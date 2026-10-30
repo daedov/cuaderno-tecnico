@@ -1,0 +1,14 @@
+nav:
+  - fundamentos-seguridad-cloud.md
+  - seguridad-identidades.md
+  - seguridad-cifrado-secretos.md
+  - seguridad-logging-deteccion.md
+  - seguridad-redes.md
+  - seguridad-maquinas-virtuales.md
+  - seguridad-contenedores-kubernetes.md
+  - seguridad-serverless.md
+  - seguridad-almacenamiento.md
+  - seguridad-bases-datos.md
+  - seguridad-apis-aplicaciones.md
+  - seguridad-servicios-ia.md
+  - ...

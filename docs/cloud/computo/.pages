@@ -1,0 +1,5 @@
+nav:
+  - maquinas-virtuales.md
+  - contenedores-gestionados.md
+  - serverless.md
+  - ...

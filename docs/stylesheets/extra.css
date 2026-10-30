@@ -1,0 +1,118 @@
+/* --- Ajustes minimalistas --- */
+
+:root {
+  --md-default-font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+}
+
+/* Modo oscuro: con primary: black, Material deja los enlaces en #4051b5
+   (contraste 2.3:1 sobre el fondo oscuro). Se aclaran para pasar WCAG AA. */
+[data-md-color-scheme="slate"] {
+  --md-typeset-a-color: #82aaff;   /* 7.0:1 */
+  --md-accent-fg-color: #a8c1ff;   /* hover */
+}
+
+/* Ancho de lectura cómodo */
+.md-grid {
+  max-width: 62rem;
+}
+
+/* Tipografía de contenido más limpia */
+.md-typeset {
+  font-size: 0.78rem;
+  line-height: 1.7;
+}
+
+.md-typeset h1 {
+  font-weight: 700;
+  letter-spacing: -0.01em;
+}
+
+.md-typeset h2 {
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  margin-top: 2.2em;
+}
+
+/* Bloques de código con esquinas suaves */
+.md-typeset pre > code {
+  border-radius: 6px;
+}
+
+/* Enlaces sutiles */
+.md-typeset a {
+  text-decoration: none;
+  border-bottom: 1px solid transparent;
+  transition: border-color 0.15s ease;
+}
+.md-typeset a:hover {
+  border-bottom-color: currentColor;
+}
+
+/* Tarjetas de la portada */
+.grid.cards > ul > li {
+  border-radius: 8px;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+.grid.cards > ul > li:hover {
+  box-shadow: var(--md-shadow-z2);
+}
+
+/* --- Formato general de tablas --- */
+.md-typeset table:not([class]),
+.md-typeset table.rc-tabla {
+  border-collapse: collapse;
+  border: 1px solid #027a7e;
+  border-radius: 0;
+  display: table;
+  width: 100%;
+  font-size: 0.65rem;
+}
+.md-typeset table:not([class]) td,
+.md-typeset table.rc-tabla td {
+  border: 1px solid #027a7e;
+  padding: 6px 10px;
+  color: var(--md-typeset-color); /* se adapta a modo claro/oscuro */
+}
+.md-typeset table:not([class]) th,
+.md-typeset table.rc-tabla th {
+  border: 1px solid #027a7e;
+  background-color: #027a7e;
+  color: white;
+  padding: 6px 10px;
+  font-weight: bold;
+}
+
+
+
+/* Colores diferenciados de celda: solo para la tabla de responsabilidad compartida */
+.rc-tabla .rc-cliente {
+  background-color: #dcf1fa; /* azul claro = Cliente */
+}
+.rc-tabla .rc-proveedor {
+  background-color: #cff2d6; /* verde claro = Proveedor */
+}
+/* En modo oscuro, mismos tonos pero oscuros para que el texto claro se lea */
+[data-md-color-scheme="slate"] .rc-tabla .rc-cliente {
+  background-color: #123f52; /* 6.3:1 */
+}
+[data-md-color-scheme="slate"] .rc-tabla .rc-proveedor {
+  background-color: #164a26; /* 5.7:1 */
+}
+/* Botón de copiar junto a los comandos en línea (ver javascripts/copiar-comandos.js) */
+.md-typeset .md-clipboard.cmd-copy {
+  position: static;
+  display: inline-block;
+  vertical-align: middle;
+  width: 1.2em;
+  height: 1.2em;
+  margin-left: 0.2em;
+  color: var(--md-default-fg-color--light);
+}
+.md-typeset .md-clipboard.cmd-copy::after {
+  width: 0.9em;
+  height: 0.9em;
+}
+.md-typeset .md-clipboard.cmd-copy:hover,
+.md-typeset .md-clipboard.cmd-copy:focus {
+  color: var(--md-accent-fg-color);
+}

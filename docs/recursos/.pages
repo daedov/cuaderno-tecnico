@@ -1,0 +1,6 @@
+nav:
+  - index.md
+  - Comandos: comandos
+  - Sintaxis: sintaxis
+  - Anatomía de archivos: anatomia
+  - ...

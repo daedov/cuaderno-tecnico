@@ -1,0 +1,10 @@
+nav:
+  - terraform.md
+  - docker.md
+  - ansible.md
+  - kubernetes.md
+  - helm.md
+  - github-actions.md
+  - gitlab-ci.md
+  - otros-archivos.md
+  - ...

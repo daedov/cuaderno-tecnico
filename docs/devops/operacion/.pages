@@ -1,0 +1,11 @@
+nav:
+  - observabilidad.md
+  - leer-logs.md
+  - troubleshooting.md
+  - operacion-sre.md
+  - postmortem.md
+  - analisis-causa-raiz.md
+  - runbooks-playbooks.md
+  - comunicacion-incidentes.md
+  - practicas-aprendizaje.md
+  - ...

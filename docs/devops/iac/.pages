@@ -1,0 +1,7 @@
+nav:
+  - infraestructura-como-codigo.md
+  - terraform-basico.md
+  - terraform-workspaces.md
+  - ansible.md
+  - pruebas-infraestructura.md
+  - ...

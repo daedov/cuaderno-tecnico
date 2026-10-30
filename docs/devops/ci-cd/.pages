@@ -1,0 +1,5 @@
+nav:
+  - integracion-continua.md
+  - ci-cd-github-actions.md
+  - despliegue-continuo.md
+  - ...

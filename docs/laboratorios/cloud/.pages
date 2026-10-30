@@ -1,0 +1,6 @@
+nav:
+  - aws-vpc-ec2.md
+  - aws-serverless-api.md
+  - azure-vnet-vm.md
+  - gcp-cloud-run.md
+  - ...

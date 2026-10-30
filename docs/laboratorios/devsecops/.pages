@@ -1,0 +1,8 @@
+nav:
+  - escaneos-en-pipeline.md
+  - oidc-github-aws.md
+  - seguridad-kubernetes.md
+  - dast-zap-juice-shop.md
+  - cspm-prowler.md
+  - hardening-linux-ansible.md
+  - ...

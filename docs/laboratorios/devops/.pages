@@ -1,0 +1,10 @@
+nav:
+  - git-flujo-pull-request.md
+  - docker-multistage-compose.md
+  - kubernetes-local-kind.md
+  - github-actions-ci.md
+  - terraform-local-workspaces.md
+  - terraform-aws-backend-remoto.md
+  - ansible-configuracion.md
+  - observabilidad-prometheus-grafana.md
+  - ...

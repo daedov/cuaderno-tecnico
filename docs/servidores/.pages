@@ -1,0 +1,6 @@
+nav:
+  - index.md
+  - Linux Server: linux
+  - Windows Server: windows
+  - Ansible con servidores: ansible
+  - ...

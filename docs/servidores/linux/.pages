@@ -1,0 +1,6 @@
+nav:
+  - linux-fundamentos-servidor.md
+  - linux-almacenamiento.md
+  - linux-redes-servidor.md
+  - linux-procesos-rendimiento.md
+  - ...

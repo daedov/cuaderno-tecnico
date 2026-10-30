@@ -1,0 +1,5 @@
+nav:
+  - ansible-linux.md
+  - ansible-windows.md
+  - ansible-casos-uso.md
+  - ...

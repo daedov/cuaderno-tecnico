@@ -1,0 +1,5 @@
+# Fijadas para que CI sea reproducible.
+# mkdocs<2.0: MkDocs 2.0 elimina el sistema de plugins y rompe Material.
+mkdocs>=1.6,<2.0
+mkdocs-material>=9.7,<10.0
+mkdocs-awesome-pages-plugin>=2.9,<3.0

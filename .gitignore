@@ -1,0 +1,14 @@
+# MkDocs
+site/
+
+# Python
+.venv/
+venv/
+__pycache__/
+*.pyc
+
+# Editores / SO
+.DS_Store
+.vscode/
+.idea/
+*.swp

@@ -1,0 +1,6 @@
+nav:
+  - seguridad-red.md
+  - balanceo-alta-disponibilidad.md
+  - redes-datacenter-hibridas.md
+  - troubleshooting-red.md
+  - ...

@@ -1,0 +1,6 @@
+nav:
+  - fundamentos-redes.md
+  - modelos-osi-tcpip.md
+  - capa-enlace-ethernet.md
+  - direccionamiento-ip.md
+  - ...

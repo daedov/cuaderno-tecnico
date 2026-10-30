@@ -1,0 +1,7 @@
+nav:
+  - entorno-python.md
+  - sintaxis-tipos.md
+  - estructuras-datos.md
+  - control-flujo-funciones.md
+  - errores-modulos.md
+  - ...

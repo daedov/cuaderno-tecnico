@@ -1,0 +1,8 @@
+nav:
+  - archivos-formatos.md
+  - scripts-cli.md
+  - sistema-procesos.md
+  - apis-http.md
+  - automatizacion-cloud.md
+  - calidad-codigo.md
+  - ...

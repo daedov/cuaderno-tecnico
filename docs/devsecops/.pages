@@ -1,0 +1,11 @@
+nav:
+  - index.md
+  - fundamentos-devsecops.md
+  - Escaneos de seguridad: escaneos
+  - Vulnerabilidades y CVE: vulnerabilidades
+  - Código y dependencias: codigo-y-dependencias
+  - Infraestructura y contenedores: infraestructura-y-contenedores
+  - Hardening: hardening
+  - Identidades y pipeline: identidades-y-pipeline
+  - Gobierno y respuesta: gobierno-y-respuesta
+  - ...

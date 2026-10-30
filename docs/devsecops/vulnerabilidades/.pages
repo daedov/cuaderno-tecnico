@@ -1,0 +1,11 @@
+nav:
+  - fundamentos-cve.md
+  - investigar-un-cve.md
+  - cve-aplicaciones-librerias.md
+  - cve-supply-chain-cicd.md
+  - cve-contenedores-kubernetes.md
+  - cve-linux-sistemas.md
+  - cve-windows-active-directory.md
+  - cve-perimetro-vpn.md
+  - cve-protocolos-hardware.md
+  - ...

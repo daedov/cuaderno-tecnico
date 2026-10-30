@@ -1,0 +1,11 @@
+nav:
+  - escaneo-en-pipeline.md
+  - sast.md
+  - sca.md
+  - secret-scanning.md
+  - container-scanning.md
+  - iac-scanning.md
+  - dast.md
+  - kspm.md
+  - cspm.md
+  - ...

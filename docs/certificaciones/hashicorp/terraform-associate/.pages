@@ -1,0 +1,9 @@
+nav:
+  - resumen-examen.md
+  - objetivo-1-2-iac-y-fundamentos.md
+  - objetivo-3-flujo-de-trabajo.md
+  - objetivo-4-configuracion.md
+  - objetivo-5-modulos.md
+  - objetivo-6-7-estado-y-mantenimiento.md
+  - objetivo-8-hcp-terraform.md
+  - ...

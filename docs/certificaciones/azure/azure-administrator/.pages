@@ -1,0 +1,8 @@
+nav:
+  - resumen-examen.md
+  - area-1-identidades-gobierno.md
+  - area-2-almacenamiento.md
+  - area-3-computo.md
+  - area-4-redes-virtuales.md
+  - area-5-monitoreo-mantenimiento.md
+  - ...

@@ -1,0 +1,9 @@
+nav:
+  - index.md
+  - roles-profesionales.md
+  - otras-certificaciones.md
+  - AWS: aws
+  - Google Cloud: google-cloud
+  - Azure: azure
+  - HashiCorp: hashicorp
+  - ...

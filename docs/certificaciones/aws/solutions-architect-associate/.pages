@@ -1,0 +1,7 @@
+nav:
+  - resumen-examen.md
+  - dominio-1-arquitecturas-seguras.md
+  - dominio-2-arquitecturas-resilientes.md
+  - dominio-3-arquitecturas-alto-rendimiento.md
+  - dominio-4-arquitecturas-costo-optimizado.md
+  - ...

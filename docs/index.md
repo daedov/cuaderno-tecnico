@@ -6,37 +6,22 @@ hide:
 
 # Inicio 🏡
 
-## Notas prácticas sobre DevOps, DevSecOps y Cloud
+## Notas prácticas sobre Cloud, DevOps y DevSecOps
 
-Aquí encontrarás apuntes, recetas, comandos y referencias para tener a mano en tu día a día
+Aquí encuentras apuntes, atajos, comandos y referencias para tener a mano en el día a día
 
-Cada tema se ve desde varias capas: **Cloud** es dónde corre todo, **DevOps** cómo lo automatizas y **DevSecOps** cómo compruebas que es seguro. Debajo están **Networking** (la base) y **Negocio TI** (el porqué), y **Python** es la herramienta para automatizar. Ver el [mapa de relaciones](mapa-de-relaciones.md).
+!!! note "Sobre estas notas"
+    Son mis notas personales, es decir, lo que he ido apuntando mientras trabajaba, estudiaba y resolvía problemas. Me han ayudado en el trabajo y en el aprendizaje del día a día, y las comparto por si a alguien más le sirven. Están escritas desde una experiencia y necesidad en particular, así que pueden tener vacíos y las voy actualizando con el tiempo.
 
 <div class="grid cards" markdown>
 
--   :material-briefcase:{ .lg .middle } **Negocio TI**
+-   :material-bookmark-multiple:{ .lg .middle } **Recursos**
 
     ---
 
-    TI y negocio, SLA/SLO/SLI, métricas, ITIL, continuidad y riesgo.
+    Enlaces, herramientas, libros y referencias útiles.
 
-    [:octicons-arrow-right-24: Ir a Negocio TI](negocio/index.md)
-
--   :material-lan:{ .lg .middle } **Networking**
-
-    ---
-
-    Fundamentos de redes de lo básico a lo avanzado, on-premise y en la nube.
-
-    [:octicons-arrow-right-24: Ir a Networking](networking/index.md)
-
--   :material-server:{ .lg .middle } **Servidores**
-
-    ---
-
-    Linux Server y Windows Server: comandos, configuración y automatización con Ansible.
-
-    [:octicons-arrow-right-24: Ir a Servidores](servidores/index.md)
+    [:octicons-arrow-right-24: Ir a Recursos](recursos/index.md)
 
 -   :material-cloud:{ .lg .middle } **Cloud**
 
@@ -62,6 +47,22 @@ Cada tema se ve desde varias capas: **Cloud** es dónde corre todo, **DevOps** c
 
     [:octicons-arrow-right-24: Ir a DevSecOps](devsecops/index.md)
 
+-   :material-lan:{ .lg .middle } **Networking**
+
+    ---
+
+    Fundamentos de redes de lo básico a lo avanzado, on-premise y en la nube.
+
+    [:octicons-arrow-right-24: Ir a Networking](networking/index.md)
+
+-   :material-server:{ .lg .middle } **Servidores**
+
+    ---
+
+    Linux Server y Windows Server: comandos, configuración y automatización con Ansible.
+
+    [:octicons-arrow-right-24: Ir a Servidores](servidores/index.md)
+
 -   :material-language-python:{ .lg .middle } **Python**
 
     ---
@@ -86,13 +87,13 @@ Cada tema se ve desde varias capas: **Cloud** es dónde corre todo, **DevOps** c
 
     [:octicons-arrow-right-24: Ir a Certificaciones](certificaciones/index.md)
 
--   :material-bookmark-multiple:{ .lg .middle } **Recursos**
+-   :material-briefcase:{ .lg .middle } **Negocio TI**
 
     ---
 
-    Enlaces, herramientas, libros y referencias útiles.
+    TI y negocio, SLA/SLO/SLI, métricas, ITIL, continuidad y riesgo.
 
-    [:octicons-arrow-right-24: Ir a Recursos](recursos/index.md)
+    [:octicons-arrow-right-24: Ir a Negocio TI](negocio/index.md)
 
 </div>
 

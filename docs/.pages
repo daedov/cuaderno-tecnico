@@ -1,5 +1,6 @@
 nav:
   - index.md
+  - Recursos: recursos
   - Cloud: cloud
   - DevOps: devops
   - DevSecOps: devsecops
@@ -9,6 +10,4 @@ nav:
   - Laboratorios: laboratorios
   - Certificaciones: certificaciones
   - Negocio TI: negocio
-  - Recursos: recursos
-  - mapa-de-relaciones.md
   - ...

@@ -502,8 +502,7 @@ argocd app diff lab-devops-app-prod
 - Anatomía de los pipelines: [GitHub Actions](github-actions.md) y [GitLab CI](gitlab-ci.md).
 
 !!! example "Practica en el laboratorio"
-    - [Lab 21: Game day: incidente simulado
-    - troubleshooting y postmortem](../../laboratorios/operacion/game-day-incidente.md)
+    - [Lab 21: Game day: incidente simulado, troubleshooting y postmortem](../../laboratorios/operacion/game-day-incidente.md)
 
 ## Referencias
 

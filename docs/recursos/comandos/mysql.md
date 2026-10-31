@@ -1,4 +1,4 @@
-## MySQL
+# MySQL
 | Comando | Descripción |
 |---------|-------------|
 | `mysql -u <usuario> -p` | Conectarse al servidor MySQL |

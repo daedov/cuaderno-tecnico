@@ -3,7 +3,7 @@ tags:
   - ansible
   - ci-cd
 ---
-## Ansible
+# Ansible
 | Comando | Descripción |
 |---------|-------------|
 | `ansible <hosts> -m ping` | Verificar conectividad |

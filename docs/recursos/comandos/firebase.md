@@ -1,4 +1,4 @@
-## Firebase CLI
+# Firebase CLI
 | Comando | Descripción |
 |---------|-------------|
 | `firebase login` | Iniciar sesión en Firebase |

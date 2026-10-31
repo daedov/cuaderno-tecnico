@@ -4,7 +4,7 @@ tags:
   - cloud
 ---
 
-## AWS CLI
+# AWS CLI
 | Comando | Descripción |
 |---------|-------------|
 | `aws configure` | Configurar credenciales y región |

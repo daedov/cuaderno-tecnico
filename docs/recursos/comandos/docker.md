@@ -16,8 +16,8 @@
 | `docker logs -f <contenedor>` | Ver logs en tiempo real |
 | `docker network ls` | Listar redes |
 | `docker volume ls` | Listar volúmenes |
-| `docker-compose up -d` | Levantar servicios definidos en compose |
-| `docker-compose down` | Detener y eliminar servicios de compose |
+| `docker compose up -d` | Levantar servicios definidos en compose |
+| `docker compose down` | Detener y eliminar servicios de compose |
 | `docker system prune -a` | Limpiar imágenes/contenedores/redes sin uso |
 
 !!! example "Practica en el laboratorio"

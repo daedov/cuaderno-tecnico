@@ -1,6 +1,6 @@
 
 
-## Terraform
+# Terraform
 | Comando | Descripción |
 |---------|-------------|
 | `terraform init` | Inicializar Terraform |

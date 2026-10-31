@@ -6,7 +6,7 @@ hide:
 # Recursos :bulb:
 
 !!! tip "¿Cuándo usar estos recursos?"
-    Aquí encontrarás una colección de enlaces, herramientas, comandos y referencias útiles que te ayudarán a resolver dudas rápidamente. Por ejemplo, si estás practicando un laboratorio y te encuentras con un error, puedes venir aquí para buscar el comando que te falta o la herramienta que podría ayudarte.
+    Es una colección de enlaces, herramientas, comandos y referencias útiles que te ayudarán a resolver dudas rápidamente.
 
 ## Comandos 
 
@@ -20,6 +20,8 @@ hide:
 - [Seguridad y escaneo](comandos/seguridad.md)
 - [Firebase CLI](comandos/firebase.md)
 - [Linux](comandos/linux.md)
+- [Debian](comandos/debian.md)
+- [Amazon Linux](comandos/amazon-linux.md)
 - [Vim](comandos/vim.md)
 - [Google Cloud CLI](comandos/google-cli.md)
 - [MySQL](comandos/mysql.md)
@@ -27,6 +29,7 @@ hide:
 ## Sintaxis
 
 - [GitHub Actions](sintaxis/github-actions.md)
+- [HCL (Terraform)](sintaxis/hcl.md)
 - [Shell / Bash](sintaxis/shell.md)
 - [YAML](sintaxis/yml.md)
 
@@ -34,7 +37,7 @@ hide:
 
 Ejemplos completos con la explicación de cada línea al costado, para entender la estructura y qué significa cada elemento.
 
-- [Terraform](anatomia/terraform.md): bloques, variables, recursos, módulos, outputs, backend y lock file
+- [Terraform](anatomia/terraform.md): variables, recursos, módulos, outputs, backend y lock file
 - [Docker](anatomia/docker.md): `Dockerfile` multi-stage, `.dockerignore` y `compose.yaml`
 - [Ansible](anatomia/ansible.md): inventario, `ansible.cfg`, playbooks, roles, templates Jinja2 y Vault
 - [Kubernetes](anatomia/kubernetes.md): Deployment, Service, Gateway API, ConfigMap, Secret, HPA, NetworkPolicy, RBAC y Kustomize
@@ -57,7 +60,6 @@ Ejemplos completos con la explicación de cada línea al costado, para entender 
 - [DevOps Exercises](https://github.com/bregman-arie/devops-exercises)
 - [Test Your Sysadmin Skills](https://github.com/trimstray/test-your-sysadmin-skills)
 - [How They DevOps](https://github.com/bregman-arie/howtheydevops)
-- [DevOps Exercises](https://github.com/bregman-arie/devops-exercises)
 - [DevOps Projects](https://github.com/NotHarshhaa/DevOps-Projects)
 - [ Inteligencia Artificial y Big Data](https://aitor-medrano.github.io/iabd/index.html)
 - [Awesome DevSecOps](https://github.com/devsecops/awesome-devsecops)

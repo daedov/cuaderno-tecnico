@@ -53,9 +53,10 @@
 | **Checkov** | Escaneo estático de IaC | [checkov.io](https://www.checkov.io/) |
 | **Snyk** | Escaneo de dependencias y contenedores | [docs.snyk.io](https://docs.snyk.io/) |
 | **SonarQube** | Escaneo de calidad de código | [docs.sonarsource.com](https://docs.sonarsource.com/) |
-| **tfsec** | Escaneo estático de Terraform | [aquasecurity.github.io/tfsec](https://aquasecurity.github.io/tfsec/) |
 | **Trivy** | Escaneo de vulnerabilidades (imágenes, IaC) | [trivy.dev/docs](https://trivy.dev/docs/latest/guide/) |
 | **Vault** | Gestión de secretos (HashiCorp) | [developer.hashicorp.com/vault](https://developer.hashicorp.com/vault/docs) |
+
+Avisos de seguridad de las nubes, CERT/CSIRT nacionales, bases de vulnerabilidades y feeds en tiempo real: [Fuentes oficiales de seguridad](../devsecops/gobierno-y-respuesta/fuentes-oficiales-seguridad.md).
 
 ## Observabilidad e incidentes
 | Herramienta | Uso | Enlace |
@@ -74,7 +75,3 @@
 | **Firebase / Firestore** | Base de datos NoSQL en la nube | [firebase.google.com/docs](https://firebase.google.com/docs) |
 | **n8n** | Automatización de flujos (low-code) | [docs.n8n.io](https://docs.n8n.io/) |
 | **Power Automate** | Automatización Microsoft 365 | [learn.microsoft.com/power-automate](https://learn.microsoft.com/en-us/power-automate/) |
-
-## Seguridad: fuentes oficiales
-
-Avisos de seguridad y estado de las nubes, CERT/CSIRT nacionales, bases de vulnerabilidades y feeds para recibirlo todo en tiempo real: [Fuentes oficiales de seguridad](../devsecops/gobierno-y-respuesta/fuentes-oficiales-seguridad.md).

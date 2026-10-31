@@ -161,6 +161,8 @@
 | `which <comando>` | Ver la ruta del ejecutable de un comando |
 | `apt list --installed` | Listar paquetes instalados |
 
+Más comandos por distribución en [Debian](debian.md) y [Amazon Linux](amazon-linux.md).
+
 ## 12. Servicios y systemd
 | Comando | Descripción |
 |---------|-------------|

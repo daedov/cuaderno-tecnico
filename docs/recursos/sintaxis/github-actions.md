@@ -5,7 +5,7 @@ tags:
 ---
 
 
-## GitHub Actions
+# GitHub Actions
 | Elemento | Descripción |
 |----------|-------------|
 | `on: [push, pull_request]` | Eventos que disparan el workflow |
@@ -23,8 +23,7 @@ tags:
     Para ver cada clave en un workflow real comentado línea por línea (eventos, permisos, matrix, environments, outputs, reusable workflows y composite actions), consulta [Anatomía de los workflows de GitHub Actions](../anatomia/github-actions.md).
 
 !!! example "Practica en el laboratorio"
-    - [Lab 04: Flujo Git con ramas
-    - pull requests y code review](../../laboratorios/devops/git-flujo-pull-request.md)
+    - [Lab 04: Flujo Git con ramas, pull requests y code review](../../laboratorios/devops/git-flujo-pull-request.md)
     - [Lab 07: Pipeline de CI con GitHub Actions](../../laboratorios/devops/github-actions-ci.md)
     - [Lab 13: Desplegar en AWS desde GitHub Actions con OIDC (sin llaves)](../../laboratorios/devsecops/oidc-github-aws.md)
 

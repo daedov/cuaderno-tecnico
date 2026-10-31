@@ -23,7 +23,7 @@ Endurecer Windows es pasar de la configuración por defecto (pensada para que to
 
 Dos decisiones reducen superficie antes de tocar una sola política:
 
-- **Server Core** (sin escritorio) en vez de *Desktop Experience*: menos binarios, menos parches y menos reinicios. Se administra con PowerShell, Windows Admin Center o RSAT.
+- **Server Core** (sin escritorio) en vez de *Desktop Experience*: menos binarios, menos parches y menos superficie de ataque (comparación completa en [Windows Server: fundamentos](../../servidores/windows/windows-server-fundamentos.md#server-core-vs-desktop-experience)).
 - **Roles mínimos**: instala solo los roles y features que el servidor necesita (`Get-WindowsFeature | Where-Object Installed` para revisarlos).
 
 ## Baselines de referencia
@@ -51,7 +51,7 @@ El SCT incluye dos herramientas clave:
 
 ## GPO y su alcance
 
-Las **Group Policy Objects** (objetos de directiva de grupo) se aplican en orden **LSDOU**: Local → Site → Domain → OU; la última gana, salvo que una GPO superior esté marcada como *Enforced*. Algunas directivas solo valen a nivel de dominio (política de contraseñas de cuentas de dominio, salvo con *Fine-Grained Password Policies*).
+Las **Group Policy Objects** (objetos de directiva de grupo) se aplican en orden **LSDOU** (Local → Site → Domain → OU); cómo funcionan la precedencia, *Enforced* y el filtrado está en [Roles y servicios: Group Policy](../../servidores/windows/windows-roles-servicios.md#precedencia-lsdou). Algunas directivas solo valen a nivel de dominio (política de contraseñas de cuentas de dominio, salvo con *Fine-Grained Password Policies*).
 
 | Escenario | Dónde vive la configuración |
 | --- | --- |
@@ -226,9 +226,7 @@ Public     True        NotConfigured         NotConfigured      False
 - Define anillos (*rings*): piloto → general, con ventanas de mantenimiento y SLA de remediación según severidad (ver [Detección y respuesta](../gobierno-y-respuesta/deteccion-respuesta.md)).
 - **WSUS** sigue funcionando pero Microsoft lo anunció como *deprecated* (sin nuevas funciones) en 2024; para nuevos despliegues mira **Azure Update Manager** (también para servidores on-premise con Azure Arc), Intune/Windows Autopatch para clientes, y **Hotpatch** en Windows Server 2025 (parches sin reinicio; revisa requisitos y licenciamiento).
 
-```powershell
-Get-HotFix | Select-Object -First 3 HotFixID, Description, InstalledOn
-```
+Cómo ver los parches instalados (`Get-HotFix`) e instalarlos desde la línea de comandos: [Administración con PowerShell: actualizaciones](../../servidores/windows/windows-powershell-administracion.md#actualizaciones).
 
 ## Active Directory en lo esencial
 

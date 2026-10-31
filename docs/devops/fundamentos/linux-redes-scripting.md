@@ -25,7 +25,7 @@ Casi todo en la nube termina corriendo sobre **Linux**: VMs, nodos de Kubernetes
 | HTTP | Leer códigos de estado y probar endpoints con `curl` | [Protocolos de aplicación](../../networking/intermedio/protocolos-aplicacion.md#http) |
 | Red | Diagnosticar un "no conecta" capa por capa | [Troubleshooting de red](../../networking/avanzado/troubleshooting-red.md) |
 
-!!! note "Para las chuletas de comandos"
+!!! note "Guías de comandos y de sintaxis"
     Tablas de comandos en [Linux](../../recursos/comandos/linux.md), [Shell / Bash](../../recursos/sintaxis/shell.md) y [Puertos comunes](../../recursos/puertos.md).
 
 ## Bash

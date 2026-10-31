@@ -33,7 +33,7 @@ tags:
 | OpenSSH | El que trae tu sistema o Git for Windows | `ssh -V` |
 | GitHub CLI (`gh`) | Opcional | `gh --version` |
 
-Teoría recomendada: [Git y control de versiones](../../devops/fundamentos/git-control-versiones.md) (estrategias de ramas, merge vs rebase, Conventional Commits, SemVer) y la chuleta de [comandos de Git](../../recursos/comandos/git.md). Para la parte de protección de ramas, [Seguridad del pipeline](../../devsecops/identidades-y-pipeline/seguridad-pipeline.md).
+Teoría recomendada: [Git y control de versiones](../../devops/fundamentos/git-control-versiones.md) (estrategias de ramas, merge vs rebase, Conventional Commits, SemVer) y la [guía de comandos de Git](../../recursos/comandos/git.md). Para la parte de protección de ramas, [Seguridad del pipeline](../../devsecops/identidades-y-pipeline/seguridad-pipeline.md).
 
 Este repositorio (`lab-devops-app`) lo vas a reutilizar: en el [Lab 05](docker-multistage-compose.md) le añades una app con Docker y en el [Lab 07](github-actions-ci.md) su pipeline de CI.
 

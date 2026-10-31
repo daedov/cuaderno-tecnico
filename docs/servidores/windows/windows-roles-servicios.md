@@ -121,7 +121,7 @@ Add-Computer -DomainName 'corp.contoso.com' -OUPath 'OU=Servidores,DC=corp,DC=co
   -Credential (Get-Credential CORP\admin-join) -Restart
 ```
 
-`-OUPath` evita que el equipo caiga en el contenedor por defecto `CN=Computers` (donde no se pueden vincular GPO). Usa una cuenta delegada solo para unir equipos, no un Domain Admin. Con Ansible: `microsoft.ad.membership` (ver [Ansible y Windows](../ansible/ansible-windows.md)).
+`-OUPath` evita que el equipo caiga en el contenedor por defecto `CN=Computers` (donde no se pueden vincular GPO). Usa una cuenta delegada solo para unir equipos, no un Domain Admin. Con Ansible: `microsoft.ad.membership` (ver [Unir servidores a Active Directory](../ansible/ansible-recetas-servidores.md#unir-servidores-a-active-directory)).
 
 ### Verificar la salud de AD
 

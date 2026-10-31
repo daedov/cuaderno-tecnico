@@ -136,7 +136,7 @@ docker stats --no-stream                            # consumo de CPU y memoria
 | `139` | 128 + 11 (**SIGSEGV**) | Segmentation fault: fallo de memoria en código nativo, librería incompatible con la imagen base |
 | `143` | 128 + 15 (**SIGTERM**) | Se pidió parar (`docker stop`, escalado, deploy). Normal si fue intencional |
 
-Más en [Docker](../contenedores/docker.md) y la chuleta de [comandos de Docker](../../recursos/comandos/docker.md).
+Más en [Docker](../contenedores/docker.md) y la [guía de comandos de Docker](../../recursos/comandos/docker.md).
 
 ### Kubernetes
 

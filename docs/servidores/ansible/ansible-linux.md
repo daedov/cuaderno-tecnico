@@ -8,13 +8,13 @@ tags:
 
 # Ansible con Linux Server
 
-> Cómo conectar Ansible a servidores Linux de verdad: requisitos del nodo, llaves SSH, `become`, intérprete de Python, bastion host, `ansible.cfg`, módulos esenciales para administrar servidores, casos completos (alta de un servidor, parches con rolling update, ampliar LVM, servicio systemd) y los errores de conexión con sus mensajes reales.
+> Cómo conectar Ansible a servidores Linux de verdad: requisitos del nodo, llaves SSH, `become`, intérprete de Python, bastion host, `ansible.cfg`, módulos esenciales para administrar servidores y los errores de conexión con sus mensajes reales.
 
 !!! info "Antes de leer"
     Los conceptos de Ansible (inventario, playbooks, roles, handlers, idempotencia, Vault) están en [Configuration management con Ansible](../../devops/iac/ansible.md), y cada línea de un proyecto explicada en [Anatomía de los archivos de Ansible](../../recursos/anatomia/ansible.md). El [Lab 10](../../laboratorios/devops/ansible-configuracion.md) los practica con contenedores conectados por `docker exec`. Esta nota da el paso que falta: **servidores por SSH**, con `sudo`, varios sistemas operativos y los problemas que aparecen en el trabajo real. Lo que se configura dentro de Linux (usuarios, systemd, LVM, firewall) se explica a mano en la sección [Linux Server](../linux/linux-fundamentos-servidor.md).
 
 !!! note "Cómo se probó"
-    Con `ansible-core` 2.21.5 y `ansible-lint` 26.10.1 (control node en WSL2 con Ubuntu 22.04) contra dos contenedores con **systemd y OpenSSH**: `srv-ans-ubuntu` (Ubuntu 24.04) y `srv-ans-rocky` (Rocky Linux 9.8), con un usuario `ansible`, llave ed25519 y `sudo` sin contraseña. La conexión es **SSH real**; `srv-ans-rocky` solo es alcanzable **a través de** `srv-ans-ubuntu` como bastion. Las salidas son reales salvo donde se indica. Límites del contenedor: no se puede reiniciar de verdad (el reinicio se simuló), firewalld no arranca porque el kernel de Docker Desktop no tiene las funciones de nftables que necesita, y el caso de LVM solo se validó con `ansible-lint` (no se crearon discos).
+    Con `ansible-core` 2.21.5 y `ansible-lint` 26.10.1 (control node en WSL2 con Ubuntu 22.04) contra dos contenedores con **systemd y OpenSSH**: `srv-ans-ubuntu` (Ubuntu 24.04) y `srv-ans-rocky` (Rocky Linux 9.8), con un usuario `ansible`, llave ed25519 y `sudo` sin contraseña. La conexión es **SSH real**; `srv-ans-rocky` solo es alcanzable **a través de** `srv-ans-ubuntu` como bastion. Las salidas son reales salvo donde se indica. Con el mismo entorno se ejecutaron las [Recetas de Ansible para servidores](ansible-recetas-servidores.md), que detallan sus límites (reinicio simulado, firewalld, LVM).
 
 ## Requisitos del nodo gestionado
 
@@ -224,7 +224,7 @@ srv-ans-rocky | SUCCESS =>
 | Firewall | `ansible.posix.firewalld`, `community.general.ufw` | `firewall-cmd`, `ufw` |
 | Reiniciar y esperar | `ansible.builtin.reboot` | `reboot` + esperar a SSH |
 
-Los comandos manuales equivalentes están en [Fundamentos de Linux Server](../linux/linux-fundamentos-servidor.md), [Almacenamiento](../linux/linux-almacenamiento.md) y [Redes en Linux Server](../linux/linux-redes-servidor.md). Ejemplos cortos de los que no aparecen en los casos de uso:
+Los comandos manuales equivalentes están en [Fundamentos de Linux Server](../linux/linux-fundamentos-servidor.md), [Almacenamiento](../linux/linux-almacenamiento.md) y [Redes en Linux Server](../linux/linux-redes-servidor.md). Ejemplos cortos de los que no aparecen en las [recetas](ansible-recetas-servidores.md#linux):
 
 ```yaml title="ejemplos de tareas"
 - name: Grupo para el equipo de operaciones
@@ -276,397 +276,14 @@ Son tareas sueltas para copiar dentro de un play (el `notify` necesita un handle
 
 ## Casos de uso
 
-### Alta de un servidor nuevo
+Los playbooks completos, probados contra Ubuntu y Rocky, están en [Recetas de Ansible para servidores](ansible-recetas-servidores.md#linux):
 
-Usuarios con su llave, paquetes base, zona horaria, sincronización de hora y firewall, para Ubuntu y Rocky en el mismo play:
+- [Alta de un servidor nuevo](ansible-recetas-servidores.md#alta-de-un-servidor-nuevo): usuarios con su llave, paquetes por familia, hora y firewall (`ufw` o `firewalld`).
+- [Parches con rolling update](ansible-recetas-servidores.md#parches-con-rolling-update): `apt`/`dnf`, detectar si hace falta reiniciar y `reboot`, de uno en uno.
+- [Ampliar un disco LVM](ansible-recetas-servidores.md#ampliar-un-disco-lvm): `lvg` y `lvol` con `resizefs`, sin desmontar.
+- [Desplegar un servicio systemd con template y handler](ansible-recetas-servidores.md#desplegar-un-servicio-systemd-con-template-y-handler).
 
-```yaml title="playbooks/alta-servidor.yml"
----
-- name: Alta de un servidor Linux nuevo
-  hosts: linux
-  become: true
-  vars:
-    alta_zona_horaria: Etc/UTC
-    alta_admins:
-      - nombre: dani
-        llave: "{{ lookup('ansible.builtin.file', 'files/dani.pub') }}"
-    alta_paquetes_comunes: [chrony, tar, rsync]
-    alta_paquetes_familia:                 # lo que cambia de nombre entre familias
-      Debian: [curl, vim, ufw]
-      RedHat: [vim-enhanced, firewalld]
-    alta_puertos_tcp: ["22", "8080"]
-  tasks:
-    - name: Instalar paquetes base
-      ansible.builtin.package:
-        name: "{{ alta_paquetes_comunes + alta_paquetes_familia[ansible_facts['os_family']] }}"
-        state: present
-
-    - name: Fijar la zona horaria
-      community.general.timezone:
-        name: "{{ alta_zona_horaria }}"
-
-    - name: Activar chrony (sincronización de hora)
-      ansible.builtin.systemd_service:
-        name: "{{ 'chrony' if ansible_facts['os_family'] == 'Debian' else 'chronyd' }}"
-        state: started
-        enabled: true
-
-    - name: Crear las cuentas de administración
-      ansible.builtin.user:
-        name: "{{ item.nombre }}"
-        groups: "{{ 'sudo' if ansible_facts['os_family'] == 'Debian' else 'wheel' }}"
-        append: true                       # sin append, le quitaría el resto de grupos
-        shell: /bin/bash
-      loop: "{{ alta_admins }}"
-      loop_control:
-        label: "{{ item.nombre }}"
-
-    - name: Autorizar sus llaves SSH
-      ansible.posix.authorized_key:
-        user: "{{ item.nombre }}"
-        key: "{{ item.llave }}"
-        exclusive: true                    # borra cualquier otra llave de ese usuario
-      loop: "{{ alta_admins }}"
-      loop_control:
-        label: "{{ item.nombre }}"
-
-    - name: Firewall en Ubuntu (ufw)
-      when: ansible_facts['os_family'] == 'Debian'
-      block:
-        - name: Permitir los puertos TCP
-          community.general.ufw:
-            rule: allow
-            port: "{{ item }}"
-            proto: tcp
-          loop: "{{ alta_puertos_tcp }}"
-
-        - name: Activar ufw con política de entrada deny
-          community.general.ufw:
-            state: enabled
-            default: deny
-            direction: incoming
-
-    - name: Firewall en Rocky (firewalld)
-      when: ansible_facts['os_family'] == 'RedHat'
-      block:
-        - name: Arrancar firewalld
-          ansible.builtin.systemd_service:
-            name: firewalld
-            state: started
-            enabled: true
-
-        - name: Abrir los puertos TCP en la zona public
-          ansible.posix.firewalld:
-            port: "{{ item }}/tcp"
-            zone: public
-            permanent: true                # sobrevive a reinicios
-            immediate: true                # y se aplica ya
-            state: enabled
-          loop: "{{ alta_puertos_tcp }}"
-```
-
-Primera ejecución real en Ubuntu y segunda (idempotencia). La zona horaria sale `ok` porque la imagen ya venía en UTC: el módulo comprueba antes de cambiar.
-
-```text
-TASK [Instalar paquetes base] ********************************
-changed: [srv-ans-ubuntu]
-TASK [Fijar la zona horaria] *********************************
-ok: [srv-ans-ubuntu]
-TASK [Activar chrony (sincronización de hora)] ***************
-changed: [srv-ans-ubuntu]
-TASK [Crear las cuentas de administración] *******************
-changed: [srv-ans-ubuntu] => (item=dani)
-TASK [Autorizar sus llaves SSH] ******************************
-changed: [srv-ans-ubuntu] => (item=dani)
-TASK [Permitir los puertos TCP] ******************************
-changed: [srv-ans-ubuntu] => (item=22)
-changed: [srv-ans-ubuntu] => (item=8080)
-TASK [Activar ufw con política de entrada deny] **************
-changed: [srv-ans-ubuntu]
-PLAY RECAP ***************************************************
-srv-ans-ubuntu : ok=8  changed=6  unreachable=0  failed=0  skipped=2
-
-# segunda ejecución
-srv-ans-ubuntu : ok=8  changed=0  unreachable=0  failed=0  skipped=2
-```
-
-Dos problemas reales que salieron al probarlo en Rocky 9, y que verás en el trabajo:
-
-- La primera versión instalaba `curl` en las dos familias y Rocky falló con `Depsolve Error occurred: ... package curl-minimal ... conflicts with curl provided by curl-7.76.1...`. RHEL 9 y sus clones traen `curl-minimal`, que ya da el comando `curl`. Por eso las listas de paquetes se separan por familia.
-- `firewalld` no pudo arrancar dentro del contenedor y la tarea siguiente falló con `firewall is not currently running, unable to perform immediate actions without a running firewall daemon`. En una VM arranca sin problema; si de verdad necesitas configurarlo sin el servicio activo (por ejemplo, al construir una imagen), el módulo tiene `offline: true` y solo admite cambios `permanent`.
-
-El firewall operativo se explica en [Redes en Linux Server](../linux/linux-redes-servidor.md#firewall-en-lo-operativo); qué reglas y qué endurecimiento aplicar, en [Hardening de Linux](../../devsecops/hardening/hardening-linux.md).
-
-### Parches con rolling update
-
-Un **rolling update** (actualización gradual) parchea los servidores por tandas para que el servicio siga disponible. `serial` fija el tamaño de cada tanda y `max_fail_percentage` detiene todo si fallan demasiados:
-
-```yaml title="playbooks/parches.yml"
----
-- name: Parches con rolling update
-  hosts: linux
-  become: true
-  serial: 1                          # de uno en uno (también "25%" o una lista [1, "25%", "50%"])
-  max_fail_percentage: 0             # si falla uno, no se toca el siguiente
-  vars:
-    parches_permitir_reinicio: true
-  tasks:
-    - name: Actualizar paquetes (Debian/Ubuntu)
-      ansible.builtin.apt:
-        upgrade: dist
-        update_cache: true
-        autoremove: true
-      when: ansible_facts['os_family'] == 'Debian'
-
-    - name: Actualizar paquetes (RHEL/Rocky)
-      ansible.builtin.dnf:
-        name: "*"
-        state: latest # noqa: package-latest
-        update_only: true            # actualiza lo instalado, no instala nada nuevo
-      when: ansible_facts['os_family'] == 'RedHat'
-
-    - name: Comprobar si hace falta reiniciar (Debian/Ubuntu)
-      ansible.builtin.stat:
-        path: /var/run/reboot-required
-      register: parches_flag_debian
-      when: ansible_facts['os_family'] == 'Debian'
-
-    - name: Comprobar si hace falta reiniciar (RHEL/Rocky)
-      ansible.builtin.command: needs-restarting -r   # rc=1 si hace falta reiniciar
-      register: parches_flag_redhat
-      changed_when: false
-      failed_when: parches_flag_redhat.rc not in [0, 1]
-      when: ansible_facts['os_family'] == 'RedHat'
-
-    - name: Decidir si se reinicia
-      ansible.builtin.set_fact:
-        parches_reinicio: >-
-          {{ (parches_flag_debian.stat.exists | default(false))
-             or (parches_flag_redhat.rc | default(0)) == 1 }}
-
-    - name: Reiniciar y esperar a que vuelva
-      ansible.builtin.reboot:
-        reboot_timeout: 600
-        msg: Reinicio por parches (Ansible)
-      when:
-        - parches_reinicio | bool
-        - parches_permitir_reinicio | bool
-
-    - name: Avisar si el reinicio quedó pendiente
-      ansible.builtin.debug:
-        msg: "Reinicio necesario pero no permitido en {{ inventory_hostname }}"
-      when:
-        - parches_reinicio | bool
-        - not (parches_permitir_reinicio | bool)
-```
-
-- `needs-restarting` viene en `dnf-utils` (`yum-utils`) en RHEL y clones. En Debian/Ubuntu el aviso es el archivo `/var/run/reboot-required`, que crean los paquetes que lo necesitan (kernel, libc…).
-- `ansible.builtin.reboot` lanza el reinicio, espera a que SSH vuelva y comprueba que el **boot ID** cambió (`/proc/sys/kernel/random/boot_id`). Un contenedor comparte el kernel del host, así que ese ID nunca cambia: por eso en la prueba se ejecutó con `-e parches_permitir_reinicio=false`.
-
-```bash
-ansible-playbook playbooks/parches.yml -e parches_permitir_reinicio=false
-```
-
-```text
-PLAY [Parches con rolling update] ****************************
-TASK [Gathering Facts] ***************************************
-ok: [srv-ans-ubuntu]
-TASK [Actualizar paquetes (Debian/Ubuntu)] *******************
-ok: [srv-ans-ubuntu]
-...
-TASK [Avisar si el reinicio quedó pendiente] *****************
-ok: [srv-ans-ubuntu] =>
-    msg: Reinicio necesario pero no permitido en srv-ans-ubuntu
-
-PLAY [Parches con rolling update] ****************************
-TASK [Gathering Facts] ***************************************
-ok: [srv-ans-rocky]
-TASK [Actualizar paquetes (RHEL/Rocky)] **********************
-changed: [srv-ans-rocky]
-...
-TASK [Avisar si el reinicio quedó pendiente] *****************
-ok: [srv-ans-rocky] =>
-    msg: Reinicio necesario pero no permitido en srv-ans-rocky
-
-PLAY RECAP ***************************************************
-srv-ans-rocky  : ok=5  changed=1  unreachable=0  failed=0  skipped=3
-srv-ans-ubuntu : ok=5  changed=0  unreachable=0  failed=0  skipped=3
-```
-
-Fíjate en que el play se repite (**un PLAY por tanda**): primero termina `srv-ans-ubuntu` y solo entonces empieza `srv-ans-rocky`. En Rocky, `needs-restarting -r` pidió reinicio de verdad tras actualizar paquetes del sistema. En Ubuntu se creó el archivo a mano para la prueba. En un entorno real, añade antes y después tareas para **drenar** el nodo del balanceador y comprobar la salud de la aplicación; ver [Despliegue continuo y estrategias](../../devops/ci-cd/despliegue-continuo.md) y el patrón completo en [Casos de uso con flotas mixtas](ansible-casos-uso.md#parches-mensuales-con-ventanas).
-
-### Ampliar un disco LVM
-
-El disco nuevo (`/dev/sdc`) ya está conectado a la VM. Se añade al **volume group** y se extiende el **logical volume** junto con su sistema de archivos, sin desmontar:
-
-```yaml title="playbooks/ampliar-lvm.yml"
----
-- name: Ampliar un volumen LVM en caliente
-  hosts: db
-  become: true
-  serial: 1
-  vars:
-    lvm_vg: vg_datos
-    lvm_lv: lv_pg
-    lvm_pvs:                       # TODOS los PV del VG: los que no estén se quitarían
-      - /dev/sdb
-      - /dev/sdc
-    lvm_tamano: +100%FREE          # "+" = añadir; sin "+" sería el tamaño final
-  tasks:
-    - name: Añadir el disco nuevo al volume group
-      community.general.lvg:
-        vg: "{{ lvm_vg }}"
-        pvs: "{{ lvm_pvs }}"
-
-    - name: Extender el LV y el sistema de archivos
-      community.general.lvol:
-        vg: "{{ lvm_vg }}"
-        lv: "{{ lvm_lv }}"
-        size: "{{ lvm_tamano }}"
-        resizefs: true             # equivale a lvextend -r: crece ext4 o XFS
-
-    - name: Comprobar el espacio final
-      ansible.builtin.command: df -h /var/lib/postgresql
-      register: lvm_df
-      changed_when: false
-
-    - name: Mostrar el resultado
-      ansible.builtin.debug:
-        var: lvm_df.stdout_lines
-```
-
-!!! danger "Cuidado con `pvs` en `lvg`"
-    `community.general.lvg` deja el VG con **exactamente** los PV de la lista: si olvidas uno que tiene datos, intentará quitarlo. Prueba siempre con `--check --diff` y `--limit` a un solo host. El procedimiento manual y el caso de nube (`growpart` cuando amplías el disco en lugar de añadir uno) están en [Ampliar un LV en caliente](../linux/linux-almacenamiento.md#ampliar-un-lv-en-caliente).
-
-Este playbook solo se validó con `ansible-lint` y `ansible-doc` (el `+` en `size` lo admite `lvol` desde community.general 3.0.0): no se crearon discos en las pruebas.
-
-### Desplegar un servicio systemd con template y handler
-
-```yaml title="playbooks/servicio.yml"
----
-- name: Desplegar un servicio systemd con template y handler
-  hosts: linux
-  become: true
-  vars:
-    app_nombre: lab-web
-    app_puerto: 8080
-    app_dir: /srv/lab-web
-  tasks:
-    - name: Crear el usuario de sistema
-      ansible.builtin.user:
-        name: "{{ app_nombre }}"
-        system: true
-        shell: /usr/sbin/nologin
-        create_home: false
-
-    - name: Crear la carpeta del contenido
-      ansible.builtin.file:
-        path: "{{ app_dir }}"
-        state: directory
-        owner: "{{ app_nombre }}"
-        mode: "0755"
-
-    - name: Publicar la página
-      ansible.builtin.copy:
-        content: "Hola desde {{ inventory_hostname }} ({{ ansible_facts['distribution'] }})\n"
-        dest: "{{ app_dir }}/index.html"
-        mode: "0644"
-
-    - name: Instalar la unit de systemd
-      ansible.builtin.template:
-        src: templates/lab-web.service.j2
-        dest: /etc/systemd/system/{{ app_nombre }}.service
-        mode: "0644"
-      notify: Reiniciar lab-web
-
-    - name: Activar el servicio
-      ansible.builtin.systemd_service:
-        name: "{{ app_nombre }}"
-        state: started
-        enabled: true
-        daemon_reload: true          # relee las units antes de arrancar
-
-  handlers:
-    - name: Reiniciar lab-web
-      ansible.builtin.systemd_service:
-        name: "{{ app_nombre }}"
-        state: restarted
-        daemon_reload: true
-```
-
-```ini title="playbooks/templates/lab-web.service.j2"
-# {{ ansible_managed }}
-[Unit]
-Description={{ app_nombre }} (servidor HTTP de ejemplo)
-After=network-online.target
-Wants=network-online.target
-
-[Service]
-User={{ app_nombre }}
-WorkingDirectory={{ app_dir }}
-ExecStart=/usr/bin/python3 -m http.server {{ app_puerto }} --bind 0.0.0.0
-Restart=on-failure
-NoNewPrivileges=true
-
-[Install]
-WantedBy=multi-user.target
-```
-
-Tres ejecuciones reales: la primera crea todo, la segunda no cambia nada y la tercera cambia el puerto, lo que modifica la unit y **dispara el handler**:
-
-```bash
-ansible-playbook playbooks/servicio.yml
-ansible-playbook playbooks/servicio.yml
-ansible-playbook playbooks/servicio.yml -e app_puerto=8081 --diff
-```
-
-```text
-# 1.ª: ok=7 changed=6 en cada host (incluye RUNNING HANDLER [Reiniciar lab-web])
-# 2.ª: ok=6 changed=0 en cada host (sin handler)
-# 3.ª:
-TASK [Instalar la unit de systemd] ***************************
---- before: /etc/systemd/system/lab-web.service
-+++ after: .../lab-web.service.j2
-@@ -7,7 +7,7 @@
- [Service]
- User=lab-web
- WorkingDirectory=/srv/lab-web
--ExecStart=/usr/bin/python3 -m http.server 8080 --bind 0.0.0.0
-+ExecStart=/usr/bin/python3 -m http.server 8081 --bind 0.0.0.0
- Restart=on-failure
-changed: [srv-ans-ubuntu]
-changed: [srv-ans-rocky]
-TASK [Activar el servicio] ***********************************
-ok: [srv-ans-ubuntu]
-ok: [srv-ans-rocky]
-RUNNING HANDLER [Reiniciar lab-web] **************************
-changed: [srv-ans-ubuntu]
-changed: [srv-ans-rocky]
-PLAY RECAP ***************************************************
-srv-ans-rocky  : ok=7  changed=2  unreachable=0  failed=0  skipped=0
-srv-ans-ubuntu : ok=7  changed=2  unreachable=0  failed=0  skipped=0
-```
-
-Y la comprobación desde cada servidor:
-
-```bash
-ansible linux -m ansible.builtin.uri -a 'url=http://127.0.0.1:8081/ return_content=true'
-```
-
-```text
-srv-ans-ubuntu | SUCCESS =>
-    content: |-
-        Hola desde srv-ans-ubuntu (Ubuntu)
-    server: SimpleHTTP/0.6 Python/3.12.3
-    status: 200
-srv-ans-rocky | SUCCESS =>
-    content: |-
-        Hola desde srv-ans-rocky (Rocky)
-    server: SimpleHTTP/0.6 Python/3.9.25
-    status: 200
-```
-
-Sin el handler, cambiar la unit no reiniciaría el servicio: seguiría escuchando en 8080 con la configuración vieja hasta el siguiente reinicio, el típico "lo cambié y no hace nada". Las units de systemd y sus drop-ins se explican en [Servicios con systemd](../linux/linux-fundamentos-servidor.md#servicios-con-systemd).
+Los casos con Linux y Windows en el mismo playbook (parches por ventanas, usuarios, inventario a CSV) están en [Ansible en flotas mixtas](ansible-casos-uso.md).
 
 ## Problemas comunes
 
@@ -682,9 +299,9 @@ Todos los mensajes de esta tabla salieron en las pruebas, salvo el de `requirett
 | `The module interpreter '/usr/bin/python' was not found.` con `module_stderr: /bin/sh: 1: /usr/bin/python: not found` | `ansible_python_interpreter` apunta a un Python que no existe (las distros actuales solo tienen `python3`) | Quita la variable para que actúe la detección automática, o pon `/usr/bin/python3` |
 | Error del intérprete o `python3: not found` en un host recién creado | La imagen mínima no trae Python | Instálalo con `ansible.builtin.raw` y `gather_facts: false` en un play previo |
 | `sudo: sorry, you must have a tty to run sudo` | `Defaults requiretty` en sudoers (sistemas antiguos) con `pipelining = True` | Quita `requiretty` de sudoers o desactiva `pipelining` para esos hosts |
-| `Depsolve Error occurred ... conflicts with curl provided by ...` | Paquete con otro nombre o en conflicto en esa familia (aquí `curl-minimal` en RHEL 9) | Listas de paquetes por `ansible_os_family` |
-| `firewall is not currently running, unable to perform immediate actions` | `firewalld` parado o sin arrancar | Arráncalo antes; para imágenes, `offline: true` con `permanent: true` |
 | Tareas lentas en flotas grandes | `forks` bajo, sin `pipelining`, facts completos en cada play | Sube `forks`, activa `pipelining`, usa `gather_facts: false` o **fact caching** donde no hagan falta |
+
+Los errores de paquetes (`Depsolve Error` por `curl-minimal` en RHEL 9) y de `firewalld` parado que salen al dar de alta un servidor se explican en la receta [Alta de un servidor nuevo](ansible-recetas-servidores.md#alta-de-un-servidor-nuevo).
 
 ### Depurar con -vvvv
 
@@ -707,7 +324,7 @@ Con `-vvvv` ves **el comando `ssh` exacto** que lanza Ansible (usuario, puerto, 
 | Enfoque | Qué se mira desde ahí | Nota |
 | --- | --- | --- |
 | Servidores (la base) | Lo que Ansible automatiza, hecho a mano | [Fundamentos de Linux Server](../linux/linux-fundamentos-servidor.md), [Almacenamiento](../linux/linux-almacenamiento.md), [Redes en Linux Server](../linux/linux-redes-servidor.md), [Procesos y rendimiento](../linux/linux-procesos-rendimiento.md) |
-| Servidores (automatización) | Windows y flotas mixtas | [Ansible con Windows Server](ansible-windows.md), [Casos de uso con flotas mixtas](ansible-casos-uso.md) |
+| Servidores (automatización) | Recetas, Windows y flotas mixtas | [Recetas de Ansible para servidores](ansible-recetas-servidores.md), [Ansible con Windows Server](ansible-windows.md), [Ansible en flotas mixtas](ansible-casos-uso.md) |
 | Cloud (el control) | Las VMs, sus llaves SSH y el acceso a redes privadas | [Máquinas virtuales](../../cloud/computo/maquinas-virtuales.md), [Redes en la nube](../../cloud/redes-y-datos/redes.md) |
 | DevOps (la automatización) | Conceptos, roles, pruebas y estrategias de despliegue | [Configuration management con Ansible](../../devops/iac/ansible.md), [Pruebas de infraestructura](../../devops/iac/pruebas-infraestructura.md), [Despliegue continuo](../../devops/ci-cd/despliegue-continuo.md), [Linux, redes y scripting](../../devops/fundamentos/linux-redes-scripting.md) |
 | DevSecOps (la verificación) | Endurecer lo que configuras y hacerlo como código | [Hardening de Linux](../../devsecops/hardening/hardening-linux.md), [Hardening como código](../../devsecops/hardening/hardening-como-codigo.md), [Lab 22: Hardening de Linux con Ansible](../../laboratorios/devsecops/hardening-linux-ansible.md) |
@@ -718,12 +335,6 @@ Con `-vvvv` ves **el comando `ssh` exacto** que lanza Ansible (usuario, puerto, 
 - [Ansible: Connection methods and details](https://docs.ansible.com/ansible/latest/inventory_guide/connection_details.html)
 - [Ansible: Understanding privilege escalation (become)](https://docs.ansible.com/ansible/latest/playbook_guide/playbooks_privilege_escalation.html)
 - [Ansible: Interpreter discovery](https://docs.ansible.com/ansible/latest/reference_appendices/interpreter_discovery.html)
-- [Ansible: Controlling playbook execution (serial, max_fail_percentage)](https://docs.ansible.com/ansible/latest/playbook_guide/playbooks_strategies.html)
 - [Ansible: Release and maintenance (matriz de versiones de Python)](https://docs.ansible.com/ansible/latest/reference_appendices/release_and_maintenance.html)
 - [Ansible: Special variables y connection variables](https://docs.ansible.com/ansible/latest/reference_appendices/special_variables.html)
-- [Módulo `ansible.builtin.reboot`](https://docs.ansible.com/ansible/latest/collections/ansible/builtin/reboot_module.html)
-- [Módulo `ansible.posix.authorized_key`](https://docs.ansible.com/ansible/latest/collections/ansible/posix/authorized_key_module.html)
-- [Módulo `community.general.lvol`](https://docs.ansible.com/ansible/latest/collections/community/general/lvol_module.html)
-- [Módulo `ansible.posix.firewalld`](https://docs.ansible.com/ansible/latest/collections/ansible/posix/firewalld_module.html) y [`community.general.ufw`](https://docs.ansible.com/ansible/latest/collections/community/general/ufw_module.html)
-- [DNF plugins: needs-restarting (`-r`: código 1 si hace falta reiniciar)](https://dnf-plugins-core.readthedocs.io/en/latest/needs_restarting.html)
 - [OpenSSH: ssh_config(5), ProxyJump](https://man.openbsd.org/ssh_config)

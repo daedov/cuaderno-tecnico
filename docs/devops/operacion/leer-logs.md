@@ -94,7 +94,7 @@ Cada fuente ordena las piezas a su manera. Los formatos que más vas a encontrar
 
 ## Herramientas en la terminal
 
-Las salidas son reales, sobre los archivos de ejemplo de los ejercicios. Chuleta en [Comandos de Linux](../../recursos/comandos/linux.md).
+Las salidas son reales, sobre los archivos de ejemplo de los ejercicios. Guía de comandos: [Linux](../../recursos/comandos/linux.md).
 
 | Herramienta | Para qué |
 | --- | --- |

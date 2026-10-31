@@ -2,7 +2,7 @@
 
 **Servidores es la base de sistemas**: cómo administrar Linux Server y Windows Server con soltura (comandos, configuración, almacenamiento, red, servicios y rendimiento) y cómo **automatizarlos con Ansible**. Aunque la infraestructura viva en la nube, debajo de cada VM, nodo de Kubernetes o runner de CI hay un sistema operativo que alguien tiene que entender.
 
-Cada nota explica los comandos con su porqué, muestra la salida esperada y termina con **casos de uso** resueltos y problemas comunes. La seguridad de los servidores está en [Hardening](../devsecops/hardening/fundamentos-hardening.md), y la chuleta rápida de comandos en [Recursos > Linux](../recursos/comandos/linux.md). Ver también el [mapa de relaciones](../mapa-de-relaciones.md).
+Cada nota explica los comandos con su porqué, muestra la salida esperada y termina con **casos de uso** resueltos y problemas comunes. La seguridad de los servidores está en [Hardening](../devsecops/hardening/fundamentos-hardening.md), y la guía de comandos en [Recursos > Linux](../recursos/comandos/linux.md). Ver también el [mapa de relaciones](../mapa-de-relaciones.md).
 
 ## Linux Server
 
@@ -19,8 +19,9 @@ Cada nota explica los comandos con su porqué, muestra la salida esperada y term
 
 ## Ansible con servidores
 
-- [Ansible con Linux](ansible/ansible-linux.md): conexión SSH, become, intérprete, módulos esenciales, rolling updates y troubleshooting
-- [Ansible con Windows](ansible/ansible-windows.md): WinRM, PSRP y SSH, Kerberos y NTLM, colecciones y módulos `win_*`, casos de uso
+- [Ansible con Linux](ansible/ansible-linux.md): conexión SSH, become, intérprete, bastion, `ansible.cfg`, módulos esenciales y troubleshooting
+- [Ansible con Windows](ansible/ansible-windows.md): WinRM, PSRP y SSH, Kerberos y NTLM, colecciones y módulos `win_*`, troubleshooting
+- [Recetas para servidores](ansible/ansible-recetas-servidores.md): alta de un servidor, rolling update, LVM y systemd en Linux; IIS, Windows Updates, Active Directory y agentes en Windows
 - [Casos de uso en flotas mixtas](ansible/ansible-casos-uso.md): inventario único y dinámico, parches, usuarios, cumplimiento y AWX
 
 !!! tip "Para practicar"

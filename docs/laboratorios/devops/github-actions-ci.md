@@ -31,7 +31,7 @@ tags:
 - Python 3.12+ en local para reproducir los pasos del pipeline antes de subirlos.
 - Git para consultar los SHA de las actions.
 
-Teoría recomendada: [Integración continua (CI)](../../devops/ci-cd/integracion-continua.md), [Despliegue continuo (CD)](../../devops/ci-cd/despliegue-continuo.md) y, sobre todo, [Seguridad del pipeline](../../devsecops/identidades-y-pipeline/seguridad-pipeline.md). Chuleta: [sintaxis de GitHub Actions](../../recursos/sintaxis/github-actions.md).
+Teoría recomendada: [Integración continua (CI)](../../devops/ci-cd/integracion-continua.md), [Despliegue continuo (CD)](../../devops/ci-cd/despliegue-continuo.md) y, sobre todo, [Seguridad del pipeline](../../devsecops/identidades-y-pipeline/seguridad-pipeline.md). Guía de sintaxis: [GitHub Actions](../../recursos/sintaxis/github-actions.md).
 
 ```bash
 cd lab-devops-app

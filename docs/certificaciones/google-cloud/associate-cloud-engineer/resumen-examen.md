@@ -98,7 +98,7 @@ Pensado para 6–8 horas por semana con práctica real en un proyecto de pruebas
 
 ## Laboratorio práctico
 
-Un recorrido corto por las cuatro secciones en un **proyecto de pruebas**, desde **Cloud Shell** (trae `gcloud`, `kubectl` y Terraform). Los comandos de cada paso están en su sección y en las chuletas de [gcloud](../../../recursos/comandos/google-cli.md) y [kubectl](../../../recursos/comandos/kubectl.md).
+Un recorrido corto por las cuatro secciones en un **proyecto de pruebas**, desde **Cloud Shell** (trae `gcloud`, `kubectl` y Terraform). Los comandos de cada paso están en su sección y en las guías de comandos de [gcloud](../../../recursos/comandos/google-cli.md) y [kubectl](../../../recursos/comandos/kubectl.md).
 
 !!! danger "Costos y limpieza"
     VMs, GKE, Cloud NAT y load balancers **cobran por hora**. Usa un proyecto solo para el laboratorio, crea primero el budget y al terminar **borra el proyecto completo**: detiene la facturación de todo (queda 30 días en *pending deletion*).

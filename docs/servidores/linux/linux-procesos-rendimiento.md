@@ -355,22 +355,7 @@ top                    # vista general para confirmar
 
 ### Disco lleno
 
-1. `df -h` y `df -i` (espacio e inodos).
-2. `du -xh --max-depth=2 /var | sort -rh | head`.
-3. Si `df` y `du` no cuadran, hay archivos borrados que siguen abiertos:
-
-    ```bash
-    sudo lsof -nP +L1
-    ```
-
-    ```text
-    COMMAND  PID USER   FD   TYPE DEVICE  SIZE/OFF NLINK    NODE NAME
-    sleep   2742 root    3r   REG  0,205 209715200     0 1076633 /var/tmp/grande.log (deleted)
-    ```
-
-    El espacio se libera al reiniciar ese proceso (o vaciando el archivo con `: > /proc/2742/fd/3`).
-
-4. Limpia lo seguro (journal, cachés, logs rotados) y corrige la causa (logrotate, retención). Ampliar el volumen: [Almacenamiento](linux-almacenamiento.md#ampliar-un-lv-en-caliente).
+El procedimiento completo (`df -h` y `df -i`, `du`, archivos borrados que siguen abiertos con `lsof +L1`, limpieza y ampliación del volumen) está en [Almacenamiento: el disco /var está al 95 %](linux-almacenamiento.md#el-disco-var-esta-al-95).
 
 ### Too many open files
 

@@ -157,7 +157,7 @@ flowchart LR
     ```
 
     - El deploy va en **otro job** con `needs: build-test` (solo corre si el anterior pasó) y `environment:` (aprobaciones y secretos por entorno; ver [Despliegue continuo](despliegue-continuo.md)).
-    - Workflow completo comentado línea por línea (permisos, matrix, environments, OIDC, reusable workflows): [Anatomía de los workflows de GitHub Actions](../../recursos/anatomia/github-actions.md#workflow-principal-comentado-linea-por-linea). Chuleta rápida: [sintaxis de GitHub Actions](../../recursos/sintaxis/github-actions.md).
+    - Workflow completo comentado línea por línea (permisos, matrix, environments, OIDC, reusable workflows): [Anatomía de los workflows de GitHub Actions](../../recursos/anatomia/github-actions.md#workflow-principal-comentado-linea-por-linea). Guía de sintaxis: [GitHub Actions](../../recursos/sintaxis/github-actions.md).
 
 === "GitLab CI"
 

@@ -254,7 +254,7 @@ Para **instalar** actualizaciones desde la línea de comandos:
 
 - **Windows Server 2019+**: `sconfig` (opción 6) o la herramienta de la organización (WSUS, Azure Update Manager, Configuration Manager). `UsoClient.exe StartScan` existe pero **no está documentado** por Microsoft: no construyas procesos sobre él.
 - **Módulo PSWindowsUpdate** (comunidad, PowerShell Gallery): `Install-WindowsUpdate -AcceptAll -AutoReboot`; muy usado, pero no es de Microsoft.
-- **A escala**: [Ansible](../ansible/ansible-windows.md) con `ansible.windows.win_updates`, o los servicios de parches de cada nube (ver [Windows Server: fundamentos](windows-server-fundamentos.md#windows-server-en-la-nube)).
+- **A escala**: [Ansible](../ansible/ansible-recetas-servidores.md#windows-updates-por-lotes-con-reinicio) con `ansible.windows.win_updates`, o los servicios de parches de cada nube (ver [Windows Server: fundamentos](windows-server-fundamentos.md#windows-server-en-la-nube)).
 
 ## Tareas programadas
 
@@ -377,12 +377,10 @@ e13636.dscb.akamaiedge.net          A  19  Answer                               
 
 `TcpTestSucceeded : False` con el ping funcionando suele ser un firewall o un servicio que no escucha; compruébalo en el servidor con `Get-NetTCPConnection -State Listen -LocalPort 443` (el `ss -tlnp` de Windows). La metodología completa está en [Troubleshooting de red](../../networking/avanzado/troubleshooting-red.md).
 
-Configurar IP estática y DNS (no ejecutado; en la nube, mejor no: ver [fundamentos](windows-server-fundamentos.md#lo-mismo-con-powershell-repetible-y-automatizable)):
+Para fijar IP estática y DNS (`New-NetIPAddress`, `Set-DnsClientServerAddress`) usa el script de [configuración inicial](windows-server-fundamentos.md#lo-mismo-con-powershell-repetible-y-automatizable); en la nube, mejor no. Tras cambiar registros DNS, vacía la caché del cliente:
 
 ```powershell
-New-NetIPAddress -InterfaceAlias 'Ethernet' -IPAddress 10.0.10.21 -PrefixLength 24 -DefaultGateway 10.0.10.1
-Set-DnsClientServerAddress -InterfaceAlias 'Ethernet' -ServerAddresses 10.0.10.10, 10.0.10.11
-Clear-DnsClientCache      # tras cambiar registros DNS (el ipconfig /flushdns de PowerShell)
+Clear-DnsClientCache      # el ipconfig /flushdns de PowerShell
 ```
 
 ## Discos y almacenamiento

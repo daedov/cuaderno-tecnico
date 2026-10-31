@@ -37,7 +37,7 @@ Necesitas el clúster `lab` del [Lab 06](../devops/kubernetes-local-kind.md) con
 !!! warning "Docker Desktop con WSL2 antiguo (cgroup v1)"
     Si `docker info` muestra `Cgroup Version: 1` o un `Kernel Version` 5.x, tu WSL2 está desactualizado y te afectará dos veces: Kubernetes 1.35+ no arranca con cgroup v1 por defecto (ver **Problemas comunes**) y kindnet no puede aplicar NetworkPolicies (paso 5). Lo correcto es `wsl --update`, reiniciar Docker Desktop y comprobar que `docker info` muestra `Cgroup Version: 2`.
 
-Teoría recomendada: [Seguridad de Kubernetes](../../devsecops/infraestructura-y-contenedores/seguridad-kubernetes.md) (RBAC, Pod Security Standards, NetworkPolicy y admission control) y [KSPM](../../devsecops/escaneos/kspm.md). Para repasar objetos básicos: [Kubernetes](../../devops/contenedores/kubernetes.md). Chuletas: [kubectl](../../recursos/comandos/kubectl.md) y [Helm](../../recursos/comandos/helm.md).
+Teoría recomendada: [Seguridad de Kubernetes](../../devsecops/infraestructura-y-contenedores/seguridad-kubernetes.md) (RBAC, Pod Security Standards, NetworkPolicy y admission control) y [KSPM](../../devsecops/escaneos/kspm.md). Para repasar objetos básicos: [Kubernetes](../../devops/contenedores/kubernetes.md). Guías de comandos: [kubectl](../../recursos/comandos/kubectl.md) y [Helm](../../recursos/comandos/helm.md).
 
 Trabaja en el repositorio `lab-devops-app`, en una rama: `git switch -c feat/k8s-seguridad`. Los manifiestos nuevos van en `k8s/seguridad/`.
 

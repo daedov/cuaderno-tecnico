@@ -11,7 +11,7 @@ tags:
 > Casos reales con servidores Linux y Windows gestionados desde el mismo proyecto: inventario único, inventario dinámico de AWS, Azure y Google Cloud, playbooks que se adaptan al sistema operativo, parches mensuales por ventanas, usuarios, inventario a CSV, cumplimiento, ejecución programada con AWX/AAP, secretos y cuándo usar otra herramienta.
 
 !!! info "Antes de leer"
-    Esta nota junta lo de [Ansible con Linux Server](ansible-linux.md) y [Ansible con Windows Server](ansible-windows.md): conexión, variables y módulos de cada sistema están allí. Los conceptos (inventario, roles, Vault) en [Configuration management con Ansible](../../devops/iac/ansible.md).
+    Esta nota junta lo de [Ansible con Linux Server](ansible-linux.md) y [Ansible con Windows Server](ansible-windows.md): conexión, variables y módulos de cada sistema están allí, y los playbooks de un solo sistema en [Recetas de Ansible para servidores](ansible-recetas-servidores.md). Los conceptos (inventario, roles, Vault) en [Configuration management con Ansible](../../devops/iac/ansible.md).
 
 !!! note "Qué se probó"
     Con `ansible-core` 2.21.5: el inventario mixto se validó con `ansible-inventory --graph` y `--host`; los playbooks con `--syntax-check` y `ansible-lint` (perfil `production`); los de usuarios, línea base y CSV se **ejecutaron** contra los dos contenedores Linux de [Ansible con Linux Server](ansible-linux.md) (Ubuntu 24.04 y Rocky 9.8 por SSH). La parte Windows no se ejecutó (sin host Windows). Los plugins de inventario dinámico se comprobaron con `ansible-doc -t inventory` (`amazon.aws` 12.0.0, `azure.azcollection` 4.1.0, `google.cloud` 1.15.0), sin credenciales de nube.
@@ -93,29 +93,7 @@ all:
         db-lnx01:
 ```
 
-=== "group_vars/linux/vars.yml"
-
-    ```yaml
-    ---
-    ansible_user: ansible
-    ansible_ssh_private_key_file: ~/.ssh/ansible_prod
-    ansible_become: true
-    ```
-
-=== "group_vars/windows/vars.yml"
-
-    ```yaml
-    ---
-    ansible_connection: winrm
-    ansible_port: 5986
-    ansible_winrm_scheme: https
-    ansible_winrm_transport: kerberos
-    ansible_winrm_server_cert_validation: validate
-    ansible_winrm_ca_trust_path: /etc/pki/ca-trust/source/anchors/corp-root-ca.pem
-    ansible_user: svc-ansible@CORP.EJEMPLO.COM
-    ansible_password: "{{ vault_win_password }}"
-    ansible_become_method: runas
-    ```
+Las `group_vars` de conexión son las de cada nota: `linux/vars.yml` como en [Ansible con Linux Server](ansible-linux.md#conexion-ssh-con-llave) y `windows/vars.yml` como la pestaña "WinRM + Kerberos" de [Ansible con Windows Server](ansible-windows.md#inventario-y-variables). `windows/vault.yml` guarda `vault_win_password` cifrada con Vault (formato en [Anatomía: archivo cifrado con Ansible Vault](../../recursos/anatomia/ansible.md#archivo-cifrado-con-ansible-vault)).
 
 ```bash
 ansible-inventory --graph
@@ -168,7 +146,7 @@ Un host puede estar en varios grupos (`win-web01` está en `windows`, `win_web`,
 
 ## Inventario dinámico de las nubes
 
-Con VMs que se crean y destruyen, el inventario se pide a la API del proveedor con un **inventory plugin**. Lo que agrupa son las **tags** (etiquetas) o **labels**: ponlas desde Terraform (`Rol`, `Entorno`, `SO`) y el inventario se organiza solo. El nombre del archivo importa: cada plugin solo lee archivos con un sufijo concreto.
+Por qué la nube necesita un inventario que se pide a la API del proveedor con un **inventory plugin** está en [Dynamic inventory](../../devops/iac/ansible.md#dynamic-inventory-inventario-dinamico); aquí va la configuración práctica de cada nube. Lo que agrupa son las **tags** (etiquetas) o **labels**: ponlas desde Terraform (`Rol`, `Entorno`, `SO`) y el inventario se organiza solo. El nombre del archivo importa: cada plugin solo lee archivos con un sufijo concreto.
 
 === "AWS"
 
@@ -243,9 +221,6 @@ azure.azcollection.azure_rm: Requires a YAML configuration file whose name ends 
 google.cloud.gcp_compute: Uses a YAML configuration file that ends with gcp_compute.(yml|yaml) or gcp.(yml|yaml).
 ```
 
-!!! warning "`tags` en aws_ec2 está obsoleto"
-    Desde `amazon.aws` 11.2.0 la variable recomendada es `ec2_tags`; la antigua `tags` se elimina en una versión posterior a 2026-12-01. Si tienes `keyed_groups` con `key: tags.Rol`, cámbialos a `ec2_tags.Rol` y pon `use_deprecated_tags: false`.
-
 Puedes pasar una **carpeta** con `-i inventories/nube/`: Ansible combina todos los archivos (estático + dinámicos). Y las `group_vars/windows/` siguen funcionando si el plugin crea un grupo llamado `windows`: así una VM nueva en Azure recibe sola la configuración de WinRM.
 
 ```bash
@@ -317,6 +292,16 @@ Los facts de Windows (`ansible_facts['os_family'] == 'Windows'`) los recoge el m
 
 ### Parches mensuales con ventanas
 
+Un **rolling update** (actualización gradual) parchea los servidores por tandas para que el servicio siga disponible. Aquí está el patrón completo; las tareas propias de cada sistema están en las recetas de [Linux](ansible-recetas-servidores.md#parches-con-rolling-update) y [Windows](ansible-recetas-servidores.md#windows-updates-por-lotes-con-reinicio).
+
+| Pieza | Qué hace |
+| --- | --- |
+| `serial` | Tamaño de cada tanda: un número (`1`), un porcentaje (`"25%"`) o una lista de tandas crecientes |
+| `max_fail_percentage` | Porcentaje de hosts fallidos a partir del cual se detiene todo; con `0`, si falla uno no se toca el siguiente |
+| Un PLAY por tanda | Ansible repite el play por cada tanda y no empieza la siguiente hasta terminar la anterior (se ve en la [salida real de la receta de Linux](ansible-recetas-servidores.md#parches-con-rolling-update)) |
+| Ventanas | Grupos del inventario que dicen **cuándo** se parchea cada servidor |
+| Drenado | Sacar el nodo del balanceador antes y devolverlo después, comprobando la salud de la aplicación |
+
 Cada servidor pertenece a una **ventana de mantenimiento** (`ventana_a`, `ventana_b`) acordada con negocio; los nodos de un mismo servicio van en ventanas distintas para que nunca caigan juntos.
 
 ```yaml title="playbooks/parches-mensual.yml"
@@ -381,7 +366,7 @@ ansible-playbook playbooks/parches-mensual.yml -e ventana=ventana_b    # segundo
 
 - `serial` como **lista** hace un *canary* (canario): primero un servidor, y si va bien, tandas más grandes. Más estrategias en [Despliegue continuo](../../devops/ci-cd/despliegue-continuo.md).
 - `drenar.yml` y `reincorporar.yml` llaman al módulo de tu balanceador (por ejemplo `community.aws.elb_target` o la API del F5/HAProxy) y comprueban la salud de la aplicación.
-- La versión Linux probada paso a paso (con la salida real del rolling update) está en [Ansible con Linux Server](ansible-linux.md#parches-con-rolling-update); la de Windows, en [Ansible con Windows Server](ansible-windows.md#windows-updates-por-lotes-con-reinicio).
+- El bloque de Linux condensa en un `shell` las dos comprobaciones de reinicio (`/var/run/reboot-required` y `needs-restarting -r`) que la [receta de Linux](ansible-recetas-servidores.md#parches-con-rolling-update) hace por separado y con su salida real; las opciones de `win_updates` (categorías, `reject_list`, WSUS) están en la [receta de Windows](ansible-recetas-servidores.md#windows-updates-por-lotes-con-reinicio).
 - Antes de la ventana, ejecuta en modo informe: `--check` en Linux y `win_updates` con `state: searched` en Windows, y adjunta la lista al **cambio** aprobado (ver [Gestión de servicios e ITIL](../../negocio/gestion-servicios-itil.md)).
 
 ### Alta y baja de usuarios en los dos sistemas
@@ -575,8 +560,8 @@ Regla práctica: **Terraform** crea la VM y sus tags; **Ansible** la configura y
 | Variables que "cambian solas" entre hosts | El host está en dos grupos que definen la misma variable | Variables de conexión solo en los grupos de SO; `ansible_group_priority` si hace falta |
 | `[WARNING]: Could not match supplied host pattern, ignoring: windows` | El patrón incluye un grupo vacío o inexistente en ese inventario | Es un aviso, no un error; revisa el `-i` que usas |
 | El inventario dinámico no lee el archivo | Sufijo incorrecto (`aws.yml` en vez de `*.aws_ec2.yml`) o falta la colección / sus librerías (boto3, SDK de Azure, google-auth) | Respeta el sufijo; `ansible-doc -t inventory <plugin>` lista los requisitos |
-| Aviso de obsolescencia de `tags` en `aws_ec2` | `amazon.aws` 12 marca `tags` como obsoleto | `ec2_tags` y `use_deprecated_tags: false` |
-| `YAML parsing failed: ... found unknown escape character` | Una ruta o usuario de Windows con `\` entre comillas dobles (`"CORP\svc-join"`) | Comillas simples o sin comillas: `'CORP\svc-join'`. Salió en esta prueba al escribir el `vault.yml` |
+| Aviso de obsolescencia de `tags` en `aws_ec2` | Desde `amazon.aws` 11.2.0 la variable recomendada es `ec2_tags`; `tags` se elimina en una versión posterior a 2026-12-01 | Cambia `key: tags.Rol` por `ec2_tags.Rol` en `keyed_groups` y pon `use_deprecated_tags: false` |
+| `YAML parsing failed: ... found unknown escape character` | Una ruta o usuario de Windows con `\` entre comillas dobles | Ver [Validar sin un host Windows](ansible-windows.md#validar-sin-un-host-windows) |
 | Un lote de parches tumba el servicio | Todos los nodos del servicio en la misma tanda | Ventanas por grupo, `serial` y drenado del balanceador |
 | `run-once[task]` en `ansible-lint` | `run_once` se comporta distinto con `strategy: free` | Un play aparte en `localhost` para lo que se hace una vez |
 
@@ -585,7 +570,7 @@ Regla práctica: **Terraform** crea la VM y sus tags; **Ansible** la configura y
 | Enfoque | Qué se mira desde ahí | Nota |
 | --- | --- | --- |
 | Servidores (la base) | Lo que se automatiza en cada sistema, hecho a mano | [Fundamentos de Linux Server](../linux/linux-fundamentos-servidor.md), [Windows Server: fundamentos](../windows/windows-server-fundamentos.md), [Administración con PowerShell](../windows/windows-powershell-administracion.md) |
-| Servidores (automatización) | Conexión y módulos de cada SO | [Ansible con Linux Server](ansible-linux.md), [Ansible con Windows Server](ansible-windows.md) |
+| Servidores (automatización) | Conexión y módulos de cada SO; recetas de un solo sistema | [Ansible con Linux Server](ansible-linux.md), [Ansible con Windows Server](ansible-windows.md), [Recetas de Ansible para servidores](ansible-recetas-servidores.md) |
 | Cloud (el control) | VMs, tags y servicios nativos de gestión | [Máquinas virtuales](../../cloud/computo/maquinas-virtuales.md), [Gobernanza](../../cloud/operacion-y-gobierno/gobernanza.md) |
 | DevOps (la automatización) | IaC, despliegues por tandas y ejecución desde CI | [Configuration management con Ansible](../../devops/iac/ansible.md), [Infrastructure as Code](../../devops/iac/infraestructura-como-codigo.md), [Despliegue continuo](../../devops/ci-cd/despliegue-continuo.md) |
 | DevSecOps (la verificación) | Hardening como código, cumplimiento y secretos | [Hardening como código](../../devsecops/hardening/hardening-como-codigo.md), [Cumplimiento y gobierno](../../devsecops/gobierno-y-respuesta/cumplimiento.md), [Secretos e identidades](../../devsecops/identidades-y-pipeline/secretos-identidades.md) |

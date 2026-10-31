@@ -12,7 +12,7 @@ tags:
 > Cómo endurecer un servidor Ubuntu/Debian o de la familia RHEL (usuarios, SSH, servicios, kernel, montajes, auditd, SELinux/AppArmor, firewall, parches y contraseñas) y cómo verificarlo con Lynis, ssh-audit y OpenSCAP.
 
 !!! info "Dónde encaja"
-    En una VM de IaaS el sistema operativo es tu responsabilidad ([Responsabilidad compartida](../../cloud/fundamentos/responsabilidad-compartida.md)). Lo específico de la nube (IMDSv2, Session Manager / Bastion / IAP, agentes de parcheo gestionado) está en [Seguridad de máquinas virtuales](../../cloud/seguridad/seguridad-maquinas-virtuales.md). Los principios, baselines y el ciclo están en [Fundamentos de hardening](fundamentos-hardening.md). Los comandos básicos de Linux están en [Linux, redes y scripting](../../devops/fundamentos/linux-redes-scripting.md) y en la [chuleta de Linux](../../recursos/comandos/linux.md).
+    En una VM de IaaS el sistema operativo es tu responsabilidad ([Responsabilidad compartida](../../cloud/fundamentos/responsabilidad-compartida.md)). Lo específico de la nube (IMDSv2, Session Manager / Bastion / IAP, agentes de parcheo gestionado) está en [Seguridad de máquinas virtuales](../../cloud/seguridad/seguridad-maquinas-virtuales.md). Los principios, baselines y el ciclo están en [Fundamentos de hardening](fundamentos-hardening.md). Los comandos básicos de Linux están en [Linux, redes y scripting](../../devops/fundamentos/linux-redes-scripting.md) y en la [guía de comandos de Linux](../../recursos/comandos/linux.md).
 
 ## ¿Qué es?
 
@@ -108,7 +108,7 @@ sudo sshd -T | grep -E '^(permitrootlogin|passwordauthentication|allowgroups) ' 
     sudo systemctl reload ssh      # el servicio se llama "ssh"
     ```
 
-    En Ubuntu 24.04 SSH arranca por **socket activation** (`ssh.socket`): el puerto y la dirección de escucha los define el socket, así que cambiar `Port` en `sshd_config` requiere además `systemctl daemon-reload` y reiniciar `ssh.socket`.
+    En Ubuntu 24.04 SSH arranca por **socket activation** (`ssh.socket`): si cambias `Port` o `ListenAddress`, sigue los pasos de [SSH del lado servidor](../../servidores/linux/linux-redes-servidor.md#ssh-del-lado-servidor).
 
 === "RHEL / Rocky / Alma"
 
@@ -233,12 +233,7 @@ sudo ausearch -k identidad -ts today -i
 
 ## Logging y journald
 
-```ini title="/etc/systemd/journald.conf.d/10-hardening.conf"
-[Journal]
-Storage=persistent      # conserva los logs tras reiniciar (/var/log/journal)
-Compress=yes
-SystemMaxUse=1G         # límite de disco para el journal
-```
+La baseline pide un journal **persistente** (`Storage=persistent`, para que los logs sobrevivan al reinicio), comprimido (`Compress=yes`) y con tope de disco (`SystemMaxUse=`). Cómo se configura con un drop-in y por qué con `Storage=auto` puede ser volátil: [Persistencia del journal](../../servidores/linux/linux-fundamentos-servidor.md#persistencia-del-journal).
 
 Los logs que solo están en el servidor desaparecen si un atacante los borra o si la instancia se elimina. Envíalos a un sistema central (rsyslog/syslog-ng, el agente de la nube u OpenTelemetry), como se ve en [Observabilidad](../../devops/operacion/observabilidad.md) y [Logging y detección en la nube](../../cloud/seguridad/seguridad-logging-deteccion.md).
 

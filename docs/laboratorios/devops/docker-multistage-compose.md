@@ -29,7 +29,7 @@ tags:
 | Python | 3.12+ para probar la app sin Docker | `python3 --version` / `py --version` |
 | Git | El repo `lab-devops-app` del Lab 04 | `git remote -v` |
 
-Teoría recomendada: [Docker: imágenes, multi-stage builds y Compose](../../devops/contenedores/docker.md) y [Seguridad de contenedores](../../devsecops/infraestructura-y-contenedores/seguridad-contenedores.md). Chuleta: [comandos de Docker](../../recursos/comandos/docker.md).
+Teoría recomendada: [Docker: imágenes, multi-stage builds y Compose](../../devops/contenedores/docker.md) y [Seguridad de contenedores](../../devsecops/infraestructura-y-contenedores/seguridad-contenedores.md). Guía de comandos: [Docker](../../recursos/comandos/docker.md).
 
 Trabaja en una rama nueva del repositorio del Lab 04:
 

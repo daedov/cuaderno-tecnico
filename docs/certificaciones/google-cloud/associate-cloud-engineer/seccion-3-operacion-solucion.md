@@ -44,7 +44,7 @@ gcloud compute disks add-resource-policies web-1 --zone=us-central1-a --resource
 
 ## Operar GKE
 
-Objetos de Kubernetes (Deployment, StatefulSet, Service, Ingress, DaemonSet) en [Kubernetes](../../../devops/contenedores/kubernetes.md); comandos de inventario y rollout (`kubectl get`, `describe`, `logs`, `rollout undo`) en la [chuleta de kubectl](../../../recursos/comandos/kubectl.md). Para el examen: **StatefulSet** = Pods con identidad y disco propio; **DaemonSet** = un Pod por node (limitado en Autopilot).
+Objetos de Kubernetes (Deployment, StatefulSet, Service, Ingress, DaemonSet) en [Kubernetes](../../../devops/contenedores/kubernetes.md); comandos de inventario y rollout (`kubectl get`, `describe`, `logs`, `rollout undo`) en la [guía de comandos de kubectl](../../../recursos/comandos/kubectl.md). Para el examen: **StatefulSet** = Pods con identidad y disco propio; **DaemonSet** = un Pod por node (limitado en Autopilot).
 
 **Artifact Registry** (Container Registry está retirado): para descargar imágenes de un repositorio **privado**, la service account de los nodes necesita **Artifact Registry Reader** (`roles/artifactregistry.reader`).
 

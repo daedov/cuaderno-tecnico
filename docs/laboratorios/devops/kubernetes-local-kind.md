@@ -70,7 +70,7 @@ cgroup v2 - kernel 6.x.y-microsoft-standard-WSL2          ← correcto
 
 Si ves `cgroup v1`, la solución de fondo es actualizar el kernel de WSL2: `wsl --update` en PowerShell, `wsl --shutdown`, reinicia Docker Desktop y repite la comprobación hasta ver `cgroup v2`. Si no puedes actualizar (por ejemplo, un equipo gestionado por tu empresa), en el Paso 1 tienes una variante de `kind-config.yaml` que lo permite como apaño de laboratorio. Un kernel antiguo también impide que kindnet aplique NetworkPolicies, algo que necesitarás en el [Lab 14](../devsecops/seguridad-kubernetes.md#paso-5-networkpolicy-default-deny-y-sus-excepciones). En Linux con una distribución reciente y en macOS ya tienes cgroup v2.
 
-Teoría recomendada: [Kubernetes: pods, deployments, services, Helm y Kustomize](../../devops/contenedores/kubernetes.md) y [Despliegue continuo y estrategias](../../devops/ci-cd/despliegue-continuo.md) (rolling update y rollback). Chuletas: [kubectl](../../recursos/comandos/kubectl.md) y [Helm](../../recursos/comandos/helm.md).
+Teoría recomendada: [Kubernetes: pods, deployments, services, Helm y Kustomize](../../devops/contenedores/kubernetes.md) y [Despliegue continuo y estrategias](../../devops/ci-cd/despliegue-continuo.md) (rolling update y rollback). Guías de comandos: [kubectl](../../recursos/comandos/kubectl.md) y [Helm](../../recursos/comandos/helm.md).
 
 Crea la carpeta `k8s/` en el repositorio `lab-devops-app` y trabaja en una rama: `git switch -c feat/k8s`.
 

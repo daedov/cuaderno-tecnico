@@ -442,7 +442,7 @@ Metodología completa en [Troubleshooting de red](../../networking/avanzado/trou
 - **DNS, TTL y resolvers**: ver [Servicios de red](../../networking/intermedio/servicios-red.md#dns-en-profundidad).
 - **Three-way handshake y estados TCP**: ver [Capa de transporte](../../networking/intermedio/capa-transporte.md#three-way-handshake).
 - **TLS, SNI y cadena de confianza**: ver [Protocolos de aplicación](../../networking/intermedio/protocolos-aplicacion.md#tls).
-- **En el trabajo real**: estos mismos comandos se ejecutan dentro de una VM o de un pod (`kubectl exec … -- curl -v`) para saber si falla el DNS interno, un security group o el certificado. En la nube se complementan con VPC Flow Logs, Reachability Analyzer, Network Watcher o Connectivity Tests ([Troubleshooting de red: en la nube](../../networking/avanzado/troubleshooting-red.md#en-la-nube)). Chuleta de comandos en [Linux, redes y scripting](../../devops/fundamentos/linux-redes-scripting.md#puertos-y-troubleshooting-de-red) y [Comandos de Linux](../../recursos/comandos/linux.md).
+- **En el trabajo real**: estos mismos comandos se ejecutan dentro de una VM o de un pod (`kubectl exec … -- curl -v`) para saber si falla el DNS interno, un security group o el certificado. En la nube se complementan con VPC Flow Logs, Reachability Analyzer, Network Watcher o Connectivity Tests ([Troubleshooting de red: en la nube](../../networking/avanzado/troubleshooting-red.md#en-la-nube)). Comandos en [Linux, redes y scripting](../../devops/fundamentos/linux-redes-scripting.md#puertos-y-troubleshooting-de-red) y en la [guía de comandos de Linux](../../recursos/comandos/linux.md).
 
 ## Documentación oficial
 

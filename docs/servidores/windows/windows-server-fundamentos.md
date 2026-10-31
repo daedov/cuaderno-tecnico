@@ -369,19 +369,13 @@ MachinePolicy       Undefined
 | 5985/TCP | HTTP | El contenido va cifrado por Kerberos o NTLM, pero sin validar la identidad del servidor por certificado |
 | 5986/TCP | HTTPS | Requiere un certificado en el servidor; obligatorio fuera de dominio o si cruzas redes no confiables |
 
-En Windows Server (2012 y posteriores) el remoting viene **activado por defecto** en redes de dominio y privadas. En Windows cliente hay que activarlo con `Enable-PSRemoting` (inicia WinRM, crea el listener HTTP y las reglas de firewall). En el equipo de prueba **no** se activó; se comprobó el estado con lectura:
+En Windows Server (2012 y posteriores) el remoting viene **activado por defecto** en redes de dominio y privadas. En Windows cliente hay que activarlo con `Enable-PSRemoting` (inicia WinRM, crea el listener HTTP y las reglas de firewall). En el equipo de prueba **no** se activó: las reglas de firewall `WINRM-HTTP-In-TCP*` salieron deshabilitadas (la consulta y su salida están en [Administración con PowerShell: firewall](windows-powershell-administracion.md#firewall)) y la lista de TrustedHosts del cliente, vacía:
 
 ```powershell
-Get-NetFirewallRule -Name 'WINRM-HTTP-In-TCP*' | Format-Table Name, Enabled, Profile, Direction, Action
 Get-Item WSMan:\localhost\Client\TrustedHosts
 ```
 
 ```text title="Salida real (Windows 11)"
-Name                      Enabled         Profile Direction Action
-----                      -------         ------- --------- ------
-WINRM-HTTP-In-TCP           False          Public   Inbound  Allow
-WINRM-HTTP-In-TCP-NoScope   False Domain, Private   Inbound  Allow
-
 Name         Value
 ----         -----
 TrustedHosts

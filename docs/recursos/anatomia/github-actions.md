@@ -11,7 +11,7 @@ tags:
 > Qué significa cada clave de un workflow de GitHub Actions, de un reusable workflow y de una composite action, con un ejemplo completo comentado línea por línea.
 
 !!! info "Cómo leer esta nota"
-    Cada línea de los ejemplos lleva su explicación a la derecha, después de `#`. Lo que es obligatorio está marcado con **[obligatorio]**; todo lo demás es opcional. Los números en burbuja (`(1)`) abren una explicación más larga debajo del bloque. Si dudas con la indentación, las listas o los bloques `|`, repasa antes la [sintaxis de YAML](../sintaxis/yml.md). La tabla corta de [sintaxis de GitHub Actions](../sintaxis/github-actions.md) es la chuleta; esta nota es la versión completa.
+    Cada línea de los ejemplos lleva su explicación a la derecha, después de `#`. Lo que es obligatorio está marcado con **[obligatorio]**; todo lo demás es opcional. Los números en burbuja (`(1)`) abren una explicación más larga debajo del bloque. Si dudas con la indentación, las listas o los bloques `|`, repasa antes la [sintaxis de YAML](../sintaxis/yml.md). La tabla corta de [sintaxis de GitHub Actions](../sintaxis/github-actions.md) es la guía de sintaxis; esta nota es la versión completa.
 
 ## Dónde vive y cómo se organiza
 

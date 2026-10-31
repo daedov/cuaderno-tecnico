@@ -101,7 +101,7 @@ Cómo deshacer cada paso de mitigación.
 
 ## Ejemplo: disco lleno en un nodo Linux
 
-Runbook para nodos Linux con métricas de `node_exporter` en Prometheus (ver [Observabilidad](observabilidad.md)). Los comandos de Linux se repasan en [Linux, redes y scripting](../fundamentos/linux-redes-scripting.md) y en la [chuleta de Linux](../../recursos/comandos/linux.md).
+Runbook para nodos Linux con métricas de `node_exporter` en Prometheus (ver [Observabilidad](observabilidad.md)). Los comandos de Linux se repasan en [Linux, redes y scripting](../fundamentos/linux-redes-scripting.md) y en la [guía de comandos de Linux](../../recursos/comandos/linux.md).
 
 ````markdown title="runbooks/nodo-disco-lleno.md"
 # Runbook: NodeFilesystemAlmostFull

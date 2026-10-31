@@ -401,8 +401,20 @@ Ojo con la **sintaxis**: `growpart` recibe el disco y el **número** de partici�
 1. Confirma y mira inodos: `df -h /var; df -i /var`.
 2. Busca qué crece: `sudo du -xh --max-depth=2 /var | sort -rh | head -15`.
 3. Sospechosos habituales: `journalctl --disk-usage` (limpia con `--vacuum-size`), logs sin rotar en `/var/log`, cachés de paquetes (`apt clean`, `dnf clean all`), imágenes de Docker (`docker system df`).
-4. Si el espacio no aparece en `du` pero sí en `df`, hay **archivos borrados que siguen abiertos**: `sudo lsof +L1`; reinicia el proceso que los tiene.
-5. Si de verdad hace falta más espacio y `/var` es un LV: `lvextend -r`. Más en [Procesos y rendimiento](linux-procesos-rendimiento.md#disco-lleno).
+4. Si el espacio no aparece en `du` pero sí en `df`, hay **archivos borrados que siguen abiertos**:
+
+    ```bash
+    sudo lsof -nP +L1
+    ```
+
+    ```text
+    COMMAND  PID USER   FD   TYPE DEVICE  SIZE/OFF NLINK    NODE NAME
+    sleep   2742 root    3r   REG  0,205 209715200     0 1076633 /var/tmp/grande.log (deleted)
+    ```
+
+    El espacio se libera al reiniciar ese proceso (o vaciando el archivo con `: > /proc/2742/fd/3`).
+
+5. Corrige la causa (logrotate, retención). Si de verdad hace falta más espacio y `/var` es un LV: [ampliarlo en caliente](#ampliar-un-lv-en-caliente) con `lvextend -r`.
 
 ### Añadir un disco de datos a una VM nueva
 
@@ -416,7 +428,7 @@ echo "UUID=$(sudo blkid -s UUID -o value /dev/vg_datos/lv_app) /srv/app xfs defa
 sudo findmnt --verify && sudo mount -a && df -h /srv/app
 ```
 
-Hecho con Ansible: [Ansible para Linux](../ansible/ansible-linux.md) (módulos `community.general.lvg`, `community.general.lvol`, `community.general.filesystem` y `ansible.posix.mount`).
+Hecho con Ansible: [Ampliar un disco LVM](../ansible/ansible-recetas-servidores.md#ampliar-un-disco-lvm) (módulos `community.general.lvg`, `community.general.lvol`, `community.general.filesystem` y `ansible.posix.mount`).
 
 ### Ampliar el disco raíz de una VM en la nube
 

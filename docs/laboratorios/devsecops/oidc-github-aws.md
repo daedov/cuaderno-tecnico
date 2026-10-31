@@ -37,7 +37,7 @@ tags:
 - [GitHub CLI](https://cli.github.com/) (`gh`) es opcional, solo para leer o personalizar el claim `sub`.
 - Terraform 1.10+ si haces la variante opcional del paso 9 (validada con Terraform 1.17.0 y el provider `hashicorp/aws` 6.70.0, como el Lab 09).
 
-Teoría recomendada: [Secretos e identidades](../../devsecops/identidades-y-pipeline/secretos-identidades.md#oidc-entre-el-pipeline-y-la-nube) (cómo funciona OIDC entre el pipeline y la nube), [Seguridad del pipeline](../../devsecops/identidades-y-pipeline/seguridad-pipeline.md) e [IAM: AWS, Azure y GCP](../../cloud/fundamentos/iam-comparativa.md). Chuleta: [comandos de AWS CLI](../../recursos/comandos/aws-cli.md).
+Teoría recomendada: [Secretos e identidades](../../devsecops/identidades-y-pipeline/secretos-identidades.md#oidc-entre-el-pipeline-y-la-nube) (cómo funciona OIDC entre el pipeline y la nube), [Seguridad del pipeline](../../devsecops/identidades-y-pipeline/seguridad-pipeline.md) e [IAM: AWS, Azure y GCP](../../cloud/fundamentos/iam-comparativa.md). Guía de comandos: [AWS CLI](../../recursos/comandos/aws-cli.md).
 
 ## Arquitectura
 

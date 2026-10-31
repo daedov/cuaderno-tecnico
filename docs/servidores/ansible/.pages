@@ -1,5 +1,6 @@
 nav:
   - ansible-linux.md
   - ansible-windows.md
+  - ansible-recetas-servidores.md
   - ansible-casos-uso.md
   - ...

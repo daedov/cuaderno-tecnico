@@ -11,7 +11,7 @@ tags:
 > Lo que necesitas para administrar un servidor Linux con soltura: elegir distro, entender el arranque, usuarios, permisos, paquetes, servicios con systemd, logs con journald, hostname y hora, con comandos probados en Ubuntu 24.04 LTS y Rocky Linux 10.
 
 !!! info "Antes de leer"
-    Conviene que manejes la terminal (moverte por directorios, editar un archivo, `sudo`). Los conceptos de Bash, systemd y SSH orientados a DevOps están en [Linux, redes y scripting](../../devops/fundamentos/linux-redes-scripting.md) y la chuleta de comandos en [Linux](../../recursos/comandos/linux.md). Aquí no se repite el **hardening** (endurecimiento): para eso ve a [Hardening de Linux](../../devsecops/hardening/hardening-linux.md).
+    Conviene que manejes la terminal (moverte por directorios, editar un archivo, `sudo`). Los conceptos de Bash, systemd y SSH orientados a DevOps están en [Linux, redes y scripting](../../devops/fundamentos/linux-redes-scripting.md) y la guía de comandos de [Linux](../../recursos/comandos/linux.md). Aquí no se repite el **hardening** (endurecimiento): para eso ve a [Hardening de Linux](../../devsecops/hardening/hardening-linux.md).
 
 !!! note "Cómo se probaron los ejemplos"
     Las salidas son reales, abreviadas, de contenedores Docker con systemd como PID 1 (`ubuntu:24.04` con systemd 255 y `rockylinux/rockylinux:10` con systemd 257). Un contenedor no es una VM: no hay GRUB ni kernel propio, y algunos comandos (por ejemplo cambiar el hostname) fallan dentro de él. Donde pasa, se indica.
@@ -329,7 +329,7 @@ La línea `mask` limita el máximo efectivo de las entradas de grupo y de usuari
 
     Los repos se definen en `/etc/yum.repos.d/*.repo`. Muchos paquetes útiles (como `htop`) están en **EPEL** (*Extra Packages for Enterprise Linux*): `dnf install epel-release` en Rocky/Alma.
 
-La política de parches automáticos y su verificación están en [Hardening de Linux](../../devsecops/hardening/hardening-linux.md); el *rolling update* (actualización gradual) de una flota con Ansible, en [Ansible para Linux](../ansible/ansible-linux.md).
+La lista completa de comandos de cada familia (quitar paquetes, dependencias, cachés, `unattended-upgrades` y `dnf-automatic`) está en las guías de comandos de [Debian](../../recursos/comandos/debian.md) y [Amazon Linux](../../recursos/comandos/amazon-linux.md). La política de parches automáticos y su verificación están en [Hardening de Linux](../../devsecops/hardening/hardening-linux.md#parches-automaticos); el *rolling update* (actualización gradual) de una flota con Ansible, en [Recetas de Ansible para servidores](../ansible/ansible-recetas-servidores.md#parches-con-rolling-update).
 
 ## Servicios con systemd
 

@@ -8,7 +8,7 @@ tags:
 
 # Ansible con Windows Server
 
-> Cómo conectar Ansible a servidores Windows: WinRM, PSRP o SSH, autenticación (Kerberos, NTLM, certificados), preparación del host, colecciones y módulos esenciales, casos de uso completos y los errores típicos de conexión.
+> Cómo conectar Ansible a servidores Windows: WinRM, PSRP o SSH, autenticación (Kerberos, NTLM, certificados), preparación del host, colecciones y módulos esenciales y los errores típicos de conexión.
 
 !!! info "Antes de leer"
     Conviene tener claros los conceptos de Ansible (inventario, playbooks, módulos, `become`) de [Configuration management con Ansible](../../devops/iac/ansible.md) y la administración remota de Windows (PowerShell Remoting, WinRM, OpenSSH Server) de [Windows Server: fundamentos](../windows/windows-server-fundamentos.md#administracion-remota). Si ya conectas Ansible a Linux, [Ansible con Linux Server](ansible-linux.md) es la nota hermana: aquí solo se explica lo que cambia.
@@ -373,209 +373,14 @@ Los comandos de PowerShell equivalentes están explicados en [Administración co
 
 ## Casos de uso
 
-### Instalar IIS y publicar un sitio
+Los playbooks completos están en [Recetas de Ansible para servidores](ansible-recetas-servidores.md#windows):
 
-```yaml title="playbooks/win-iis.yml"
----
-- name: Instalar IIS y publicar un sitio
-  hosts: win_web
-  vars:
-    iis_sitio: intranet
-    iis_ruta: C:\inetpub\intranet
-    iis_puerto: 80
-  tasks:
-    - name: Instalar el rol Web-Server con sus herramientas
-      ansible.windows.win_feature:
-        name: Web-Server
-        include_management_tools: true
-        state: present
-      register: iis_feature
+- [Instalar IIS y publicar un sitio](ansible-recetas-servidores.md#instalar-iis-y-publicar-un-sitio): `win_feature`, `microsoft.iis` y regla de firewall.
+- [Windows Updates por lotes con reinicio](ansible-recetas-servidores.md#windows-updates-por-lotes-con-reinicio): `win_updates` en modo informe y con reinicio.
+- [Unir servidores a Active Directory](ansible-recetas-servidores.md#unir-servidores-a-active-directory): `microsoft.ad.membership` y la primera conexión sin Kerberos.
+- [Regla de firewall y servicio de un agente](ansible-recetas-servidores.md#regla-de-firewall-y-servicio-de-un-agente): MSI idempotente con `product_id` y `failure_actions`.
 
-    - name: Reiniciar si la instalación lo pide
-      ansible.windows.win_reboot:
-      when: iis_feature.reboot_required
-
-    - name: Crear la carpeta del sitio
-      ansible.windows.win_file:
-        path: "{{ iis_ruta }}"
-        state: directory
-
-    - name: Publicar la página de inicio
-      ansible.windows.win_template:
-        src: templates/index.html.j2
-        dest: "{{ iis_ruta }}\\index.html"
-
-    - name: Crear el application pool
-      microsoft.iis.web_app_pool:
-        name: "{{ iis_sitio }}"
-        state: started
-
-    - name: Crear el sitio con su binding
-      microsoft.iis.website:
-        name: "{{ iis_sitio }}"
-        physical_path: "{{ iis_ruta }}"
-        application_pool: "{{ iis_sitio }}"
-        state: started
-        bindings:
-          set:                                  # lista exacta: quita los bindings que no estén
-            - ip: "*"
-              port: "{{ iis_puerto }}"
-              hostname: intranet.corp.ejemplo.com
-
-    - name: Abrir el puerto HTTP en el firewall
-      ansible.windows.win_firewall_rule:
-        name: IIS intranet HTTP
-        localport: "{{ iis_puerto }}"
-        protocol: tcp
-        direction: in
-        action: allow
-        profiles: [domain]
-        state: present
-        enabled: true
-
-    - name: Comprobar que responde
-      ansible.windows.win_uri:
-        url: http://localhost:{{ iis_puerto }}/
-        headers:
-          Host: intranet.corp.ejemplo.com
-        return_content: true
-      register: iis_respuesta
-      failed_when: "'intranet' not in iis_respuesta.content"
-```
-
-```text title="Salida esperada (no ejecutada: sin host Windows)"
-TASK [Instalar el rol Web-Server con sus herramientas] ****
-changed: [win-web01]
-changed: [win-web02]
-TASK [Reiniciar si la instalación lo pide] ****************
-skipping: [win-web01]
-skipping: [win-web02]
-...
-PLAY RECAP ************************************************
-win-web01 : ok=8  changed=6  unreachable=0  failed=0  skipped=1
-win-web02 : ok=8  changed=6  unreachable=0  failed=0  skipped=1
-```
-
-El certificado HTTPS del sitio y la configuración manual de IIS están en [IIS](../windows/windows-roles-servicios.md#iis).
-
-### Windows Updates por lotes con reinicio
-
-```yaml title="playbooks/win-updates.yml"
----
-- name: Windows Updates por lotes con reinicio
-  hosts: windows
-  serial: "25%"                     # de cuatro en cuatro si hay 16 servidores
-  max_fail_percentage: 0            # si falla uno, no sigue con el siguiente lote
-  tasks:
-    - name: Buscar las actualizaciones pendientes (sin instalar)
-      ansible.windows.win_updates:
-        category_names:
-          - SecurityUpdates
-          - CriticalUpdates
-          - UpdateRollups
-        state: searched
-      register: upd_pendientes
-
-    - name: Mostrar cuántas hay
-      ansible.windows.win_shell: Write-Output "{{ upd_pendientes.found_update_count }} actualizaciones pendientes"
-      changed_when: false
-
-    - name: Instalar y reiniciar las veces que haga falta
-      ansible.windows.win_updates:
-        category_names:
-          - SecurityUpdates
-          - CriticalUpdates
-          - UpdateRollups
-        reject_list:
-          - KB5034441                   # ejemplo: un KB que tu equipo decidió aplazar
-        reboot: true                    # reinicia y continúa hasta terminar
-        reboot_timeout: 3600
-      register: upd_resultado
-
-    - name: Fallar si alguna no se instaló
-      ansible.builtin.assert:
-        that: upd_resultado.failed_update_count | default(0) == 0
-        fail_msg: "{{ upd_resultado.failed_update_count }} actualizaciones fallaron en {{ inventory_hostname }}"
-```
-
-- `state: searched` es el "modo informe": lista sin instalar. Útil para revisar antes de la ventana.
-- Con `reboot: true`, el módulo reinicia y vuelve a buscar hasta que no quedan actualizaciones de esas categorías.
-- Si los servidores usan **WSUS** o Windows Update for Business, el módulo respeta esa configuración (`server_selection` permite forzar `windows_update`). Las políticas de parcheo están en [Hardening de Windows](../../devsecops/hardening/hardening-windows.md#parches-windows-update-y-wsus).
-
-### Unir servidores a Active Directory
-
-```yaml title="playbooks/win-dominio.yml"
----
-- name: Unir servidores Windows al dominio
-  hosts: win_app
-  vars:
-    dominio_fqdn: corp.ejemplo.com
-    dominio_ou: OU=Servidores,DC=corp,DC=ejemplo,DC=com
-  tasks:
-    - name: Apuntar el DNS a los controladores de dominio
-      ansible.windows.win_dns_client:
-        adapter_names: "*"
-        dns_servers:
-          - 10.20.0.10
-          - 10.20.0.11
-
-    - name: Unir al dominio en la OU de servidores y reiniciar
-      microsoft.ad.membership:
-        dns_domain_name: "{{ dominio_fqdn }}"
-        hostname: "{{ inventory_hostname }}"    # renombra y une en un solo reinicio
-        domain_ou_path: "{{ dominio_ou }}"
-        domain_admin_user: "{{ vault_join_user }}"
-        domain_admin_password: "{{ vault_join_password }}"
-        state: domain
-        reboot: true
-      no_log: true
-```
-
-Antes de unirse, el servidor **no está en el dominio**, así que la primera conexión no puede ser Kerberos: usa una cuenta local con NTLM sobre HTTPS (o SSH) para este play, y Kerberos a partir de ahí. Usa una cuenta con permiso **solo** para unir equipos a esa OU (delegación en AD), no un Domain Admin. Los pasos manuales equivalentes (`Add-Computer`) están en [Unir un equipo al dominio](../windows/windows-roles-servicios.md#unir-un-equipo-al-dominio).
-
-### Regla de firewall y servicio de un agente
-
-```yaml title="playbooks/win-firewall-servicio.yml"
----
-- name: Regla de firewall y servicio de un agente
-  hosts: win_app
-  vars:
-    agente_msi_url: https://repo.corp.ejemplo.com/agente/agente-2.4.1-x64.msi
-    agente_product_id: "{6F1A6B3E-0000-4C2B-9C1D-1234567890AB}"
-  tasks:
-    - name: Instalar el agente desde un MSI
-      ansible.windows.win_package:
-        path: "{{ agente_msi_url }}"
-        product_id: "{{ agente_product_id }}"   # así sabe si ya está instalado (idempotencia)
-        arguments: /qn /norestart
-        state: present
-
-    - name: Permitir el puerto del agente solo desde la red de gestión
-      ansible.windows.win_firewall_rule:
-        name: Agente de monitoreo 9182
-        localport: 9182
-        protocol: tcp
-        direction: in
-        action: allow
-        remoteip: 10.20.0.0/24
-        profiles: [domain, private]
-        state: present
-        enabled: true
-
-    - name: Servicio en automático con reinicio ante fallos
-      ansible.windows.win_service:
-        name: AgenteMonitoreo
-        start_mode: auto
-        state: started
-        failure_actions:                        # lo mismo que "sc.exe failure"
-          - type: restart
-            delay_ms: 5000
-          - type: restart
-            delay_ms: 30000
-        failure_reset_period_sec: 86400
-```
-
-Sin `product_id`, `win_package` no puede saber si el MSI ya está instalado y lo descargaría en cada ejecución. Lo obtienes en un equipo donde ya esté instalado, en el registro de desinstalación (`Get-ItemProperty HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\*` y la propiedad `PSChildName`). Evita `Win32_Product`: es lento y hace que Windows Installer revise todos los MSI.
+Los casos con Linux y Windows en el mismo playbook están en [Ansible en flotas mixtas](ansible-casos-uso.md).
 
 ## Validar sin un host Windows
 
@@ -595,7 +400,7 @@ Passed: 0 failure(s), 0 warning(s) in 15 files processed of 17 encountered.
 Last profile that met the validation criteria was 'production'.
 ```
 
-`--syntax-check` carga el inventario y descifra `vault.yml` (si tiene la contraseña de Vault), pero **no se conecta** a ningún host. Un error que sí detectó en esta prueba: un usuario escrito como `"CORP\svc-join"` (comillas dobles) da `YAML parsing failed: ... found unknown escape character`, porque `\s` no es un escape válido en YAML. Con comillas simples (`'CORP\svc-join'`) o sin comillas funciona.
+`--syntax-check` carga el inventario y descifra `vault.yml` (si tiene la contraseña de Vault), pero **no se conecta** a ningún host. Un error que sí detectó en esta prueba: un usuario escrito en el `vault.yml` como `"CORP\svc-join"` (comillas dobles) da `YAML parsing failed: ... found unknown escape character`, porque `\s` no es un escape válido en YAML. Con comillas simples (`'CORP\svc-join'`) o sin comillas funciona.
 
 Para probar de verdad sin producción: una VM de evaluación de Windows Server (Microsoft ofrece imágenes de evaluación) o una VM en la nube que destruyes al terminar; ver [Máquinas virtuales](../../cloud/computo/maquinas-virtuales.md).
 
@@ -622,7 +427,7 @@ Para ver el detalle de la conexión usa `-vvvv`, igual que en Linux; con `winrm`
 | Enfoque | Qué se mira desde ahí | Nota |
 | --- | --- | --- |
 | Servidores (la base) | Administrar Windows a mano: WinRM, OpenSSH, PowerShell, roles | [Windows Server: fundamentos](../windows/windows-server-fundamentos.md), [Administración con PowerShell](../windows/windows-powershell-administracion.md), [Roles y servicios](../windows/windows-roles-servicios.md) |
-| Servidores (automatización) | Lo mismo en Linux y las flotas mixtas | [Ansible con Linux Server](ansible-linux.md), [Casos de uso con flotas mixtas](ansible-casos-uso.md) |
+| Servidores (automatización) | Recetas, lo mismo en Linux y las flotas mixtas | [Recetas de Ansible para servidores](ansible-recetas-servidores.md), [Ansible con Linux Server](ansible-linux.md), [Ansible en flotas mixtas](ansible-casos-uso.md) |
 | Cloud (el control) | VMs Windows en AWS, Azure y Google Cloud | [Máquinas virtuales](../../cloud/computo/maquinas-virtuales.md) |
 | DevOps (la automatización) | Conceptos de Ansible, roles y pruebas | [Configuration management con Ansible](../../devops/iac/ansible.md), [Pruebas de infraestructura](../../devops/iac/pruebas-infraestructura.md) |
 | DevSecOps (la verificación) | Endurecer Windows y aplicarlo como código; credenciales fuera del repositorio | [Hardening de Windows](../../devsecops/hardening/hardening-windows.md), [Hardening como código](../../devsecops/hardening/hardening-como-codigo.md), [Secretos e identidades](../../devsecops/identidades-y-pipeline/secretos-identidades.md) |

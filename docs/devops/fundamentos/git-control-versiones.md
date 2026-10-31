@@ -16,7 +16,7 @@ El **version control** (control de versiones) guarda el historial de cambios de 
 Todo pipeline de CI/CD empieza con un evento de Git: un *push*, un *pull request* o un *tag*.
 
 !!! note "Comandos"
-    Esta nota explica conceptos y flujos. La chuleta de comandos está en [Git](../../recursos/comandos/git.md).
+    Esta nota explica conceptos y flujos. La guía de comandos está en [Git](../../recursos/comandos/git.md).
 
 ## Conceptos clave
 
@@ -56,7 +56,7 @@ flowchart LR
 !!! danger "Regla de oro del rebase"
     No hagas rebase (ni `push --force`) sobre una rama **compartida** que otras personas ya descargaron, y nunca sobre `main`. Si necesitas forzar en tu propia rama, usa `git push --force-with-lease`, que se niega a sobrescribir cambios ajenos.
 
-Comandos de merge, rebase y reescritura de historial (`rebase -i`, `cherry-pick`, `--autosquash`) en la chuleta: [Ramas y navegación](../../recursos/comandos/git.md#4-ramas-y-navegacion) y [Reescritura de historial](../../recursos/comandos/git.md#8-reescritura-de-historial). Para deshacer cambios (`revert` frente a `reset`, rollback de una release): [Volver atrás y rollback](../../recursos/comandos/git.md#7-volver-atras-y-rollback).
+Comandos de merge, rebase y reescritura de historial (`rebase -i`, `cherry-pick`, `--autosquash`) en la guía de comandos: [Ramas y navegación](../../recursos/comandos/git.md#4-ramas-y-navegacion) y [Reescritura de historial](../../recursos/comandos/git.md#8-reescritura-de-historial). Para deshacer cambios (`revert` frente a `reset`, rollback de una release): [Volver atrás y rollback](../../recursos/comandos/git.md#7-volver-atras-y-rollback).
 
 En la interfaz de GitHub o GitLab al aceptar un PR puedes elegir **merge commit**, **squash merge** (todos los commits del PR se aplastan en uno) o **rebase merge**. Muchos equipos usan *squash* para que cada PR sea un solo commit en `main`.
 

@@ -1,10 +1,10 @@
 nav:
-  - terraform.md
-  - docker.md
-  - ansible.md
-  - kubernetes.md
-  - helm.md
-  - github-actions.md
-  - gitlab-ci.md
-  - otros-archivos.md
+  - Terraform: terraform.md
+  - Docker: docker.md
+  - Ansible: ansible.md
+  - Kubernetes: kubernetes.md
+  - Helm: helm.md
+  - GitHub Actions: github-actions.md
+  - GitLab CI: gitlab-ci.md
+  - Otros archivos: otros-archivos.md
   - ...

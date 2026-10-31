@@ -58,7 +58,7 @@ Para los conceptos generales (etapas, artefactos, registries, comparación con o
 
 | Enfoque | Qué se mira desde ahí | Nota |
 | --- | --- | --- |
-| Cloud (el control) | Rol que asume el workflow en la nube (OIDC) y dónde se despliega | [IAM: AWS, Azure y GCP](../../cloud/identidad-y-seguridad/iam-comparativa.md), [Contenedores gestionados](../../cloud/computo/contenedores-gestionados.md) |
+| Cloud (el control) | Rol que asume el workflow en la nube (OIDC) y dónde se despliega | [IAM: AWS, Azure y GCP](../../cloud/fundamentos/iam-comparativa.md), [Contenedores gestionados](../../cloud/computo/contenedores-gestionados.md) |
 | DevOps (la automatización) | Conceptos de CI/CD y flujo de ramas que dispara el workflow | [Integración continua](integracion-continua.md), [Despliegue continuo](despliegue-continuo.md), [Git y control de versiones](../fundamentos/git-control-versiones.md) |
 | DevSecOps (la verificación) | Escaneos dentro del workflow, permisos mínimos del `GITHUB_TOKEN` y actions fijadas por SHA | [Escaneo en el pipeline](../../devsecops/escaneos/escaneo-en-pipeline.md), [Seguridad del pipeline](../../devsecops/identidades-y-pipeline/seguridad-pipeline.md), [Secretos e identidades](../../devsecops/identidades-y-pipeline/secretos-identidades.md) |
 | Laboratorios (la práctica) | Practicar esto paso a paso | [Lab 07: Pipeline de CI con GitHub Actions](../../laboratorios/devops/github-actions-ci.md), [Lab 12: Escaneos de seguridad en el pipeline](../../laboratorios/devsecops/escaneos-en-pipeline.md), [Lab 13: Desplegar en AWS desde GitHub Actions con OIDC (sin llaves)](../../laboratorios/devsecops/oidc-github-aws.md), [Lab 15: DAST con OWASP ZAP sobre OWASP Juice Shop](../../laboratorios/devsecops/dast-zap-juice-shop.md) |

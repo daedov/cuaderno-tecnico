@@ -13,7 +13,7 @@ tags:
 > Cómo blindar Amazon S3, Azure Blob Storage y Cloud Storage: bloqueo de acceso público desde la organización, adiós a las ACLs, cifrado, versionado e inmutabilidad, URLs firmadas con alcance corto, acceso privado, logs y detección de datos sensibles. Incluye snapshots y discos compartidos.
 
 !!! info "Antes de leer"
-    En el [Shared Responsibility Model](../fundamentos/responsabilidad-compartida.md) el proveedor garantiza la durabilidad y el cifrado físico, pero **quién puede leer tus objetos es 100 % tu responsabilidad**: políticas, ACLs, enlaces firmados y exposición de red. Conviene haber leído [Almacenamiento y datos](../redes-y-datos/almacenamiento-datos.md) (tipos de storage y clases) y [Seguridad base](../identidad-y-seguridad/seguridad-base.md) (KMS y cifrado). Las claves y su rotación se tratan en [Cifrado y secretos](seguridad-cifrado-secretos.md).
+    En el [Shared Responsibility Model](../fundamentos/responsabilidad-compartida.md) el proveedor garantiza la durabilidad y el cifrado físico, pero **quién puede leer tus objetos es 100 % tu responsabilidad**: políticas, ACLs, enlaces firmados y exposición de red. Conviene haber leído [Almacenamiento y datos](../redes-y-datos/almacenamiento-datos.md) (tipos de storage y clases). El cifrado con KMS, las claves y su rotación se tratan en [Cifrado y secretos](seguridad-cifrado-secretos.md).
 
 ## Riesgos típicos
 
@@ -162,201 +162,7 @@ Para correr estos checks fuera del portal (Prowler, Steampipe) ver [CSPM](../../
 
 ## Configuración segura con IaC
 
-Fragmentos con los controles clave (Terraform, providers `aws` v6, `azurerm` v5 y `google` v8; revisa la versión mayor vigente al copiarlos).
-
-=== "AWS"
-
-    ```hcl title="s3.tf"
-    resource "aws_s3_account_public_access_block" "this" {
-      block_public_acls       = true
-      ignore_public_acls      = true
-      block_public_policy     = true
-      restrict_public_buckets = true
-    }
-
-    resource "aws_s3_bucket" "datos" {
-      bucket = "acme-datos-prod"
-    }
-
-    resource "aws_s3_bucket_ownership_controls" "datos" {
-      bucket = aws_s3_bucket.datos.id
-      rule {
-        object_ownership = "BucketOwnerEnforced" # ACLs desactivadas
-      }
-    }
-
-    resource "aws_s3_bucket_versioning" "datos" {
-      bucket = aws_s3_bucket.datos.id
-      versioning_configuration {
-        status = "Enabled"
-      }
-    }
-
-    resource "aws_s3_bucket_server_side_encryption_configuration" "datos" {
-      bucket = aws_s3_bucket.datos.id
-      rule {
-        apply_server_side_encryption_by_default {
-          sse_algorithm     = "aws:kms"
-          kms_master_key_id = aws_kms_key.datos.arn
-        }
-        bucket_key_enabled = true
-      }
-    }
-
-    data "aws_iam_policy_document" "solo_tls" {
-      statement {
-        sid     = "DenyInsecureTransport"
-        effect  = "Deny"
-        actions = ["s3:*"]
-        resources = [
-          aws_s3_bucket.datos.arn,
-          "${aws_s3_bucket.datos.arn}/*",
-        ]
-        principals {
-          type        = "*"
-          identifiers = ["*"]
-        }
-        condition {
-          test     = "Bool"
-          variable = "aws:SecureTransport"
-          values   = ["false"]
-        }
-      }
-    }
-
-    resource "aws_s3_bucket_policy" "datos" {
-      bucket = aws_s3_bucket.datos.id
-      policy = data.aws_iam_policy_document.solo_tls.json
-    }
-
-    resource "aws_ebs_snapshot_block_public_access" "this" {
-      state = "block-all-sharing"
-    }
-    ```
-
-=== "Azure"
-
-    ```hcl title="storage.tf"
-    resource "azurerm_storage_account" "datos" {
-      name                     = "acmedatosprod"
-      resource_group_name      = azurerm_resource_group.datos.name
-      location                 = azurerm_resource_group.datos.location
-      account_tier             = "Standard"
-      account_replication_type = "ZRS"
-
-      allow_nested_items_to_be_public = false # sin acceso anónimo (default en v5)
-      shared_access_key_enabled       = false # solo Entra ID
-      https_traffic_only_enabled      = true
-      min_tls_version                 = "TLS1_2"
-      public_network_access_enabled   = false # acceso por private endpoint
-      infrastructure_encryption_enabled = true
-
-      blob_properties {
-        versioning_enabled = true
-        delete_retention_policy {
-          days = 30
-        }
-        container_delete_retention_policy {
-          days = 30
-        }
-      }
-    }
-    ```
-
-    !!! warning "Shared Key y Terraform"
-        Con `shared_access_key_enabled = false`, configura el provider con `storage_use_azuread = true` para que Terraform gestione contenedores con Entra ID en lugar de con la clave de la cuenta.
-
-=== "Google Cloud"
-
-    ```hcl title="gcs.tf"
-    resource "google_storage_bucket" "datos" {
-      name     = "acme-datos-prod"
-      location = "US-CENTRAL1"
-
-      uniform_bucket_level_access = true
-      public_access_prevention    = "enforced"
-
-      versioning {
-        enabled = true
-      }
-
-      encryption {
-        default_kms_key_name = google_kms_crypto_key.datos.id
-      }
-
-      soft_delete_policy {
-        retention_duration_seconds = 2592000 # 30 días
-      }
-
-      logging {
-        log_bucket = google_storage_bucket.logs.name
-      }
-    }
-    ```
-
-Guardrail a nivel organización, para que nadie pueda saltarse los controles aunque tenga permisos en el proyecto:
-
-=== "AWS (SCP)"
-
-    ```json title="scp-s3-bpa.json"
-    {
-      "Version": "2012-10-17",
-      "Statement": [
-        {
-          "Sid": "ProtegerBlockPublicAccess",
-          "Effect": "Deny",
-          "Action": [
-            "s3:PutAccountPublicAccessBlock",
-            "s3:PutBucketPublicAccessBlock"
-          ],
-          "Resource": "*",
-          "Condition": {
-            "ArnNotLike": {
-              "aws:PrincipalARN": "arn:aws:iam::*:role/PlatformAdmin"
-            }
-          }
-        }
-      ]
-    }
-    ```
-
-=== "Azure (Policy)"
-
-    ```hcl title="policy.tf"
-    # Política integrada "Storage account public access should be disallowed"
-    resource "azurerm_management_group_policy_assignment" "no_blob_publico" {
-      name                 = "deny-public-blob"
-      management_group_id  = azurerm_management_group.plataforma.id
-      policy_definition_id = "/providers/Microsoft.Authorization/policyDefinitions/4fa4b6c0-31ca-4c0d-b10d-24b96f62a751"
-      parameters = jsonencode({
-        effect = { value = "Deny" }
-      })
-    }
-    ```
-
-=== "Google Cloud (Organization Policy)"
-
-    ```hcl title="org-policy.tf"
-    resource "google_org_policy_policy" "public_access_prevention" {
-      name   = "organizations/${var.org_id}/policies/storage.publicAccessPrevention"
-      parent = "organizations/${var.org_id}"
-      spec {
-        rules {
-          enforce = "TRUE"
-        }
-      }
-    }
-
-    resource "google_org_policy_policy" "uniform_access" {
-      name   = "organizations/${var.org_id}/policies/storage.uniformBucketLevelAccess"
-      parent = "organizations/${var.org_id}"
-      spec {
-        rules {
-          enforce = "TRUE"
-        }
-      }
-    }
-    ```
+Los fragmentos de Terraform con estos controles (y los guardrails de organización, cuando aplican) están en las páginas por proveedor: [AWS](terraform/aws.md#almacenamiento-de-objetos), [Azure](terraform/azure.md#almacenamiento-de-objetos) y [Google Cloud](terraform/google-cloud.md#almacenamiento-de-objetos).
 
 Antes de aplicar, pasa los planes por un escáner de IaC (Checkov, Trivy) para detectar buckets sin cifrado o públicos: ver [Seguridad de IaC](../../devsecops/infraestructura-y-contenedores/seguridad-iac.md).
 
@@ -376,7 +182,7 @@ Antes de aplicar, pasa los planes por un escáner de IaC (Checkov, Trivy) para d
 | Enfoque | Qué se mira desde ahí | Nota |
 | --- | --- | --- |
 | Cloud (el control) | Tipos de storage, clases, replicación y backups | [Almacenamiento y datos](../redes-y-datos/almacenamiento-datos.md) |
-| Cloud (el control) | Claves, cifrado y guardrails de la organización | [Seguridad base](../identidad-y-seguridad/seguridad-base.md), [Cifrado y secretos](seguridad-cifrado-secretos.md), [Gobernanza](../operacion-y-gobierno/gobernanza.md) |
+| Cloud (el control) | Claves, cifrado y guardrails de la organización | [Cifrado y secretos](seguridad-cifrado-secretos.md), [Gobernanza](../operacion-y-gobierno/gobernanza.md) |
 | Cloud (el control) | Resto del bloque de seguridad | [Fundamentos de seguridad cloud](fundamentos-seguridad-cloud.md), [Seguridad de identidades](seguridad-identidades.md), [Seguridad de redes](seguridad-redes.md), [Seguridad de bases de datos](seguridad-bases-datos.md) |
 | DevOps (la automatización) | Buckets definidos como código con valores seguros | [Infrastructure as Code](../../devops/iac/infraestructura-como-codigo.md), [Terraform básico](../../devops/iac/terraform-basico.md) |
 | DevSecOps (la verificación) | Detectar buckets públicos y sin cifrar antes y después del despliegue | [Seguridad de IaC](../../devsecops/infraestructura-y-contenedores/seguridad-iac.md), [CSPM](../../devsecops/escaneos/cspm.md), [Cumplimiento](../../devsecops/gobierno-y-respuesta/cumplimiento.md) |

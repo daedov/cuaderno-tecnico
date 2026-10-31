@@ -37,7 +37,7 @@ tags:
 - [GitHub CLI](https://cli.github.com/) (`gh`) es opcional, solo para leer o personalizar el claim `sub`.
 - Terraform 1.10+ si haces la variante opcional del paso 9 (validada con Terraform 1.17.0 y el provider `hashicorp/aws` 6.70.0, como el Lab 09).
 
-Teoría recomendada: [Secretos e identidades](../../devsecops/identidades-y-pipeline/secretos-identidades.md#oidc-entre-el-pipeline-y-la-nube) (cómo funciona OIDC entre el pipeline y la nube), [Seguridad del pipeline](../../devsecops/identidades-y-pipeline/seguridad-pipeline.md) e [IAM: AWS, Azure y GCP](../../cloud/identidad-y-seguridad/iam-comparativa.md). Chuleta: [comandos de AWS CLI](../../recursos/comandos/aws-cli.md).
+Teoría recomendada: [Secretos e identidades](../../devsecops/identidades-y-pipeline/secretos-identidades.md#oidc-entre-el-pipeline-y-la-nube) (cómo funciona OIDC entre el pipeline y la nube), [Seguridad del pipeline](../../devsecops/identidades-y-pipeline/seguridad-pipeline.md) e [IAM: AWS, Azure y GCP](../../cloud/fundamentos/iam-comparativa.md). Chuleta: [comandos de AWS CLI](../../recursos/comandos/aws-cli.md).
 
 ## Arquitectura
 
@@ -597,7 +597,7 @@ Para el método general de diagnóstico, ver [Troubleshooting](../../devops/oper
 
 ## Información complementaria
 
-- **Federación de identidades**: AWS confía en un emisor externo (GitHub) en lugar de crear usuarios IAM con llaves ([IAM: AWS, Azure y GCP](../../cloud/identidad-y-seguridad/iam-comparativa.md#aws-iam)).
+- **Federación de identidades**: AWS confía en un emisor externo (GitHub) en lugar de crear usuarios IAM con llaves ([IAM: AWS, Azure y GCP](../../cloud/fundamentos/iam-comparativa.md#aws-iam)).
 - **Credenciales temporales**: caducan solas (aquí, en 1 hora); una fuga del log de un job vale poco tiempo ([Secretos e identidades](../../devsecops/identidades-y-pipeline/secretos-identidades.md#por-que-evitar-llaves-estaticas)).
 - **El `sub` es la seguridad**: el proveedor OIDC solo dice "confío en GitHub"; la trust policy decide **qué parte** de GitHub.
 - **Un rol por entorno y por propósito**: despliegue a prod desde un environment con aprobación, solo lectura para PRs, nunca el mismo rol para todo ([Aislamiento de entornos](../../devsecops/identidades-y-pipeline/seguridad-pipeline.md#aislamiento-de-entornos)).
@@ -646,8 +646,8 @@ Para el método general de diagnóstico, ver [Troubleshooting](../../devops/oper
 
 **Cloud**
 
-- [IAM: AWS, Azure y GCP](../../cloud/identidad-y-seguridad/iam-comparativa.md)
-- [Seguridad base en la nube](../../cloud/identidad-y-seguridad/seguridad-base.md)
+- [IAM: AWS, Azure y GCP](../../cloud/fundamentos/iam-comparativa.md)
+- [Seguridad de identidades](../../cloud/seguridad/seguridad-identidades.md)
 
 **DevOps**
 

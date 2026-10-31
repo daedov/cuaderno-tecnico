@@ -51,7 +51,7 @@ tags:
 ## Buenas prácticas
 
 1. **Pregúntate primero si necesitas una VM.** Un servicio gestionado (contenedores, serverless, base de datos gestionada) te quita la responsabilidad del sistema operativo.
-2. **Imagen dorada (*golden image*) construida en pipeline**: parte de una imagen oficial o CIS, aplica *hardening* (CIS Benchmark del sistema operativo), instala agentes, escanéala y publícala versionada. Las VMs no se parchean "a mano": se reemplazan o se parchean con el servicio gestionado.
+2. **Imagen dorada (*golden image*) construida en pipeline**: parte de una imagen oficial o CIS, aplica *hardening* (CIS Benchmark del sistema operativo), instala agentes, escanéala y publícala versionada. Las VMs no se parchean "a mano": se reemplazan o se parchean con el servicio gestionado. El proceso (Packer, roles de Ansible, verificación con Lynis/OpenSCAP) está en [Hardening como código](../../devsecops/hardening/hardening-como-codigo.md); los servicios de cada nube, en [Pipeline de imágenes](#pipeline-de-imagenes-golden-images).
 3. **IMDSv2 / metadatos protegidos y hop limit 1.** En AWS, fija los *instance metadata defaults* de la cuenta para que toda instancia nueva exija token.
 4. **Ninguna IP pública.** La VM vive en subnet privada; entra por Session Manager, Bastion o IAP y sale por NAT.
 5. **Parches automáticos con ventanas y reportes de cumplimiento.** Define baselines (qué clasificaciones, cuántos días de espera) y revisa el estado de cumplimiento cada semana.
@@ -80,6 +80,37 @@ tags:
     - **Shielded VM** viene activado en la mayoría de imágenes públicas con vTPM e integrity monitoring, pero **Secure Boot está desactivado por defecto**: actívalo.
     - Activa **OS Login** (`enable-oslogin=TRUE`) para que el acceso SSH dependa de IAM y bloquea las claves SSH de proyecto.
     - Org policies útiles: `compute.vmExternalIpAccess`, `compute.requireOsLogin`, `compute.requireShieldedVm`, `compute.disableSerialPortAccess`.
+
+## Pipeline de imágenes (golden images)
+
+Para construir la *golden image* puedes usar Packer (ver [Hardening como código](../../devsecops/hardening/hardening-como-codigo.md#golden-images-con-packer-y-ansible)) o el builder gestionado de cada proveedor:
+
+| | AWS | Azure | Google Cloud |
+| --- | --- | --- | --- |
+| Servicio | **EC2 Image Builder** | **Azure VM Image Builder** | No hay un builder gestionado equivalente: **Packer en Cloud Build** |
+| Cómo se define | Image recipe + components (YAML de AWSTOE) + infrastructure y distribution configuration | Image template (JSON/Bicep) con customizers `Shell`, `PowerShell`, `File`, `WindowsUpdate` | `cloudbuild.yaml` que ejecuta el builder de comunidad de Packer |
+| Hardening incluido | Componentes de **STIG** gestionados por Amazon; componentes **CIS** al suscribirte a una CIS Hardened Image del Marketplace | Plantilla de ejemplo con la Azure Windows security baseline; tus scripts o Ansible | Tus provisioners (Ansible, scripts) |
+| Escaneo | Integración con Amazon Inspector durante el pipeline | Microsoft Defender for Cloud sobre las VMs creadas | Escaneo de la VM o de la imagen con tus herramientas en el pipeline |
+| Publicación | AMI distribuida a regiones y cuentas (AWS RAM, Organizations) | **Azure Compute Gallery** (versiones y réplicas) | Compute Engine image, opcionalmente en una image family |
+| Costo | El servicio no cobra; pagas la instancia de build, EBS, S3 e Inspector | Pagas la VM de build, el almacenamiento y la red | Pagas Cloud Build y la VM temporal |
+
+=== "AWS"
+
+    - Los **componentes** tienen fases `build`, `validate` y `test`: si un test falla, la imagen no se distribuye.
+    - Una **CIS Hardened Image** del AWS Marketplace (con costo por hora) da acceso a un componente CIS Level 1 que se ejecuta al final de la receta, después de tus cambios.
+    - Combínalo con una restricción de organización para lanzar solo AMIs aprobadas (ver [Gobernanza](../operacion-y-gobierno/gobernanza.md)).
+
+=== "Azure"
+
+    - VM Image Builder **usa Packer por debajo** y crea un resource group temporal `IT_<rg>_<plantilla>_<guid>` en tu suscripción.
+    - Necesita una **user-assigned managed identity** con permisos para leer artefactos y escribir en la Compute Gallery.
+    - Las **CIS Hardened Images** también están en Azure Marketplace.
+
+=== "Google Cloud"
+
+    - La guía oficial construye y publica en Artifact Registry el builder de comunidad de Packer y lo usa desde Cloud Build. La service account de Cloud Build necesita `Compute Instance Admin (v1)` y `Service Account User`.
+    - Agrupa las imágenes en una **image family** para que las VMs usen siempre la última versión aprobada.
+    - Las **CIS Hardened Images** están en Google Cloud Marketplace.
 
 ## Cómo verificarlo
 
@@ -160,202 +191,7 @@ Solo comandos de lectura.
 
 ## Configuración segura con IaC
 
-Versiones de provider: `hashicorp/aws` 6.x, `hashicorp/azurerm` 5.x y `hashicorp/google` 8.x (ver la nota sobre versiones en [Seguridad de redes](seguridad-redes.md#configuracion-segura-con-iac)). Pasa `terraform validate` antes de aplicar.
-
-=== "AWS"
-
-    ```hcl title="vm-segura.tf"
-    resource "aws_ebs_encryption_by_default" "this" {
-      enabled = true
-    }
-
-    resource "aws_ec2_instance_metadata_defaults" "this" {
-      http_tokens                 = "required"
-      http_put_response_hop_limit = 1
-    }
-
-    resource "aws_launch_template" "app" {
-      name_prefix   = "app-"
-      image_id      = var.golden_ami_id
-      instance_type = "t4g.small"
-
-      iam_instance_profile {
-        name = aws_iam_instance_profile.app.name # incluye AmazonSSMManagedInstanceCore
-      }
-
-      metadata_options {
-        http_endpoint               = "enabled"
-        http_tokens                 = "required"
-        http_put_response_hop_limit = 1
-      }
-
-      network_interfaces {
-        associate_public_ip_address = false
-        security_groups             = [aws_security_group.app.id]
-      }
-
-      block_device_mappings {
-        device_name = "/dev/xvda"
-        ebs {
-          volume_type = "gp3"
-          encrypted   = true
-          kms_key_id  = aws_kms_key.ebs.arn
-        }
-      }
-    }
-    ```
-
-=== "Azure"
-
-    ```hcl title="vm-segura.tf"
-    resource "azurerm_linux_virtual_machine" "app" {
-      name                            = "vm-app-01"
-      resource_group_name             = azurerm_resource_group.app.name
-      location                        = azurerm_resource_group.app.location
-      size                            = "Standard_D2as_v5"
-      admin_username                  = "azureops"
-      disable_password_authentication = true
-      network_interface_ids           = [azurerm_network_interface.app.id] # NIC sin public IP
-
-      admin_ssh_key {
-        username   = "azureops"
-        public_key = var.ssh_public_key
-      }
-
-      # Trusted Launch
-      secure_boot_enabled = true
-      vtpm_enabled        = true
-
-      encryption_at_host_enabled = true
-      patch_mode                 = "AutomaticByPlatform"
-      patch_assessment_mode      = "AutomaticByPlatform"
-
-      identity {
-        type = "SystemAssigned"
-      }
-
-      os_disk {
-        caching              = "ReadWrite"
-        storage_account_type = "Premium_LRS"
-      }
-
-      source_image_reference {
-        publisher = "Canonical"
-        offer     = "ubuntu-24_04-lts"
-        sku       = "server"
-        version   = "latest"
-      }
-    }
-    ```
-
-=== "Google Cloud"
-
-    ```hcl title="vm-segura.tf"
-    resource "google_compute_instance" "app" {
-      name         = "vm-app-01"
-      zone         = var.zone
-      machine_type = "e2-standard-2"
-      tags         = ["ssh-iap"]
-
-      boot_disk {
-        initialize_params {
-          image = "debian-cloud/debian-12"
-        }
-      }
-
-      # Sin bloque access_config = sin IP externa
-      network_interface {
-        subnetwork = google_compute_subnetwork.app.id
-      }
-
-      shielded_instance_config {
-        enable_secure_boot          = true
-        enable_vtpm                 = true
-        enable_integrity_monitoring = true
-      }
-
-      service_account {
-        email  = google_service_account.app.email # dedicada, no la default
-        scopes = ["cloud-platform"]               # los permisos los decide IAM
-      }
-
-      metadata = {
-        enable-oslogin         = "TRUE"
-        block-project-ssh-keys = "TRUE"
-        serial-port-enable     = "FALSE"
-      }
-    }
-    ```
-
-### Guardrails de organización
-
-=== "AWS (SCP)"
-
-    ```json title="scp-imdsv2.json"
-    {
-      "Version": "2012-10-17",
-      "Statement": [
-        {
-          "Sid": "ExigirIMDSv2",
-          "Effect": "Deny",
-          "Action": "ec2:RunInstances",
-          "Resource": "arn:aws:ec2:*:*:instance/*",
-          "Condition": {
-            "StringNotEquals": { "ec2:MetadataHttpTokens": "required" }
-          }
-        },
-        {
-          "Sid": "NoVolverAIMDSv1",
-          "Effect": "Deny",
-          "Action": "ec2:ModifyInstanceMetadataOptions",
-          "Resource": "*",
-          "Condition": {
-            "ArnNotLike": { "aws:PrincipalArn": "arn:aws:iam::*:role/PlatformAdmin" }
-          }
-        }
-      ]
-    }
-    ```
-
-=== "Azure Policy"
-
-    ```hcl title="policy-sin-ip-publica.tf"
-    data "azurerm_policy_definition" "nic_sin_ip_publica" {
-      display_name = "Network interfaces should not have public IPs"
-    }
-
-    resource "azurerm_subscription_policy_assignment" "nic_sin_ip_publica" {
-      name                 = "deny-nic-public-ip"
-      subscription_id      = data.azurerm_subscription.current.id
-      policy_definition_id = data.azurerm_policy_definition.nic_sin_ip_publica.id
-    }
-    ```
-
-=== "Google Cloud (Organization Policy)"
-
-    ```hcl title="org-policy-vm.tf"
-    resource "google_org_policy_policy" "sin_ip_externa" {
-      name   = "organizations/${var.org_id}/policies/compute.vmExternalIpAccess"
-      parent = "organizations/${var.org_id}"
-
-      spec {
-        rules {
-          deny_all = "TRUE"
-        }
-      }
-    }
-
-    resource "google_org_policy_policy" "shielded_vm" {
-      name   = "organizations/${var.org_id}/policies/compute.requireShieldedVm"
-      parent = "organizations/${var.org_id}"
-
-      spec {
-        rules {
-          enforce = "TRUE"
-        }
-      }
-    }
-    ```
+Los fragmentos de Terraform con estos controles (y los guardrails de organización, cuando aplican) están en las páginas por proveedor: [AWS](terraform/aws.md#maquinas-virtuales), [Azure](terraform/azure.md#maquinas-virtuales) y [Google Cloud](terraform/google-cloud.md#maquinas-virtuales).
 
 ## Errores comunes
 
@@ -374,7 +210,7 @@ Versiones de provider: `hashicorp/aws` 6.x, `hashicorp/azurerm` 5.x y `hashicorp
 | --- | --- | --- |
 | Cloud (el control) | Servicio de VMs y sus opciones; red, identidad, cifrado y logs de la VM | [Máquinas virtuales](../computo/maquinas-virtuales.md), [Seguridad de redes](seguridad-redes.md), [Seguridad de identidades](seguridad-identidades.md), [Seguridad de cifrado y secretos](seguridad-cifrado-secretos.md), [Seguridad de logging y detección](seguridad-logging-deteccion.md) |
 | DevOps (la automatización) | Construir *golden images* y configurar las VMs como código | [Ansible](../../devops/iac/ansible.md), [Terraform](../../devops/iac/terraform-basico.md), [Linux, redes y scripting](../../devops/fundamentos/linux-redes-scripting.md) |
-| DevSecOps (la verificación) | *Hardening* con CIS, escaneo de IaC, vulnerabilidades del sistema operativo con SLA | [Cumplimiento y gobierno](../../devsecops/gobierno-y-respuesta/cumplimiento.md), [Seguridad de IaC](../../devsecops/infraestructura-y-contenedores/seguridad-iac.md), [CVE de Linux y sistemas](../../devsecops/vulnerabilidades/cve-linux-sistemas.md), [Detección y respuesta](../../devsecops/gobierno-y-respuesta/deteccion-respuesta.md) |
+| DevSecOps (la verificación) | *Hardening* del sistema operativo con CIS, escaneo de IaC, vulnerabilidades del sistema operativo con SLA | [Fundamentos de hardening](../../devsecops/hardening/fundamentos-hardening.md), [Hardening de Linux](../../devsecops/hardening/hardening-linux.md), [Hardening de Windows](../../devsecops/hardening/hardening-windows.md), [Hardening como código](../../devsecops/hardening/hardening-como-codigo.md), [Cumplimiento y gobierno](../../devsecops/gobierno-y-respuesta/cumplimiento.md), [Seguridad de IaC](../../devsecops/infraestructura-y-contenedores/seguridad-iac.md), [CVE de Linux y sistemas](../../devsecops/vulnerabilidades/cve-linux-sistemas.md), [Detección y respuesta](../../devsecops/gobierno-y-respuesta/deteccion-respuesta.md) |
 | Laboratorios (la práctica) | Practicar esto paso a paso | [Lab 22: Endurecer un servidor Linux con Ansible y medirlo con Lynis y OpenSCAP](../../laboratorios/devsecops/hardening-linux-ansible.md) |
 
 ## Referencias
@@ -394,3 +230,6 @@ Versiones de provider: `hashicorp/aws` 6.x, `hashicorp/azurerm` 5.x y `hashicorp
 - [VM Manager](https://cloud.google.com/compute/vm-manager/docs/overview)
 - [OS Login](https://cloud.google.com/compute/docs/oslogin)
 - [CIS Hardened Images](https://www.cisecurity.org/cis-hardened-images)
+- [EC2 Image Builder](https://docs.aws.amazon.com/imagebuilder/latest/userguide/what-is-image-builder.html), [componentes de hardening STIG](https://docs.aws.amazon.com/imagebuilder/latest/userguide/ib-stig.html) y [componentes de hardening CIS](https://docs.aws.amazon.com/imagebuilder/latest/userguide/toe-cis.html)
+- [Azure VM Image Builder](https://learn.microsoft.com/es-es/azure/virtual-machines/image-builder-overview)
+- [Construir imágenes de VM con Packer en Cloud Build](https://cloud.google.com/build/docs/building/build-vm-images-with-packer)

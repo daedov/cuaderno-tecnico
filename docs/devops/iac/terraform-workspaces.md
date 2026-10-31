@@ -235,7 +235,7 @@ Herramientas como **Terragrunt** automatizan este patrón de directorios para ev
 
 | Enfoque | Qué se mira desde ahí | Nota |
 | --- | --- | --- |
-| Cloud (el control) | Separar entornos en cuentas, suscripciones o proyectos distintos con sus propios permisos | [Gobernanza](../../cloud/operacion-y-gobierno/gobernanza.md), [IAM: AWS, Azure y GCP](../../cloud/identidad-y-seguridad/iam-comparativa.md) |
+| Cloud (el control) | Separar entornos en cuentas, suscripciones o proyectos distintos con sus propios permisos | [Gobernanza](../../cloud/operacion-y-gobierno/gobernanza.md), [IAM: AWS, Azure y GCP](../../cloud/fundamentos/iam-comparativa.md) |
 | DevOps (la automatización) | Conceptos de Terraform, alternativas como Terragrunt y entornos efímeros por pull request | [Terraform](terraform-basico.md), [Infrastructure as Code: panorama y herramientas](infraestructura-como-codigo.md), [Pruebas de infraestructura](pruebas-infraestructura.md) |
 | DevSecOps (la verificación) | Aislamiento de entornos y credenciales distintas para `prod` en el pipeline | [Seguridad del pipeline](../../devsecops/identidades-y-pipeline/seguridad-pipeline.md), [Seguridad de IaC](../../devsecops/infraestructura-y-contenedores/seguridad-iac.md) |
 | Laboratorios (la práctica) | Practicar esto paso a paso | [Lab 08: Terraform sin nube: providers locales y workspaces](../../laboratorios/devops/terraform-local-workspaces.md), [Lab 09: Terraform en AWS con remote state en S3](../../laboratorios/devops/terraform-aws-backend-remoto.md) |

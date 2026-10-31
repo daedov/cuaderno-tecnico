@@ -155,7 +155,7 @@ Cada proveedor agrupa sus VMs según el uso para el que están pensadas. AWS las
 | Confidential computing (memoria cifrada mientras se usa) | AWS Nitro Enclaves, AMD SEV-SNP | Azure confidential VMs | Confidential VM |
 | Servicio de metadatos dentro de la VM | Instance Metadata Service (IMDS) | Azure Instance Metadata Service (IMDS) | Metadata server |
 
-Para la parte de permisos, ver [IAM: AWS, Azure y GCP](../identidad-y-seguridad/iam-comparativa.md).
+Para la parte de permisos, ver [IAM: AWS, Azure y GCP](../fundamentos/iam-comparativa.md).
 
 !!! tip "Instance metadata"
     En los tres proveedores, el servicio de metadatos responde en `169.254.169.254` desde dentro de la VM y es de donde la VM obtiene sus credenciales temporales. En AWS conviene exigir **IMDSv2** (con token) para evitar ataques **SSRF** (*Server-Side Request Forgery*) que roben esas credenciales.
@@ -208,7 +208,7 @@ El recurso principal para crear una VM en cada proveedor (ver [Terraform](../../
 
 | Enfoque | Qué se mira desde ahí | Nota |
 | --- | --- | --- |
-| Cloud (el control) | Alternativas de cómputo; red y firewall de la VM; permisos; costos y alta disponibilidad | [Contenedores gestionados](contenedores-gestionados.md), [Serverless](serverless.md), [Redes en la nube](../redes-y-datos/redes.md), [IAM](../identidad-y-seguridad/iam-comparativa.md), [FinOps y costos](../fundamentos/finops-costos.md), [Resiliencia](../operacion-y-gobierno/resiliencia.md) |
+| Cloud (el control) | Alternativas de cómputo; red y firewall de la VM; permisos; costos y alta disponibilidad | [Contenedores gestionados](contenedores-gestionados.md), [Serverless](serverless.md), [Redes en la nube](../redes-y-datos/redes.md), [IAM](../fundamentos/iam-comparativa.md), [FinOps y costos](../fundamentos/finops-costos.md), [Resiliencia](../operacion-y-gobierno/resiliencia.md) |
 | DevOps (la automatización) | Crear VMs con IaC, configurarlas con Ansible y desplegar sobre ellas | [Terraform](../../devops/iac/terraform-basico.md), [Ansible](../../devops/iac/ansible.md), [Linux, redes y scripting](../../devops/fundamentos/linux-redes-scripting.md), [Despliegue continuo](../../devops/ci-cd/despliegue-continuo.md) |
 | DevSecOps (la verificación) | *Hardening* con CIS Benchmarks, reglas abiertas a internet, IMDSv2 | [Cumplimiento y gobierno](../../devsecops/gobierno-y-respuesta/cumplimiento.md), [Seguridad de IaC](../../devsecops/infraestructura-y-contenedores/seguridad-iac.md) |
 | Laboratorios (la práctica) | Practicar esto paso a paso | [Lab 17: AWS: VPC con subnets públicas y privadas y una EC2](../../laboratorios/cloud/aws-vpc-ec2.md), [Lab 19: Azure: VNet, NSG y una VM con Azure CLI](../../laboratorios/cloud/azure-vnet-vm.md) |

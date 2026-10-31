@@ -42,7 +42,7 @@ tags:
 - Una cuenta con rol **Owner** (o Contributor + User Access Administrator) en la suscripción de pruebas: el lab crea **role assignments**.
 - Un par de llaves SSH (el lab las genera si no existen).
 - Labs previos: [Lab 00](../fundamentos/preparar-entorno.md) y [Lab 02](../fundamentos/subnetting-plan-ips.md) (plan de IPs). Si hiciste el [Lab 17](aws-vpc-ec2.md), compara cada paso con su equivalente en AWS.
-- Teoría: [Redes en la nube](../../cloud/redes-y-datos/redes.md), [Máquinas virtuales](../../cloud/computo/maquinas-virtuales.md) e [IAM: AWS, Azure y GCP](../../cloud/identidad-y-seguridad/iam-comparativa.md).
+- Teoría: [Redes en la nube](../../cloud/redes-y-datos/redes.md), [Máquinas virtuales](../../cloud/computo/maquinas-virtuales.md) e [IAM: AWS, Azure y GCP](../../cloud/fundamentos/iam-comparativa.md).
 
 !!! tip "Git Bash en Windows"
     Ejecuta `export MSYS_NO_PATHCONV=1` antes de empezar: los IDs de Azure empiezan por `/subscriptions/...` y Git Bash los convertiría en rutas de Windows al pasarlos a `--scope`.
@@ -516,7 +516,7 @@ Método general: [Troubleshooting](../../devops/operacion/troubleshooting.md) y 
 
 - **NSG y reglas por defecto**: entender las reglas implícitas es clave para no abrir más de la cuenta. Ver [Redes en la nube](../../cloud/redes-y-datos/redes.md#firewalls-stateful-y-stateless) y [Seguridad de red](../../networking/avanzado/seguridad-red.md).
 - **Default outbound access**: Azure está retirando la salida implícita; lo correcto es una salida explícita (NAT Gateway, load balancer) o ninguna. Ver [Routing y NAT](../../networking/intermedio/routing-nat.md).
-- **Managed identity vs claves**: la identidad la gestiona Azure y el token caduca solo; no hay secretos que rotar ni que se filtren. Ver [IAM: AWS, Azure y GCP](../../cloud/identidad-y-seguridad/iam-comparativa.md) y [Secretos e identidades](../../devsecops/identidades-y-pipeline/secretos-identidades.md).
+- **Managed identity vs claves**: la identidad la gestiona Azure y el token caduca solo; no hay secretos que rotar ni que se filtren. Ver [IAM: AWS, Azure y GCP](../../cloud/fundamentos/iam-comparativa.md) y [Secretos e identidades](../../devsecops/identidades-y-pipeline/secretos-identidades.md).
 - **Control plane vs data plane**: ser Owner te deja crear la storage account, pero leer o escribir blobs requiere roles de datos. Ver [Almacenamiento y datos](../../cloud/redes-y-datos/almacenamiento-datos.md).
 - **En el trabajo real** las VNets se organizan en *hub-and-spoke*, Azure Policy impide crear IPs públicas en VMs y obliga a usar subnets privadas, y el despliegue se hace con Bicep o Terraform desde un pipeline. Ver [Gobernanza](../../cloud/operacion-y-gobierno/gobernanza.md) y [Redes de datacenter e híbridas](../../networking/avanzado/redes-datacenter-hibridas.md).
 
@@ -559,7 +559,7 @@ Método general: [Troubleshooting](../../devops/operacion/troubleshooting.md) y 
 
 ## Notas relacionadas
 
-- **Cloud**: [Redes en la nube](../../cloud/redes-y-datos/redes.md) · [Máquinas virtuales](../../cloud/computo/maquinas-virtuales.md) · [IAM: AWS, Azure y GCP](../../cloud/identidad-y-seguridad/iam-comparativa.md) · [Seguridad base](../../cloud/identidad-y-seguridad/seguridad-base.md) · [Almacenamiento y datos](../../cloud/redes-y-datos/almacenamiento-datos.md) · [Gobernanza](../../cloud/operacion-y-gobierno/gobernanza.md) · [FinOps y costos](../../cloud/fundamentos/finops-costos.md)
+- **Cloud**: [Redes en la nube](../../cloud/redes-y-datos/redes.md) · [Máquinas virtuales](../../cloud/computo/maquinas-virtuales.md) · [IAM: AWS, Azure y GCP](../../cloud/fundamentos/iam-comparativa.md) · [Fundamentos de seguridad cloud](../../cloud/seguridad/fundamentos-seguridad-cloud.md) · [Almacenamiento y datos](../../cloud/redes-y-datos/almacenamiento-datos.md) · [Gobernanza](../../cloud/operacion-y-gobierno/gobernanza.md) · [FinOps y costos](../../cloud/fundamentos/finops-costos.md)
 - **DevOps**: [Infrastructure as Code](../../devops/iac/infraestructura-como-codigo.md) · [Troubleshooting](../../devops/operacion/troubleshooting.md)
 - **DevSecOps**: [Secretos e identidades](../../devsecops/identidades-y-pipeline/secretos-identidades.md) · [Seguridad de IaC](../../devsecops/infraestructura-y-contenedores/seguridad-iac.md)
 - **Networking**: [Direccionamiento IP](../../networking/basico/direccionamiento-ip.md) · [Routing y NAT](../../networking/intermedio/routing-nat.md) · [Seguridad de red](../../networking/avanzado/seguridad-red.md) · [Redes de datacenter e híbridas](../../networking/avanzado/redes-datacenter-hibridas.md) · [Troubleshooting de red](../../networking/avanzado/troubleshooting-red.md)

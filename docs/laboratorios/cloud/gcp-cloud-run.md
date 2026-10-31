@@ -412,8 +412,8 @@ Método general: [Troubleshooting](../../devops/operacion/troubleshooting.md).
 
 - **Cloud Run** ejecuta contenedores HTTP sin gestionar servidores y escala a cero. Ver [Contenedores gestionados](../../cloud/computo/contenedores-gestionados.md) y [Serverless](../../cloud/computo/serverless.md).
 - **Revisiones y tráfico**: cada despliegue crea una revisión inmutable; los porcentajes y los tags permiten canary y blue/green sin infraestructura extra. Ver [Despliegue continuo](../../devops/ci-cd/despliegue-continuo.md).
-- **Service accounts y least privilege**: identidad de ejecución propia y bindings en el recurso, no en el proyecto. Ver [IAM: AWS, Azure y GCP](../../cloud/identidad-y-seguridad/iam-comparativa.md).
-- **Secretos**: Secret Manager guarda versiones, controla quién las lee y audita el acceso; nunca van en la imagen ni en el repositorio. Ver [Seguridad base](../../cloud/identidad-y-seguridad/seguridad-base.md) y [Secretos e identidades](../../devsecops/identidades-y-pipeline/secretos-identidades.md).
+- **Service accounts y least privilege**: identidad de ejecución propia y bindings en el recurso, no en el proyecto. Ver [IAM: AWS, Azure y GCP](../../cloud/fundamentos/iam-comparativa.md).
+- **Secretos**: Secret Manager guarda versiones, controla quién las lee y audita el acceso; nunca van en la imagen ni en el repositorio. Ver [Seguridad de cifrado y secretos](../../cloud/seguridad/seguridad-cifrado-secretos.md) y [Secretos e identidades](../../devsecops/identidades-y-pipeline/secretos-identidades.md).
 - **Logs estructurados**: un JSON por línea con `severity` permite filtrar y crear métricas basadas en logs. Ver [Observabilidad nativa](../../cloud/operacion-y-gobierno/observabilidad-nativa.md).
 - **En el trabajo real** el pipeline construye y escanea la imagen ([Seguridad de contenedores](../../devsecops/infraestructura-y-contenedores/seguridad-contenedores.md)), la firma, la sube con un digest inmutable y despliega con canary automático y rollback si fallan las métricas.
 
@@ -456,7 +456,7 @@ Método general: [Troubleshooting](../../devops/operacion/troubleshooting.md).
 
 ## Notas relacionadas
 
-- **Cloud**: [Contenedores gestionados](../../cloud/computo/contenedores-gestionados.md) · [Serverless](../../cloud/computo/serverless.md) · [IAM: AWS, Azure y GCP](../../cloud/identidad-y-seguridad/iam-comparativa.md) · [Seguridad base](../../cloud/identidad-y-seguridad/seguridad-base.md) · [Observabilidad nativa](../../cloud/operacion-y-gobierno/observabilidad-nativa.md) · [Arquitectura en la nube](../../cloud/arquitectura/arquitectura-cloud.md) · [FinOps y costos](../../cloud/fundamentos/finops-costos.md)
+- **Cloud**: [Contenedores gestionados](../../cloud/computo/contenedores-gestionados.md) · [Serverless](../../cloud/computo/serverless.md) · [IAM: AWS, Azure y GCP](../../cloud/fundamentos/iam-comparativa.md) · [Fundamentos de seguridad cloud](../../cloud/seguridad/fundamentos-seguridad-cloud.md) · [Observabilidad nativa](../../cloud/operacion-y-gobierno/observabilidad-nativa.md) · [Arquitectura en la nube](../../cloud/arquitectura/arquitectura-cloud.md) · [FinOps y costos](../../cloud/fundamentos/finops-costos.md)
 - **DevOps**: [Despliegue continuo](../../devops/ci-cd/despliegue-continuo.md) · [Integración continua](../../devops/ci-cd/integracion-continua.md) · [Docker](../../devops/contenedores/docker.md) · [Troubleshooting](../../devops/operacion/troubleshooting.md)
 - **DevSecOps**: [Secretos e identidades](../../devsecops/identidades-y-pipeline/secretos-identidades.md) · [Seguridad de contenedores](../../devsecops/infraestructura-y-contenedores/seguridad-contenedores.md) · [Software supply chain](../../devsecops/codigo-y-dependencias/cadena-suministro.md)
 - **Networking**: [Protocolos de aplicación](../../networking/intermedio/protocolos-aplicacion.md)

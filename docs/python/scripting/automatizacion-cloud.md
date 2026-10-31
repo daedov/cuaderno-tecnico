@@ -14,7 +14,7 @@ tags:
 > Usar los SDKs de Python de AWS (boto3), Azure y Google Cloud para consultar y operar recursos: clientes, paginación, credenciales sin claves en el código y el mismo ejemplo en las tres nubes. Y cuándo conviene un SDK, la CLI o IaC.
 
 !!! info "Antes de leer"
-    Esta nota asume lo visto en [APIs y HTTP](apis-http.md) (paginación, reintentos, tokens) y en [Sistema y procesos](sistema-procesos.md). Para entender las identidades que usan los SDKs, ten a mano [IAM: AWS, Azure y GCP](../../cloud/identidad-y-seguridad/iam-comparativa.md).
+    Esta nota asume lo visto en [APIs y HTTP](apis-http.md) (paginación, reintentos, tokens) y en [Sistema y procesos](sistema-procesos.md). Para entender las identidades que usan los SDKs, ten a mano [IAM: AWS, Azure y GCP](../../cloud/fundamentos/iam-comparativa.md).
 
 ## ¿Qué es?
 
@@ -317,7 +317,7 @@ Escribe `s3_sin_owner.py` que liste los buckets de S3 de la cuenta **sin la etiq
 
 | Enfoque | Qué se mira desde ahí | Nota |
 | --- | --- | --- |
-| Cloud (el control) | Las identidades que usa el SDK, los recursos que consulta y las etiquetas que los gobiernan | [IAM: AWS, Azure y GCP](../../cloud/identidad-y-seguridad/iam-comparativa.md), [Máquinas virtuales](../../cloud/computo/maquinas-virtuales.md), [Gobernanza](../../cloud/operacion-y-gobierno/gobernanza.md), [FinOps y costos](../../cloud/fundamentos/finops-costos.md), [Serverless](../../cloud/computo/serverless.md) |
+| Cloud (el control) | Las identidades que usa el SDK, los recursos que consulta y las etiquetas que los gobiernan | [IAM: AWS, Azure y GCP](../../cloud/fundamentos/iam-comparativa.md), [Máquinas virtuales](../../cloud/computo/maquinas-virtuales.md), [Gobernanza](../../cloud/operacion-y-gobierno/gobernanza.md), [FinOps y costos](../../cloud/fundamentos/finops-costos.md), [Serverless](../../cloud/computo/serverless.md) |
 | DevOps (la automatización) | Dónde termina la IaC y empieza el script | [Infrastructure as Code](../../devops/iac/infraestructura-como-codigo.md), [Terraform](../../devops/iac/terraform-basico.md) |
 | DevSecOps (la verificación) | OIDC en lugar de claves, permisos mínimos del script y auditoría continua | [Secretos e identidades](../../devsecops/identidades-y-pipeline/secretos-identidades.md), [Cumplimiento y gobierno](../../devsecops/gobierno-y-respuesta/cumplimiento.md) |
 | Python (la herramienta) | Paginación, reintentos y CLIs | [APIs y HTTP](apis-http.md), [Scripts de línea de comandos](scripts-cli.md) |

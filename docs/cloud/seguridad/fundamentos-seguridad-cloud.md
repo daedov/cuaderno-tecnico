@@ -13,7 +13,7 @@ tags:
 > Los principios que guían todas las decisiones de seguridad en AWS, Azure y Google Cloud, los baselines oficiales para medirte, cómo priorizar y el checklist de controles imprescindibles, con enlace a cada nota de este bloque.
 
 !!! info "Antes de leer"
-    Esta es la puerta de entrada del bloque **Seguridad en la nube**. Conviene haber leído el [Shared Responsibility Model](../fundamentos/responsabilidad-compartida.md) (qué protege el proveedor y qué te toca a ti), [Seguridad base](../identidad-y-seguridad/seguridad-base.md) (qué es cada servicio de seguridad) y [Gobernanza](../operacion-y-gobierno/gobernanza.md) (landing zone y guardrails). Aquí no se repite qué es cada servicio: se explica **cómo configurarlo bien y cómo comprobarlo**.
+    Esta es la puerta de entrada del bloque **Seguridad en la nube**. Conviene haber leído el [Shared Responsibility Model](../fundamentos/responsabilidad-compartida.md) (qué protege el proveedor y qué te toca a ti), [IAM: AWS, Azure y GCP](../fundamentos/iam-comparativa.md) (identidades y permisos en cada proveedor) y [Gobernanza](../operacion-y-gobierno/gobernanza.md) (landing zone y guardrails). El foco del bloque no es qué es cada servicio, sino **cómo configurarlo bien y cómo comprobarlo**; la tabla de [controles por proveedor](#controles-por-proveedor) da las equivalencias entre nubes.
 
 ## ¿Qué es la seguridad en la nube?
 
@@ -133,6 +133,8 @@ Servicios que soportan los controles transversales del bloque. **(I)** = impresc
 | Registro de configuración | AWS Config | Azure Resource Graph + Azure Policy | Cloud Asset Inventory |
 | Análisis de permisos | IAM Access Analyzer | Entra access reviews, PIM, Defender CSPM (CIEM) | IAM Recommender, Policy Analyzer |
 | Gestión de claves | AWS KMS | Azure Key Vault / Managed HSM | Cloud KMS |
+| Gestión de secretos | AWS Secrets Manager, Parameter Store | Azure Key Vault (secrets) | Secret Manager |
+| WAF y DDoS | AWS WAF, AWS Shield | Azure Web Application Firewall, Azure DDoS Protection | Google Cloud Armor |
 | Vulnerabilidades de cómputo | Amazon Inspector | Defender for Servers / Defender Vulnerability Management | Security Command Center (Vulnerability Assessment) |
 | Agregación y SIEM | AWS Security Hub, Amazon Security Lake | Microsoft Sentinel | Google Security Operations |
 
@@ -224,78 +226,7 @@ Comandos de solo lectura para comprobar que la base del bloque está activa.
 
 ## Configuración segura con IaC
 
-Activar la base del bloque como código (providers: `hashicorp/aws` ~> 6.0, `hashicorp/azurerm` ~> 5.0, `hashicorp/google` ~> 8.0; revisa la versión mayor vigente antes de usarlos).
-
-=== "AWS"
-
-    ```hcl title="security-hub.tf"
-    data "aws_region" "current" {}
-
-    resource "aws_securityhub_account" "this" {
-      enable_default_standards = false
-    }
-
-    resource "aws_securityhub_standards_subscription" "fsbp" {
-      standards_arn = "arn:aws:securityhub:${data.aws_region.current.region}::standards/aws-foundational-security-best-practices/v/1.0.0"
-      depends_on    = [aws_securityhub_account.this]
-    }
-
-    resource "aws_securityhub_standards_subscription" "cis" {
-      standards_arn = "arn:aws:securityhub:${data.aws_region.current.region}::standards/cis-aws-foundations-benchmark/v/5.0.0"
-      depends_on    = [aws_securityhub_account.this]
-    }
-    ```
-
-    En el provider v6, `data.aws_region` expone `region` (el atributo `name` quedó obsoleto). En una organización, hazlo desde el administrador delegado con `aws_securityhub_configuration_policy`.
-
-=== "Azure"
-
-    ```hcl title="defender.tf"
-    # Defender CSPM y Defender for Servers en la suscripción
-    resource "azurerm_security_center_subscription_pricing" "cspm" {
-      tier          = "Standard"
-      resource_type = "CloudPosture"
-    }
-
-    resource "azurerm_security_center_subscription_pricing" "servers" {
-      tier          = "Standard"
-      resource_type = "VirtualMachines"
-      subplan       = "P2"
-    }
-
-    resource "azurerm_security_center_contact" "seguridad" {
-      name                = "default"
-      email               = "seguridad@ejemplo.com"
-      alert_notifications = true
-      alerts_to_admins    = true
-    }
-    ```
-
-=== "Google Cloud"
-
-    ```hcl title="org-policies.tf"
-    # Secure-by-default: aplicar a mano en organizaciones anteriores a mayo de 2024
-    locals {
-      constraints_booleanas = [
-        "iam.managed.disableServiceAccountKeyCreation",
-        "iam.disableServiceAccountKeyUpload",
-        "iam.automaticIamGrantsForDefaultServiceAccounts",
-        "storage.uniformBucketLevelAccess",
-      ]
-    }
-
-    resource "google_org_policy_policy" "baseline" {
-      for_each = toset(local.constraints_booleanas)
-      name     = "organizations/${var.org_id}/policies/${each.value}"
-      parent   = "organizations/${var.org_id}"
-
-      spec {
-        rules {
-          enforce = "TRUE"
-        }
-      }
-    }
-    ```
+Los fragmentos de Terraform con estos controles (y los guardrails de organización, cuando aplican) están en las páginas por proveedor: [AWS](terraform/aws.md#base-de-seguridad), [Azure](terraform/azure.md#base-de-seguridad) y [Google Cloud](terraform/google-cloud.md#base-de-seguridad).
 
 ## Errores comunes
 
@@ -313,8 +244,8 @@ Controles imprescindibles de todo el bloque y la nota que los desarrolla:
 - [ ] Root / Global Administrator / Super Admin con MFA resistente a phishing, cuentas break-glass y sin uso diario → [Seguridad de identidades](seguridad-identidades.md)
 - [ ] Sin access keys, client secrets ni service account keys de larga duración; OIDC y workload identities → [Seguridad de identidades](seguridad-identidades.md)
 - [ ] Guardrails de organización (SCP/RCP, Azure Policy, Organization Policy) → [Seguridad de identidades](seguridad-identidades.md)
-- [ ] Claves con rotación, separación de roles y protección contra borrado; secretos en un gestor y con rotación → [Seguridad de cifrado y secretos](seguridad-cifrado-secretos.md)
-- [ ] Audit logs de organización centralizados, inmutables y con retención; detección activa y alertas mínimas → [Seguridad de logging y detección](seguridad-logging-deteccion.md)
+- [ ] Cifrado por defecto revisado (por ejemplo, EBS encryption by default); claves con rotación, separación de roles y protección contra borrado; secretos en un gestor, leídos con la identidad del recurso y con rotación → [Seguridad de cifrado y secretos](seguridad-cifrado-secretos.md)
+- [ ] Audit logs de organización centralizados, inmutables y con retención; registro de configuración en todas las regiones; detección activa en todas las cuentas y alertas mínimas con responsable y canal claros → [Seguridad de logging y detección](seguridad-logging-deteccion.md)
 - [ ] Sin 0.0.0.0/0 a puertos de administración; private endpoints; flow logs; WAF y DDoS → [Seguridad de redes](seguridad-redes.md)
 - [ ] VMs con imagen endurecida, parches automáticos, IMDSv2 y sin IP pública → [Seguridad de máquinas virtuales](seguridad-maquinas-virtuales.md)
 - [ ] Clústeres con API server privado, workload identity, Pod Security y registry con escaneo → [Seguridad de contenedores y Kubernetes](seguridad-contenedores-kubernetes.md)
@@ -328,7 +259,7 @@ Controles imprescindibles de todo el bloque y la nota que los desarrolla:
 
 | Enfoque | Qué se mira desde ahí | Nota |
 | --- | --- | --- |
-| Cloud (el control) | Modelo de responsabilidad, servicios de seguridad base, landing zone y guardrails | [Shared Responsibility Model](../fundamentos/responsabilidad-compartida.md), [Seguridad base](../identidad-y-seguridad/seguridad-base.md), [Gobernanza](../operacion-y-gobierno/gobernanza.md), [Well-Architected Framework](../fundamentos/well-architected.md) |
+| Cloud (el control) | Modelo de responsabilidad, IAM de cada proveedor, landing zone y guardrails | [Shared Responsibility Model](../fundamentos/responsabilidad-compartida.md), [IAM: AWS, Azure y GCP](../fundamentos/iam-comparativa.md), [Gobernanza](../operacion-y-gobierno/gobernanza.md), [Well-Architected Framework](../fundamentos/well-architected.md) |
 | DevOps (la automatización) | Landing zone y controles definidos como código y desplegados por pipeline | [Infrastructure as Code](../../devops/iac/infraestructura-como-codigo.md), [Terraform](../../devops/iac/terraform-basico.md) |
 | DevSecOps (la verificación) | Postura evaluada de forma continua contra CIS y el baseline del proveedor; respuesta a hallazgos | [CSPM](../../devsecops/escaneos/cspm.md), [Cumplimiento y gobierno](../../devsecops/gobierno-y-respuesta/cumplimiento.md), [Fundamentos DevSecOps](../../devsecops/fundamentos-devsecops.md), [Detección y respuesta](../../devsecops/gobierno-y-respuesta/deteccion-respuesta.md) |
 | Networking (la base) | Zero trust, segmentación y firewalls como base de la seguridad de red | [Seguridad de red](../../networking/avanzado/seguridad-red.md) |

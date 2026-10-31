@@ -35,7 +35,7 @@ tags:
 - **Teoría recomendada**:
     - [Entorno de trabajo con Python](../../python/fundamentos/entorno-python.md): `venv`, `pip`, `uv` y `pipx`.
     - [FinOps y costos](../../cloud/fundamentos/finops-costos.md): cómo cobra la nube y las herramientas nativas de costos.
-    - [IAM: AWS, Azure y GCP](../../cloud/identidad-y-seguridad/iam-comparativa.md): identidades, roles y por qué no se trabaja con la cuenta raíz.
+    - [IAM: AWS, Azure y GCP](../../cloud/fundamentos/iam-comparativa.md): identidades, roles y por qué no se trabaja con la cuenta raíz.
 
 !!! tip "En Windows, trabaja dentro de WSL2"
     **WSL2** (*Windows Subsystem for Linux*) ejecuta un Linux real dentro de Windows. Los labs están escritos para una terminal Linux (Bash), Ansible no funciona en Windows de forma nativa y Docker Desktop usa WSL2 por debajo. La recomendación es: Docker Desktop y el editor en Windows; el resto de herramientas **dentro de Ubuntu en WSL2**, siguiendo las pestañas "Linux".
@@ -396,7 +396,7 @@ Un **budget** (presupuesto) compara el gasto real y el previsto (*forecasted*) c
 
 ### Paso 10: Crea la identidad de laboratorio y conecta las CLIs
 
-El principio de **least privilege** (mínimo privilegio) dice que cada identidad tenga solo los permisos que necesita. Para el día a día usarás una identidad de laboratorio, no la raíz, y sin llaves de larga duración en tu disco. Comparativa completa en [IAM: AWS, Azure y GCP](../../cloud/identidad-y-seguridad/iam-comparativa.md).
+El principio de **least privilege** (mínimo privilegio) dice que cada identidad tenga solo los permisos que necesita. Para el día a día usarás una identidad de laboratorio, no la raíz, y sin llaves de larga duración en tu disco. Comparativa completa en [IAM: AWS, Azure y GCP](../../cloud/fundamentos/iam-comparativa.md).
 
 === "AWS"
 
@@ -642,7 +642,7 @@ Para el método general de diagnóstico, mira [Troubleshooting](../../devops/ope
 - **WSL2**: una VM ligera con un kernel Linux real gestionada por Windows. Los archivos de tus proyectos van mejor dentro de Linux (`~/proyectos`) que en `/mnt/c`, por rendimiento.
 - **Entornos virtuales y uv**: cada proyecto con sus dependencias aisladas; ver [Entorno de trabajo con Python](../../python/fundamentos/entorno-python.md).
 - **Budgets y FinOps**: el presupuesto es la primera herramienta de control de costos y la base del *showback*; ver [FinOps y costos](../../cloud/fundamentos/finops-costos.md).
-- **Root user vs identidad de trabajo**: la raíz solo para tareas que la exigen (facturación, cerrar la cuenta); el día a día, con identidades federadas y credenciales temporales. Ver [IAM: AWS, Azure y GCP](../../cloud/identidad-y-seguridad/iam-comparativa.md#best-practices-comunes).
+- **Root user vs identidad de trabajo**: la raíz solo para tareas que la exigen (facturación, cerrar la cuenta); el día a día, con identidades federadas y credenciales temporales. Ver [IAM: AWS, Azure y GCP](../../cloud/fundamentos/iam-comparativa.md#best-practices-comunes).
 - **En el trabajo real**: las empresas usan una **landing zone** con cuentas separadas por entorno, SSO corporativo, budgets por cuenta y SCPs/Azure Policy/Organization Policy. Tu cuenta de pruebas con MFA, budget y usuario limitado es la versión mínima de eso ([Gobernanza](../../cloud/operacion-y-gobierno/gobernanza.md)).
 
 ## Documentación oficial
@@ -688,8 +688,8 @@ Para el método general de diagnóstico, mira [Troubleshooting](../../devops/ope
 
 - **Cloud**
     - [FinOps y costos](../../cloud/fundamentos/finops-costos.md)
-    - [IAM: AWS, Azure y GCP](../../cloud/identidad-y-seguridad/iam-comparativa.md)
-    - [Seguridad base en la nube](../../cloud/identidad-y-seguridad/seguridad-base.md)
+    - [IAM: AWS, Azure y GCP](../../cloud/fundamentos/iam-comparativa.md)
+    - [Fundamentos de seguridad cloud](../../cloud/seguridad/fundamentos-seguridad-cloud.md)
     - [Gobernanza](../../cloud/operacion-y-gobierno/gobernanza.md)
     - [Modelos de servicio y regiones](../../cloud/fundamentos/modelos-de-servicio-y-regiones.md)
 - **DevOps**

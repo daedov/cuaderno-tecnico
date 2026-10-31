@@ -82,7 +82,7 @@ resource "aws_s3_bucket_lifecycle_configuration" "logs" {
 | Replicación a otra región | S3 Replication (CRR) | GRS / GZRS (*geo-redundant storage*), object replication | Buckets *dual-region* o *multi-region* |
 
 !!! danger "Buckets públicos por error"
-    Un bucket expuesto a internet es una de las filtraciones de datos más frecuentes en la nube. Mantén el bloqueo de acceso público activado a nivel de cuenta/organización, cifra los datos (ver [Seguridad base](../identidad-y-seguridad/seguridad-base.md)) y controla el acceso con IAM (ver [IAM](../identidad-y-seguridad/iam-comparativa.md)).
+    Un bucket expuesto a internet es una de las filtraciones de datos más frecuentes en la nube. Mantén el bloqueo de acceso público activado a nivel de cuenta/organización, cifra los datos (ver [Seguridad de cifrado y secretos](../seguridad/seguridad-cifrado-secretos.md)) y controla el acceso con IAM (ver [IAM](../fundamentos/iam-comparativa.md)).
 
 ### Redundancia en Azure Storage
 
@@ -175,7 +175,7 @@ flowchart LR
 
 | Enfoque | Qué se mira desde ahí | Nota |
 | --- | --- | --- |
-| Cloud (el control) | RTO/RPO y DR; cifrado con KMS; discos de VM; costos de almacenamiento; acceso privado desde la red | [Resiliencia](../operacion-y-gobierno/resiliencia.md), [Seguridad base](../identidad-y-seguridad/seguridad-base.md), [Máquinas virtuales](../computo/maquinas-virtuales.md), [FinOps y costos](../fundamentos/finops-costos.md), [Redes en la nube](redes.md) |
+| Cloud (el control) | RTO/RPO y DR; cifrado con KMS; discos de VM; costos de almacenamiento; acceso privado desde la red | [Resiliencia](../operacion-y-gobierno/resiliencia.md), [Seguridad de cifrado y secretos](../seguridad/seguridad-cifrado-secretos.md), [Máquinas virtuales](../computo/maquinas-virtuales.md), [FinOps y costos](../fundamentos/finops-costos.md), [Redes en la nube](redes.md) |
 | DevOps (la automatización) | Definir buckets, bases de datos y políticas de backup como código; migraciones de esquema en el despliegue | [Infrastructure as Code](../../devops/iac/infraestructura-como-codigo.md), [Despliegue continuo](../../devops/ci-cd/despliegue-continuo.md), [Operación y fiabilidad (SRE)](../../devops/operacion/operacion-sre.md) |
 | DevSecOps (la verificación) | Detectar buckets públicos y bases sin cifrar o sin backup; auditoría continua | [Seguridad de IaC](../../devsecops/infraestructura-y-contenedores/seguridad-iac.md), [Cumplimiento y gobierno](../../devsecops/gobierno-y-respuesta/cumplimiento.md) |
 | Laboratorios (la práctica) | Practicar esto paso a paso | [Lab 09: Terraform en AWS con remote state en S3](../../laboratorios/devops/terraform-aws-backend-remoto.md), [Lab 18: AWS: API serverless con Lambda, API Gateway y DynamoDB](../../laboratorios/cloud/aws-serverless-api.md), [Lab 19: Azure: VNet, NSG y una VM con Azure CLI](../../laboratorios/cloud/azure-vnet-vm.md) |

@@ -14,7 +14,7 @@ tags:
 > Cómo configurar bien el cifrado en reposo y en tránsito, los servicios de claves (AWS KMS, Azure Key Vault, Cloud KMS), los secretos y los certificados: políticas de acceso, separación de roles, rotación y protección contra el borrado.
 
 !!! info "Antes de leer"
-    En el [Shared Responsibility Model](../fundamentos/responsabilidad-compartida.md), el proveedor cifra la infraestructura y opera los HSM; tú decides **qué clave usa cada dato, quién puede usarla, cuándo se rota y quién puede borrarla**, y dónde viven los secretos de tus aplicaciones. Conviene haber leído [Seguridad base](../identidad-y-seguridad/seguridad-base.md), que explica envelope encryption, los modelos de clave (provider-managed, customer-managed, BYOK) y los servicios de secretos.
+    En el [Shared Responsibility Model](../fundamentos/responsabilidad-compartida.md), el proveedor cifra la infraestructura y opera los HSM; tú decides **qué clave usa cada dato, quién puede usarla, cuándo se rota y quién puede borrarla**, y dónde viven los secretos de tus aplicaciones. Quién puede usar cada clave se decide con IAM (ver [IAM: AWS, Azure y GCP](../fundamentos/iam-comparativa.md)).
 
 ## ¿Qué protege el cifrado y qué no?
 
@@ -30,7 +30,29 @@ flowchart LR
 
 Con una **customer-managed key** (CMK) añades un segundo candado independiente: aunque alguien tenga acceso al dato, sin permiso sobre la clave no lo puede leer, y desactivar la clave "apaga" el acceso a todo lo que cifra.
 
+## Envelope encryption y modelos de clave
+
+Los servicios de KMS no cifran tus datos directamente: usan **envelope encryption** (cifrado de sobre). Un **data key** (clave de datos) cifra los datos y una **KEK** (*key encryption key*, clave de cifrado de claves) guardada en el KMS cifra ese data key. Así la clave maestra nunca sale del KMS y rotarla no obliga a recifrar todos los datos.
+
+```mermaid
+flowchart LR
+    K[KEK en el KMS] -->|cifra| D[Data key]
+    D -->|cifra| X[Datos]
+```
+
+Quién gestiona la KEK define cuánto controlas tú:
+
+| Modelo | AWS | Azure | Google Cloud | Qué controlas |
+| --- | --- | --- | --- | --- |
+| **Provider-managed keys** (claves gestionadas por el proveedor) | AWS owned keys, AWS managed keys (`aws/s3`, `aws/ebs`…) | Microsoft-managed keys | Google default encryption | Nada: el proveedor crea, guarda y rota la clave |
+| **Customer-managed keys** (claves gestionadas por el cliente, CMK) | Customer managed keys en AWS KMS | Customer-managed keys en Key Vault o Managed HSM | CMEK (*customer-managed encryption keys*) en Cloud KMS | Políticas de acceso, rotación, desactivación y borrado de la clave |
+| Clave generada o guardada fuera | Importar material de clave (*BYOK*, *Bring Your Own Key*) o external key store (XKS) | Importar claves a Key Vault o Managed HSM (*BYOK*) | Importar claves a Cloud KMS o Cloud External Key Manager (EKM) | Generas la clave tú; con XKS y EKM además vive en un gestor externo |
+
+Las CMK tienen sentido cuando un requisito de [cumplimiento](../../devsecops/gobierno-y-respuesta/cumplimiento.md) lo exige, cuando necesitas separar quién administra los datos de quién administra las claves, o cuando quieres poder "apagar" el acceso a los datos desactivando la clave (*crypto-shredding*, borrado criptográfico). A cambio, tú respondes de su ciclo de vida.
+
 ## Cifrado en reposo y en tránsito por servicio
+
+El **encryption at rest** (cifrado en reposo) protege los datos guardados en discos, buckets, bases de datos y backups; el **encryption in transit** (cifrado en tránsito), los que viajan por la red, con **TLS** (*Transport Layer Security*).
 
 | Servicio | En reposo por defecto | Qué te toca activar | En tránsito |
 | --- | --- | --- | --- |
@@ -145,9 +167,11 @@ Un **secret** (secreto) es una credencial que una aplicación necesita en tiempo
 
     Para bases de datos de RDS y Aurora, usa `manage_master_user_password = true`: RDS guarda la contraseña maestra en Secrets Manager y la rota sin función Lambda propia. En ECS y Lambda, referencia el ARN del secreto en lugar de copiar su valor en una variable.
 
+    **Parameter Store** (de AWS Systems Manager) también guarda secretos simples como parámetros `SecureString` (cifrados con KMS y con versiones), pero **no rota**: úsalo para configuración y deja las credenciales que deben rotar en Secrets Manager.
+
 === "Azure"
 
-    En App Service y Azure Functions usa **Key Vault references** (`@Microsoft.KeyVault(SecretUri=...)`) en la configuración, resueltas con la managed identity de la app. En AKS, el **Secrets Store CSI Driver** con el proveedor de Azure Key Vault monta los secretos sin guardarlos en el clúster.
+    Se recomienda **un Key Vault por aplicación y por entorno**, con el modelo de permisos Azure RBAC. En App Service y Azure Functions usa **Key Vault references** (`@Microsoft.KeyVault(SecretUri=...)`) en la configuración, resueltas con la managed identity de la app. En AKS, el **Secrets Store CSI Driver** con el proveedor de Azure Key Vault monta los secretos sin guardarlos en el clúster.
 
 === "Google Cloud"
 
@@ -280,173 +304,7 @@ Comandos de solo lectura.
 
 ## Configuración segura con IaC
 
-=== "AWS"
-
-    ```hcl title="kms-secretos.tf"
-    resource "aws_ebs_encryption_by_default" "this" {
-      enabled = true
-    }
-
-    resource "aws_kms_key" "datos" {
-      description             = "CMK de datos de la app de pagos (prod)"
-      enable_key_rotation     = true
-      rotation_period_in_days = 180
-      deletion_window_in_days = 30
-      policy                  = file("${path.module}/key-policy-datos.json")
-
-      lifecycle {
-        prevent_destroy = true
-      }
-    }
-
-    resource "aws_kms_alias" "datos" {
-      name          = "alias/pagos-prod-datos"
-      target_key_id = aws_kms_key.datos.key_id
-    }
-
-    resource "aws_secretsmanager_secret" "api_externa" {
-      name       = "prod/pagos/api-externa"
-      kms_key_id = aws_kms_key.datos.arn
-    }
-
-    resource "aws_secretsmanager_secret_rotation" "api_externa" {
-      secret_id           = aws_secretsmanager_secret.api_externa.id
-      rotation_lambda_arn = aws_lambda_function.rotar_api_externa.arn
-
-      rotation_rules {
-        automatically_after_days = 30
-      }
-    }
-    ```
-
-    ```json title="scp-proteger-claves.json"
-    {
-      "Version": "2012-10-17",
-      "Statement": [
-        {
-          "Sid": "ProtegerBorradoDeClaves",
-          "Effect": "Deny",
-          "Action": ["kms:ScheduleKeyDeletion", "kms:DisableKey", "kms:PutKeyPolicy"],
-          "Resource": "*",
-          "Condition": {
-            "ArnNotLike": { "aws:PrincipalArn": "arn:aws:iam::*:role/seguridad-kms-admin" }
-          }
-        }
-      ]
-    }
-    ```
-
-=== "Azure"
-
-    ```hcl title="key-vault.tf"
-    resource "azurerm_key_vault" "app" {
-      name                          = "kv-pagos-prod"
-      location                      = azurerm_resource_group.app.location
-      resource_group_name           = azurerm_resource_group.app.name
-      tenant_id                     = data.azurerm_client_config.current.tenant_id
-      sku_name                      = "premium"
-      rbac_authorization_enabled    = true
-      purge_protection_enabled      = true
-      soft_delete_retention_days    = 90
-      public_network_access_enabled = false
-
-      network_acls {
-        default_action = "Deny"
-        bypass         = "AzureServices"
-      }
-    }
-
-    resource "azurerm_key_vault_key" "datos" {
-      name         = "datos"
-      key_vault_id = azurerm_key_vault.app.id
-      key_type     = "RSA-HSM"
-      key_size     = 3072
-      key_opts     = ["wrapKey", "unwrapKey"]
-
-      rotation_policy {
-        automatic {
-          time_before_expiry = "P30D"
-        }
-        expire_after         = "P365D"
-        notify_before_expiry = "P29D"
-      }
-    }
-
-    # Guardrail: exigir purge protection en todos los vaults del management group
-    resource "azurerm_management_group_policy_assignment" "kv_purge" {
-      name                 = "kv-purge-protection"
-      management_group_id  = data.azurerm_management_group.workloads.id
-      policy_definition_id = "/providers/Microsoft.Authorization/policyDefinitions/0b60c0b2-2dc2-4e1c-b5c9-abbed971de53"
-      parameters           = jsonencode({ effect = { value = "Deny" } })
-    }
-    ```
-
-    En azurerm v5 se eliminó `enable_rbac_authorization` (el nombre de v4) y `rbac_authorization_enabled` pasó a ser **obligatorio** en `azurerm_key_vault`. La definición `0b60c0b2-…` es *Key vaults should have deletion protection enabled*; confirma el ID y los efectos permitidos en el portal antes de asignarla.
-
-=== "Google Cloud"
-
-    ```hcl title="kms-secretos.tf"
-    resource "google_kms_key_ring" "pagos" {
-      project  = var.kms_project_id
-      name     = "pagos-prod"
-      location = "us-central1"
-    }
-
-    resource "google_kms_crypto_key" "datos" {
-      name                       = "datos"
-      key_ring                   = google_kms_key_ring.pagos.id
-      rotation_period            = "7776000s" # 90 días
-      destroy_scheduled_duration = "2592000s" # 30 días
-
-      version_template {
-        algorithm        = "GOOGLE_SYMMETRIC_ENCRYPTION"
-        protection_level = "HSM"
-      }
-
-      lifecycle {
-        prevent_destroy = true
-      }
-    }
-
-    # Solo el service agent de Cloud Storage del proyecto de la app puede usar la clave
-    resource "google_kms_crypto_key_iam_member" "gcs" {
-      crypto_key_id = google_kms_crypto_key.datos.id
-      role          = "roles/cloudkms.cryptoKeyEncrypterDecrypter"
-      member        = "serviceAccount:service-${var.app_project_number}@gs-project-accounts.iam.gserviceaccount.com"
-    }
-
-    resource "google_secret_manager_secret" "api_externa" {
-      project   = var.app_project_id
-      secret_id = "api-externa"
-
-      replication {
-        auto {}
-      }
-
-      rotation {
-        rotation_period    = "2592000s"
-        next_rotation_time = "2026-12-01T00:00:00Z"
-      }
-
-      topics {
-        name = google_pubsub_topic.rotacion.id
-      }
-    }
-
-    # Guardrail: Cloud Storage solo con CMEK en la carpeta de producción
-    resource "google_org_policy_policy" "cmek" {
-      name   = "folders/${var.folder_prod_id}/policies/gcp.restrictNonCmekServices"
-      parent = "folders/${var.folder_prod_id}"
-
-      spec {
-        rules {
-          values {
-            denied_values = ["storage.googleapis.com"]
-          }
-        }
-      }
-    }
-    ```
+Los fragmentos de Terraform con estos controles (y los guardrails de organización, cuando aplican) están en las páginas por proveedor: [AWS](terraform/aws.md#cifrado-claves-y-secretos), [Azure](terraform/azure.md#cifrado-claves-y-secretos) y [Google Cloud](terraform/google-cloud.md#cifrado-claves-y-secretos).
 
 ## Errores comunes
 
@@ -462,13 +320,14 @@ Comandos de solo lectura.
 
 | Enfoque | Qué se mira desde ahí | Nota |
 | --- | --- | --- |
-| Cloud (el control) | Conceptos de KMS y secretos; quién puede usar las claves; cifrado de cada servicio | [Seguridad base](../identidad-y-seguridad/seguridad-base.md), [Seguridad de identidades](seguridad-identidades.md), [Seguridad de almacenamiento](seguridad-almacenamiento.md), [Seguridad de bases de datos](seguridad-bases-datos.md) |
+| Cloud (el control) | Quién puede usar las claves; cifrado de cada servicio | [IAM: AWS, Azure y GCP](../fundamentos/iam-comparativa.md), [Seguridad de identidades](seguridad-identidades.md), [Seguridad de almacenamiento](seguridad-almacenamiento.md), [Seguridad de bases de datos](seguridad-bases-datos.md) |
 | DevOps (la automatización) | Claves, vaults y secretos como código; inyectar secretos en los despliegues | [Infrastructure as Code](../../devops/iac/infraestructura-como-codigo.md), [Despliegue continuo](../../devops/ci-cd/despliegue-continuo.md) |
 | DevSecOps (la verificación) | Detectar secretos en commits, rotación, OIDC y Vault; escanear IaC sin cifrado | [Secretos e identidades](../../devsecops/identidades-y-pipeline/secretos-identidades.md), [Secret scanning](../../devsecops/escaneos/secret-scanning.md), [Seguridad de IaC](../../devsecops/infraestructura-y-contenedores/seguridad-iac.md) |
 | Networking (la base) | TLS, certificados, PKI y mTLS | [Protocolos de aplicación](../../networking/intermedio/protocolos-aplicacion.md) |
 
 ## Referencias
 
+- [AWS KMS concepts](https://docs.aws.amazon.com/es_es/kms/latest/developerguide/concepts.html)
 - [AWS KMS: best practices](https://docs.aws.amazon.com/kms/latest/developerguide/best-practices.html)
 - [Key policies in AWS KMS](https://docs.aws.amazon.com/es_es/kms/latest/developerguide/key-policies.html)
 - [Rotate AWS KMS keys](https://docs.aws.amazon.com/kms/latest/developerguide/rotate-keys.html)
@@ -482,6 +341,7 @@ Comandos de solo lectura.
 - [MCSB v2: Data Protection](https://learn.microsoft.com/en-us/security/benchmark/azure/mcsb-v2-data-protection)
 - [Cloud KMS: separation of duties](https://cloud.google.com/kms/docs/separation-of-duties)
 - [Cloud KMS: key rotation](https://cloud.google.com/kms/docs/key-rotation)
+- [Default encryption at rest en Google Cloud](https://cloud.google.com/docs/security/encryption/default-encryption)
 - [Customer-managed encryption keys (CMEK)](https://cloud.google.com/kms/docs/cmek)
 - [Secret Manager: best practices](https://cloud.google.com/secret-manager/docs/best-practices)
 - [Certificate Manager](https://cloud.google.com/certificate-manager/docs/overview)

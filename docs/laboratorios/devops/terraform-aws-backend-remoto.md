@@ -566,7 +566,7 @@ Para un método general de diagnóstico, ver [Troubleshooting](../../devops/oper
 ## Información complementaria
 
 - **Remote state y locking**: el state compartido en un backend con bloqueo es lo que permite trabajar en equipo y desde CI/CD. Ver [Remote state](../../devops/iac/terraform-basico.md#remote-state-estado-remoto).
-- **Permisos mínimos del backend**: `s3:ListBucket` sobre el bucket, `s3:GetObject` y `s3:PutObject` sobre la key del state, y `s3:GetObject`, `s3:PutObject` y `s3:DeleteObject` sobre `<key>.tflock`. Quien lee el state ve sus secretos: restringe el acceso. Ver [IAM: AWS, Azure y GCP](../../cloud/identidad-y-seguridad/iam-comparativa.md).
+- **Permisos mínimos del backend**: `s3:ListBucket` sobre el bucket, `s3:GetObject` y `s3:PutObject` sobre la key del state, y `s3:GetObject`, `s3:PutObject` y `s3:DeleteObject` sobre `<key>.tflock`. Quien lee el state ve sus secretos: restringe el acceso. Ver [IAM: AWS, Azure y GCP](../../cloud/fundamentos/iam-comparativa.md).
 - **Drift detection**: un plan programado con `-detailed-exitcode` es el control más simple; los servicios de configuración de la nube lo complementan. Ver [Seguridad de IaC](../../devsecops/infraestructura-y-contenedores/seguridad-iac.md#drift-detection).
 - **Provider AWS v6**: casi todos los recursos aceptan un argumento `region` propio, así que un mismo provider puede gestionar recursos en varias regiones. Fija la versión mayor (`~> 6.0`) para no saltar a la 7 sin querer.
 - **Otras nubes**: el equivalente es el backend `azurerm` (Azure Storage) o `gcs` (Cloud Storage), ambos con bloqueo incluido. Ver [Almacenamiento y datos](../../cloud/redes-y-datos/almacenamiento-datos.md).
@@ -613,8 +613,8 @@ Para un método general de diagnóstico, ver [Troubleshooting](../../devops/oper
 **Cloud**
 
 - [Almacenamiento y datos](../../cloud/redes-y-datos/almacenamiento-datos.md)
-- [IAM: AWS, Azure y GCP](../../cloud/identidad-y-seguridad/iam-comparativa.md)
-- [Seguridad base en la nube](../../cloud/identidad-y-seguridad/seguridad-base.md)
+- [IAM: AWS, Azure y GCP](../../cloud/fundamentos/iam-comparativa.md)
+- [Seguridad de cifrado y secretos](../../cloud/seguridad/seguridad-cifrado-secretos.md)
 - [Gobernanza](../../cloud/operacion-y-gobierno/gobernanza.md)
 - [FinOps y costos](../../cloud/fundamentos/finops-costos.md)
 

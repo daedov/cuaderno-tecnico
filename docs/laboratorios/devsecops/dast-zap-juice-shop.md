@@ -429,7 +429,7 @@ Para errores del workflow en general, sigue el método de [Troubleshooting](../.
 ## Información complementaria
 
 - **DAST**: prueba la aplicación **en ejecución** desde fuera, como lo haría un atacante; encuentra configuración y comportamiento que el SAST no ve ([DAST](../../devsecops/escaneos/dast.md)).
-- **Baseline, full y API**: pasivo y seguro; activo y agresivo; activo y guiado por el contrato de la API ([Pruebas dinámicas](../../devsecops/codigo-y-dependencias/pruebas-dinamicas.md#owasp-zap)).
+- **Baseline, full y API**: pasivo y seguro; activo y agresivo; activo y guiado por el contrato de la API ([DAST](../../devsecops/escaneos/dast.md)).
 - **OWASP Top 10:2025**: el idioma común para clasificar hallazgos web; ZAP da el CWE y tú decides la categoría ([Fundamentos de DevSecOps](../../devsecops/fundamentos-devsecops.md#owasp-top-10)).
 - **Dónde corre el DAST**: entorno efímero por PR o staging, nunca producción sin autorización ([DAST: dónde correrlo](../../devsecops/escaneos/dast.md#donde-correrlo)).
 - **Gestión de hallazgos**: muchas alertas se corrigen en el reverse proxy o el CDN, no en el código; localiza la capa correcta ([DAST: gestión de hallazgos](../../devsecops/escaneos/dast.md#gestion-de-hallazgos)) y aplica los plazos de [SLA de remediación](../../devsecops/gobierno-y-respuesta/deteccion-respuesta.md#sla-de-remediacion).

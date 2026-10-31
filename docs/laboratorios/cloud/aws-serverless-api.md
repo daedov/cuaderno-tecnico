@@ -593,7 +593,7 @@ Para el método general, ver [Troubleshooting](../../devops/operacion/troublesho
 - **Serverless y cold starts**: pagas por invocación y la plataforma escala sola; el costo es la latencia del primer arranque y los límites de tiempo. Ver [Serverless](../../cloud/computo/serverless.md).
 - **DynamoDB on-demand vs provisioned**: on-demand cobra por petición y encaja con tráfico impredecible o bajo; provisioned es más barato con carga estable. Ver [Almacenamiento y datos](../../cloud/redes-y-datos/almacenamiento-datos.md).
 - **API Gateway como puerta de entrada**: centraliza autenticación, throttling y enrutado delante de las funciones. Ver [Integración y APIs](../../cloud/arquitectura/integracion-apis.md).
-- **Identity-based vs resource-based policy**: el rol dice qué puede hacer la función; la política de la función dice quién puede invocarla. Ver [IAM: AWS, Azure y GCP](../../cloud/identidad-y-seguridad/iam-comparativa.md).
+- **Identity-based vs resource-based policy**: el rol dice qué puede hacer la función; la política de la función dice quién puede invocarla. Ver [IAM: AWS, Azure y GCP](../../cloud/fundamentos/iam-comparativa.md).
 - **Logs y observabilidad**: logs estructurados (JSON) facilitan buscar por campos en Logs Insights. Ver [Observabilidad nativa](../../cloud/operacion-y-gobierno/observabilidad-nativa.md).
 - **En el trabajo real** el `terraform apply` lo ejecuta un pipeline con OIDC (sin llaves, como en el [Lab 13](../devsecops/oidc-github-aws.md)), las pruebas locales corren en CI y un escáner de IaC rechaza políticas con `"Action": "*"`.
 
@@ -635,7 +635,7 @@ Para el método general, ver [Troubleshooting](../../devops/operacion/troublesho
 
 ## Notas relacionadas
 
-- **Cloud**: [Serverless](../../cloud/computo/serverless.md) · [Almacenamiento y datos](../../cloud/redes-y-datos/almacenamiento-datos.md) · [Arquitecturas de referencia](../../cloud/arquitectura/arquitecturas-referencia.md) · [Integración y APIs](../../cloud/arquitectura/integracion-apis.md) · [IAM: AWS, Azure y GCP](../../cloud/identidad-y-seguridad/iam-comparativa.md) · [Observabilidad nativa](../../cloud/operacion-y-gobierno/observabilidad-nativa.md) · [FinOps y costos](../../cloud/fundamentos/finops-costos.md)
+- **Cloud**: [Serverless](../../cloud/computo/serverless.md) · [Almacenamiento y datos](../../cloud/redes-y-datos/almacenamiento-datos.md) · [Arquitecturas de referencia](../../cloud/arquitectura/arquitecturas-referencia.md) · [Integración y APIs](../../cloud/arquitectura/integracion-apis.md) · [IAM: AWS, Azure y GCP](../../cloud/fundamentos/iam-comparativa.md) · [Observabilidad nativa](../../cloud/operacion-y-gobierno/observabilidad-nativa.md) · [FinOps y costos](../../cloud/fundamentos/finops-costos.md)
 - **DevOps**: [Infrastructure as Code](../../devops/iac/infraestructura-como-codigo.md) · [Terraform](../../devops/iac/terraform-basico.md) · [Leer logs](../../devops/operacion/leer-logs.md) · [Troubleshooting](../../devops/operacion/troubleshooting.md)
 - **DevSecOps**: [Secretos e identidades](../../devsecops/identidades-y-pipeline/secretos-identidades.md) · [Seguridad de IaC](../../devsecops/infraestructura-y-contenedores/seguridad-iac.md) · [Pruebas dinámicas](../../devsecops/codigo-y-dependencias/pruebas-dinamicas.md)
 - **Networking**: [Protocolos de aplicación](../../networking/intermedio/protocolos-aplicacion.md)

@@ -48,6 +48,18 @@ tags:
 !!! note "Nombres que cambian"
     En Azure, los **NSG flow logs** ya no se pueden crear desde el 30 de junio de 2025 y se retiran en septiembre de 2027: el reemplazo son los **virtual network flow logs**. En Google Cloud, las firewall rules y firewall policies se agrupan ahora bajo el nombre **Cloud Next Generation Firewall (Cloud NGFW)**, con niveles Essentials, Standard y Enterprise.
 
+## WAF en el borde
+
+Un **WAF** (*Web Application Firewall*, firewall de aplicaciones web) inspecciona el tráfico HTTP(S) **antes** de que llegue a tu aplicación y bloquea patrones de ataque como SQL injection, XSS (*Cross-Site Scripting*) o bots, además de aplicar **rate limiting** (limitación de peticiones por IP). No reemplaza a los security groups ni a las reglas de firewall de red: trabaja en la capa 7 (HTTP), no en IPs y puertos.
+
+| | AWS WAF | Azure WAF | Google Cloud Armor |
+| --- | --- | --- | --- |
+| Dónde se asocia | Amazon CloudFront, Application Load Balancer, Amazon API Gateway, AWS AppSync, entre otros | Azure Front Door o Application Gateway | Backend services de los load balancers de aplicación externos de Cloud Load Balancing |
+| Conjunto de reglas | **Web ACL** con *AWS Managed Rules* y reglas propias | **WAF policy** con *Default Rule Set* / OWASP CRS y reglas propias | **Security policy** con *preconfigured WAF rules* (basadas en OWASP CRS) y reglas propias |
+| Modo solo registro | Acción *Count* | *Detection mode* | *Preview mode* |
+
+En los tres, una regla en modo solo registro **anota sin bloquear**: déjala así unos días, revisa los falsos positivos en los logs y después pasa a bloquear.
+
 ## Buenas prácticas
 
 1. **Diseña la red por capas y por entorno.** Subnet pública solo para el load balancer (y NAT); aplicación y datos en subnets privadas; producción y no-producción en VPC/VNet (o cuentas/proyectos) distintas. El modelo **hub-and-spoke** (concentrador y radios) con un firewall en el hub permite inspeccionar el tráfico entre *spokes* y hacia internet (ver [Redes de datacenter e híbridas](../../networking/avanzado/redes-datacenter-hibridas.md)).
@@ -170,200 +182,7 @@ Para escanearlo de forma continua y multi-cuenta, ver [CSPM](../../devsecops/esc
 
 ## Configuración segura con IaC
 
-!!! note "Versiones de provider"
-    Los fragmentos de este bloque usan `hashicorp/aws` 6.x, `hashicorp/azurerm` 5.x y `hashicorp/google` 8.x (las versiones mayores vigentes en octubre de 2026). Fija la versión con `~>` y pasa `terraform validate` y `terraform plan` antes de aplicar. Si vienes de versiones anteriores, revisa las *upgrade guides*: por ejemplo, en azurerm 5 `azurerm_network_watcher_flow_log` ya solo acepta `target_resource_id`, y en google 7 `google_compute_subnetwork` perdió `enable_flow_logs` en favor de `log_config`.
-
-    ```hcl title="versions.tf"
-    terraform {
-      required_providers {
-        aws     = { source = "hashicorp/aws", version = "~> 6.0" }
-        azurerm = { source = "hashicorp/azurerm", version = "~> 5.0" }
-        google  = { source = "hashicorp/google", version = "~> 8.0" }
-      }
-    }
-    ```
-
-=== "AWS"
-
-    ```hcl title="red-segura.tf"
-    # Deja el default security group sin reglas (EC2.2)
-    resource "aws_default_security_group" "default" {
-      vpc_id = aws_vpc.main.id
-    }
-
-    # Flow logs de toda la VPC hacia el bucket de logs central
-    resource "aws_flow_log" "main" {
-      vpc_id               = aws_vpc.main.id
-      traffic_type         = "ALL"
-      log_destination_type = "s3"
-      log_destination      = var.flow_logs_bucket_arn
-    }
-
-    # Endpoints para administrar instancias sin salida a internet
-    resource "aws_vpc_endpoint" "ssm" {
-      for_each            = toset(["ssm", "ssmmessages", "ec2messages"])
-      vpc_id              = aws_vpc.main.id
-      service_name        = "com.amazonaws.${var.region}.${each.key}"
-      vpc_endpoint_type   = "Interface"
-      subnet_ids          = aws_subnet.private[*].id
-      security_group_ids  = [aws_security_group.endpoints.id]
-      private_dns_enabled = true
-    }
-
-    # Bloquea el tráfico entrante desde internet gateways en toda la región
-    resource "aws_vpc_block_public_access_options" "this" {
-      internet_gateway_block_mode = "block-ingress"
-    }
-    ```
-
-=== "Azure"
-
-    ```hcl title="red-segura.tf"
-    resource "azurerm_subnet" "app" {
-      name                            = "snet-app"
-      resource_group_name             = azurerm_resource_group.net.name
-      virtual_network_name            = azurerm_virtual_network.main.name
-      address_prefixes                = ["10.10.1.0/24"]
-      default_outbound_access_enabled = false # subnet privada: sale por NAT o firewall
-    }
-
-    resource "azurerm_network_security_group" "app" {
-      name                = "nsg-app"
-      location            = azurerm_resource_group.net.location
-      resource_group_name = azurerm_resource_group.net.name
-
-      security_rule {
-        name                       = "https-desde-appgw"
-        priority                   = 100
-        direction                  = "Inbound"
-        access                     = "Allow"
-        protocol                   = "Tcp"
-        source_address_prefix      = "10.10.0.0/24" # subnet del Application Gateway
-        source_port_range          = "*"
-        destination_address_prefix = "*"
-        destination_port_range     = "443"
-      }
-    }
-
-    resource "azurerm_subnet_network_security_group_association" "app" {
-      subnet_id                 = azurerm_subnet.app.id
-      network_security_group_id = azurerm_network_security_group.app.id
-    }
-
-    # Virtual network flow logs (reemplazo de los NSG flow logs)
-    resource "azurerm_network_watcher_flow_log" "vnet" {
-      name                 = "fl-vnet-main"
-      network_watcher_name = "NetworkWatcher_${var.location}"
-      resource_group_name  = "NetworkWatcherRG"
-      target_resource_id   = azurerm_virtual_network.main.id
-      storage_account_id   = var.logs_storage_account_id
-      enabled              = true
-      version              = 2
-
-      retention_policy {
-        enabled = true
-        days    = 90
-      }
-    }
-    ```
-
-=== "Google Cloud"
-
-    ```hcl title="red-segura.tf"
-    resource "google_compute_subnetwork" "app" {
-      name                     = "snet-app"
-      region                   = var.region
-      network                  = google_compute_network.main.id
-      ip_cidr_range            = "10.20.1.0/24"
-      private_ip_google_access = true
-
-      log_config {
-        aggregation_interval = "INTERVAL_5_SEC"
-        flow_sampling        = 0.5
-        metadata             = "INCLUDE_ALL_METADATA"
-      }
-    }
-
-    # SSH solo desde el rango de IAP y solo a VMs con la etiqueta
-    resource "google_compute_firewall" "ssh_desde_iap" {
-      name          = "allow-ssh-from-iap"
-      network       = google_compute_network.main.id
-      direction     = "INGRESS"
-      source_ranges = ["35.235.240.0/20"]
-      target_tags   = ["ssh-iap"]
-
-      allow {
-        protocol = "tcp"
-        ports    = ["22"]
-      }
-
-      log_config {
-        metadata = "INCLUDE_ALL_METADATA"
-      }
-    }
-    ```
-
-### Guardrails de organización
-
-=== "AWS (SCP)"
-
-    ```json title="scp-red.json"
-    {
-      "Version": "2012-10-17",
-      "Statement": [
-        {
-          "Sid": "SoloRedPuedeAbrirInternet",
-          "Effect": "Deny",
-          "Action": [
-            "ec2:CreateInternetGateway",
-            "ec2:AttachInternetGateway",
-            "ec2:ModifyVpcBlockPublicAccessOptions",
-            "ec2:CreateVpcBlockPublicAccessExclusion"
-          ],
-          "Resource": "*",
-          "Condition": {
-            "ArnNotLike": {
-              "aws:PrincipalArn": "arn:aws:iam::*:role/NetworkAdmin"
-            }
-          }
-        }
-      ]
-    }
-    ```
-
-=== "Azure Policy"
-
-    ```json title="deny-admin-ports-from-internet.json"
-    {
-      "if": {
-        "allOf": [
-          { "field": "type", "equals": "Microsoft.Network/networkSecurityGroups/securityRules" },
-          { "field": "Microsoft.Network/networkSecurityGroups/securityRules/direction", "equals": "Inbound" },
-          { "field": "Microsoft.Network/networkSecurityGroups/securityRules/access", "equals": "Allow" },
-          { "field": "Microsoft.Network/networkSecurityGroups/securityRules/sourceAddressPrefix", "in": ["*", "Internet", "0.0.0.0/0"] },
-          { "field": "Microsoft.Network/networkSecurityGroups/securityRules/destinationPortRange", "in": ["22", "3389"] }
-        ]
-      },
-      "then": { "effect": "deny" }
-    }
-    ```
-
-    Esta regla cubre las reglas creadas como recurso separado. Las reglas definidas dentro del propio NSG se evalúan con los alias `securityRules[*]`, y los rangos (`"1-65535"`) o listas de puertos necesitan condiciones extra: prueba la política en modo `audit` antes de pasar a `deny`.
-
-=== "Google Cloud (Organization Policy)"
-
-    ```hcl title="org-policy-red.tf"
-    resource "google_org_policy_policy" "skip_default_network" {
-      name   = "organizations/${var.org_id}/policies/compute.skipDefaultNetworkCreation"
-      parent = "organizations/${var.org_id}"
-
-      spec {
-        rules {
-          enforce = "TRUE"
-        }
-      }
-    }
-    ```
+Los fragmentos de Terraform con estos controles (y los guardrails de organización, cuando aplican) están en las páginas por proveedor: [AWS](terraform/aws.md#redes), [Azure](terraform/azure.md#redes) y [Google Cloud](terraform/google-cloud.md#redes).
 
 El escaneo de estas configuraciones antes del `apply` (Checkov, Trivy) se ve en [Seguridad de IaC](../../devsecops/infraestructura-y-contenedores/seguridad-iac.md).
 
@@ -384,7 +203,7 @@ El escaneo de estas configuraciones antes del `apply` (Checkov, Trivy) se ve en 
 | Enfoque | Qué se mira desde ahí | Nota |
 | --- | --- | --- |
 | Networking (la base) | Firewalls stateful, DMZ, microsegmentación, zero trust; hub-and-spoke; troubleshooting con flow logs | [Seguridad de red](../../networking/avanzado/seguridad-red.md), [Redes de datacenter e híbridas](../../networking/avanzado/redes-datacenter-hibridas.md), [Troubleshooting de red](../../networking/avanzado/troubleshooting-red.md) |
-| Cloud (el control) | Cómo se arma la red; WAF y detección; guardrails de organización; el resto del bloque de seguridad | [Redes en la nube](../redes-y-datos/redes.md), [Seguridad base](../identidad-y-seguridad/seguridad-base.md), [Gobernanza](../operacion-y-gobierno/gobernanza.md), [Fundamentos de seguridad cloud](fundamentos-seguridad-cloud.md), [Seguridad de máquinas virtuales](seguridad-maquinas-virtuales.md), [Seguridad de APIs y aplicaciones](seguridad-apis-aplicaciones.md) |
+| Cloud (el control) | Cómo se arma la red; WAF y detección; guardrails de organización; el resto del bloque de seguridad | [Redes en la nube](../redes-y-datos/redes.md), [Seguridad de logging y detección](seguridad-logging-deteccion.md), [Gobernanza](../operacion-y-gobierno/gobernanza.md), [Fundamentos de seguridad cloud](fundamentos-seguridad-cloud.md), [Seguridad de máquinas virtuales](seguridad-maquinas-virtuales.md), [Seguridad de APIs y aplicaciones](seguridad-apis-aplicaciones.md) |
 | DevOps (la automatización) | Definir VPC, reglas y endpoints como código | [Infrastructure as Code](../../devops/iac/infraestructura-como-codigo.md), [Terraform](../../devops/iac/terraform-basico.md) |
 | DevSecOps (la verificación) | Detectar reglas abiertas a `0.0.0.0/0` en el pipeline y en la cuenta; network policies dentro del clúster | [Seguridad de IaC](../../devsecops/infraestructura-y-contenedores/seguridad-iac.md), [CSPM](../../devsecops/escaneos/cspm.md), [Seguridad de Kubernetes](../../devsecops/infraestructura-y-contenedores/seguridad-kubernetes.md), [Cumplimiento y gobierno](../../devsecops/gobierno-y-respuesta/cumplimiento.md) |
 
@@ -394,7 +213,10 @@ El escaneo de estas configuraciones antes del `apply` (Checkov, Trivy) se ve en 
 - [VPC Block Public Access](https://docs.aws.amazon.com/vpc/latest/userguide/security-vpc-bpa.html)
 - [AWS Systems Manager Session Manager](https://docs.aws.amazon.com/systems-manager/latest/userguide/session-manager.html)
 - [AWS Foundational Security Best Practices: controles de Amazon EC2](https://docs.aws.amazon.com/securityhub/latest/userguide/ec2-controls.html)
+- [AWS WAF](https://docs.aws.amazon.com/es_es/waf/latest/developerguide/waf-chapter.html)
 - [AWS Shield](https://docs.aws.amazon.com/waf/latest/developerguide/shield-chapter.html)
+- [Azure Web Application Firewall](https://learn.microsoft.com/es-es/azure/web-application-firewall/overview)
+- [Google Cloud Armor](https://cloud.google.com/armor/docs/cloud-armor-overview)
 - [Procedimientos recomendados de seguridad de red de Azure](https://learn.microsoft.com/es-es/azure/security/fundamentals/network-best-practices)
 - [Microsoft Cloud Security Benchmark: seguridad de red](https://learn.microsoft.com/es-es/security/benchmark/azure/mcsb-network-security)
 - [Registros de flujo de red virtual](https://learn.microsoft.com/es-es/azure/network-watcher/vnet-flow-logs-overview)

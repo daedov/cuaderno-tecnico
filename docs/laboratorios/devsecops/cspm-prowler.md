@@ -44,7 +44,7 @@ Este lab usa **dos perfiles**, cada uno para lo suyo:
 - `lab-admin` (AdministratorAccess) **solo** para crear y, en la Limpieza, borrar el rol de auditoría `lab16-prowler` (paso 2). Crear roles y adjuntarles políticas es gestión de IAM, que el perfil `lab` (PowerUserAccess) no permite. Antes de empezar, vuelve a asignar `AdministratorAccess` a tu usuario en IAM Identity Center ([Lab 00, Paso 11](../fundamentos/preparar-entorno.md#paso-11-perfil-lab-admin-para-gestionar-iam-en-aws)).
 - `lab` (PowerUserAccess) para todo lo demás: asumir el rol de auditoría para escanear (`sts:AssumeRole` no es una acción de IAM, así que PowerUserAccess la permite) y aplicar la remediación con Terraform, que no crea recursos de IAM.
 
-Comprueba las dos sesiones con `aws sts get-caller-identity --profile lab` y `aws sts get-caller-identity --profile lab-admin`. Teoría recomendada: [CSPM](../../devsecops/escaneos/cspm.md) (qué detecta y cómo se integra), [Cumplimiento y gobierno](../../devsecops/gobierno-y-respuesta/cumplimiento.md) (qué es un CIS Benchmark), [Seguridad base en la nube](../../cloud/identidad-y-seguridad/seguridad-base.md) y [Fundamentos de seguridad en la nube](../../cloud/seguridad/fundamentos-seguridad-cloud.md).
+Comprueba las dos sesiones con `aws sts get-caller-identity --profile lab` y `aws sts get-caller-identity --profile lab-admin`. Teoría recomendada: [CSPM](../../devsecops/escaneos/cspm.md) (qué detecta y cómo se integra), [Cumplimiento y gobierno](../../devsecops/gobierno-y-respuesta/cumplimiento.md) (qué es un CIS Benchmark) y [Fundamentos de seguridad en la nube](../../cloud/seguridad/fundamentos-seguridad-cloud.md).
 
 ## Arquitectura
 
@@ -574,7 +574,7 @@ Para el método general de diagnóstico, ver [Troubleshooting](../../devops/oper
 - **CIS Benchmarks**: recomendaciones de configuración con perfiles Level 1 (básico, bajo impacto) y Level 2 (defensa en profundidad) ([Cumplimiento y gobierno](../../devsecops/gobierno-y-respuesta/cumplimiento.md#cis-benchmarks)).
 - **Solo lectura para auditar**: la herramienta de auditoría no necesita escribir; separar el rol de auditoría del de remediación es mínimo privilegio aplicado ([Fundamentos de seguridad en la nube](../../cloud/seguridad/fundamentos-seguridad-cloud.md#como-verificarlo)).
 - **Remediar en el código**: lo que corriges en la consola vuelve con el siguiente `apply`; corrige en Terraform y añade un guardrail ([CSPM: remediar con IaC](../../devsecops/escaneos/cspm.md#remediar-con-iac)).
-- **Servicios nativos**: Security Hub CSPM, Microsoft Defender for Cloud y Security Command Center hacen lo mismo de forma continua dentro de cada nube ([Seguridad base](../../cloud/identidad-y-seguridad/seguridad-base.md#registro-de-configuracion)).
+- **Servicios nativos**: Security Hub CSPM, Microsoft Defender for Cloud y Security Command Center hacen lo mismo de forma continua dentro de cada nube ([Seguridad de logging y detección](../../cloud/seguridad/seguridad-logging-deteccion.md#registro-de-configuracion)).
 - **En el trabajo real**: CSPM se ejecuta a diario sobre todas las cuentas desde una cuenta de seguridad, los hallazgos van a tickets con SLA según severidad, y las excepciones se documentan en la mutelist con dueño y fecha.
 
 ## Documentación oficial
@@ -627,12 +627,11 @@ Para el método general de diagnóstico, ver [Troubleshooting](../../devops/oper
 
 **Cloud**
 
-- [Seguridad base en la nube](../../cloud/identidad-y-seguridad/seguridad-base.md)
 - [Fundamentos de seguridad en la nube](../../cloud/seguridad/fundamentos-seguridad-cloud.md)
 - [Seguridad de identidades](../../cloud/seguridad/seguridad-identidades.md)
 - [Seguridad del almacenamiento](../../cloud/seguridad/seguridad-almacenamiento.md)
 - [Logging y detección](../../cloud/seguridad/seguridad-logging-deteccion.md)
-- [IAM: AWS, Azure y GCP](../../cloud/identidad-y-seguridad/iam-comparativa.md)
+- [IAM: AWS, Azure y GCP](../../cloud/fundamentos/iam-comparativa.md)
 - [Gobernanza](../../cloud/operacion-y-gobierno/gobernanza.md)
 
 **DevOps**

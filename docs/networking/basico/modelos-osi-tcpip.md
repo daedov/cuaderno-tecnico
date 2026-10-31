@@ -161,7 +161,7 @@ Lo mismo pasa con la seguridad: un **security group** o un **NSG** filtra en L3/
 
 | Enfoque | Qué se mira desde ahí | Nota |
 | --- | --- | --- |
-| Cloud (el control) | Load balancers L4 vs L7, security groups (L3/L4) frente a WAF (L7) | [Redes en la nube](../../cloud/redes-y-datos/redes.md), [Seguridad base](../../cloud/identidad-y-seguridad/seguridad-base.md) |
+| Cloud (el control) | Load balancers L4 vs L7, security groups (L3/L4) frente a WAF (L7) | [Redes en la nube](../../cloud/redes-y-datos/redes.md), [Seguridad de redes](../../cloud/seguridad/seguridad-redes.md#waf-en-el-borde) |
 | DevOps (la automatización) | Diagnóstico capa por capa desde Linux; ingress (L7) y services (L4) en Kubernetes | [Linux, redes y scripting](../../devops/fundamentos/linux-redes-scripting.md), [Kubernetes](../../devops/contenedores/kubernetes.md) |
 | DevSecOps (la verificación) | Controles en distintas capas: network policies (L3/L4) y pruebas de aplicación (L7) | [Seguridad de Kubernetes](../../devsecops/infraestructura-y-contenedores/seguridad-kubernetes.md), [Pruebas dinámicas](../../devsecops/codigo-y-dependencias/pruebas-dinamicas.md) |
 | Laboratorios (la práctica) | Practicar esto paso a paso | [Lab 01: Diagnóstico de red desde Linux](../../laboratorios/fundamentos/linux-red-diagnostico.md) |

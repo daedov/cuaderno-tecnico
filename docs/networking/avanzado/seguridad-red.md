@@ -181,14 +181,14 @@ El modelo clásico de **perímetro** ("dentro de la red es confiable, fuera no")
 | VPN site-to-site | AWS Site-to-Site VPN | Azure VPN Gateway | Cloud VPN (HA VPN) |
 | Acceso remoto / ZTNA | AWS Client VPN, AWS Verified Access | VPN Gateway point-to-site, Microsoft Entra Private Access | Identity-Aware Proxy (IAP) |
 
-Detalle de reglas, valores por defecto y ejemplos en [Redes en la nube](../../cloud/redes-y-datos/redes.md#firewalls-stateful-y-stateless) y [Seguridad base](../../cloud/identidad-y-seguridad/seguridad-base.md).
+Detalle de reglas, valores por defecto y ejemplos en [Redes en la nube](../../cloud/redes-y-datos/redes.md#firewalls-stateful-y-stateless) y [Seguridad de redes](../../cloud/seguridad/seguridad-redes.md).
 
 ## Relación con otras secciones
 
 | Enfoque | Qué se mira desde ahí | Nota |
 | --- | --- | --- |
 | Networking (la base) | Firewalls stateful sobre TCP; TLS contra MITM; reverse proxies; VPN hacia la nube; diagnosticar un firewall que bloquea | [Capa de transporte](../intermedio/capa-transporte.md), [Protocolos de aplicación](../intermedio/protocolos-aplicacion.md), [Balanceo y alta disponibilidad](balanceo-alta-disponibilidad.md), [Redes de datacenter e híbridas](redes-datacenter-hibridas.md), [Troubleshooting de red](troubleshooting-red.md) |
-| Cloud (el control) | Security groups, NSG, firewall rules, WAF, DDoS y firewalls gestionados | [Redes en la nube](../../cloud/redes-y-datos/redes.md), [Seguridad base](../../cloud/identidad-y-seguridad/seguridad-base.md), [Gobernanza](../../cloud/operacion-y-gobierno/gobernanza.md) |
+| Cloud (el control) | Security groups, NSG, firewall rules, WAF, DDoS y firewalls gestionados | [Redes en la nube](../../cloud/redes-y-datos/redes.md), [Seguridad de redes](../../cloud/seguridad/seguridad-redes.md), [Gobernanza](../../cloud/operacion-y-gobierno/gobernanza.md) |
 | DevOps (la automatización) | Reglas de firewall y segmentación definidas como código y revisadas en pull requests | [Infrastructure as Code](../../devops/iac/infraestructura-como-codigo.md), [Terraform](../../devops/iac/terraform-basico.md) |
 | DevSecOps (la verificación) | Detectar reglas abiertas a `0.0.0.0/0`; NetworkPolicies; amenazas y riesgo (STRIDE); alertas de IDS en el SIEM | [Seguridad de IaC](../../devsecops/infraestructura-y-contenedores/seguridad-iac.md), [Seguridad de Kubernetes](../../devsecops/infraestructura-y-contenedores/seguridad-kubernetes.md), [Fundamentos DevSecOps](../../devsecops/fundamentos-devsecops.md), [Detección y respuesta](../../devsecops/gobierno-y-respuesta/deteccion-respuesta.md), [CVE en dispositivos perimetrales y VPN](../../devsecops/vulnerabilidades/cve-perimetro-vpn.md) |
 | Laboratorios (la práctica) | Practicar esto paso a paso | [Lab 01: Diagnóstico de red desde Linux](../../laboratorios/fundamentos/linux-red-diagnostico.md), [Lab 14: Endurecer un clúster: Pod Security, NetworkPolicy y Kyverno](../../laboratorios/devsecops/seguridad-kubernetes.md), [Lab 17: AWS: VPC con subnets públicas y privadas y una EC2](../../laboratorios/cloud/aws-vpc-ec2.md), [Lab 19: Azure: VNet, NSG y una VM con Azure CLI](../../laboratorios/cloud/azure-vnet-vm.md), [Lab 22: Endurecer un servidor Linux con Ansible y medirlo con Lynis y OpenSCAP](../../laboratorios/devsecops/hardening-linux-ansible.md) |

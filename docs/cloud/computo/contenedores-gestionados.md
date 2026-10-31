@@ -162,7 +162,7 @@ flowchart TD
 Según el [Shared Responsibility Model](../fundamentos/responsabilidad-compartida.md), el proveedor opera el control plane, pero **tú sigues siendo responsable** de:
 
 - **La imagen**: vulnerabilidades, imagen base, secretos dentro de ella. Ver [Seguridad de contenedores](../../devsecops/infraestructura-y-contenedores/seguridad-contenedores.md).
-- **Los permisos** del contenedor hacia la nube: usa la identidad de carga de trabajo (IAM role de la task, Workload Identity) en vez de *access keys* en variables de entorno. Ver [IAM](../identidad-y-seguridad/iam-comparativa.md).
+- **Los permisos** del contenedor hacia la nube: usa la identidad de carga de trabajo (IAM role de la task, Workload Identity) en vez de *access keys* en variables de entorno. Ver [IAM](../fundamentos/iam-comparativa.md).
 - **La configuración del clúster**: RBAC, network policies, Pod Security Standards. Ver [Seguridad de Kubernetes](../../devsecops/infraestructura-y-contenedores/seguridad-kubernetes.md).
 - **La red**: qué servicios son públicos y cuáles internos. Ver [Redes en la nube](../redes-y-datos/redes.md).
 
@@ -188,7 +188,7 @@ Según el [Shared Responsibility Model](../fundamentos/responsabilidad-compartid
 
 | Enfoque | Qué se mira desde ahí | Nota |
 | --- | --- | --- |
-| Cloud (el control) | Alternativas de cómputo; red e identidad de los contenedores | [Máquinas virtuales](maquinas-virtuales.md), [Serverless](serverless.md), [Redes en la nube](../redes-y-datos/redes.md), [IAM](../identidad-y-seguridad/iam-comparativa.md) |
+| Cloud (el control) | Alternativas de cómputo; red e identidad de los contenedores | [Máquinas virtuales](maquinas-virtuales.md), [Serverless](serverless.md), [Redes en la nube](../redes-y-datos/redes.md), [IAM](../fundamentos/iam-comparativa.md) |
 | DevOps (la automatización) | Construir la imagen, subirla al registry y desplegarla | [Docker](../../devops/contenedores/docker.md), [Kubernetes](../../devops/contenedores/kubernetes.md), [Despliegue continuo](../../devops/ci-cd/despliegue-continuo.md) |
 | DevSecOps (la verificación) | Escaneo y firma de imágenes; seguridad del clúster | [Seguridad de contenedores](../../devsecops/infraestructura-y-contenedores/seguridad-contenedores.md), [Seguridad de Kubernetes](../../devsecops/infraestructura-y-contenedores/seguridad-kubernetes.md), [Software supply chain](../../devsecops/codigo-y-dependencias/cadena-suministro.md) |
 | Laboratorios (la práctica) | Practicar esto paso a paso | [Lab 05: Imagen multi-stage y Docker Compose](../../laboratorios/devops/docker-multistage-compose.md), [Lab 06: Desplegar una app en Kubernetes local con kind](../../laboratorios/devops/kubernetes-local-kind.md), [Lab 14: Endurecer un clúster: Pod Security, NetworkPolicy y Kyverno](../../laboratorios/devsecops/seguridad-kubernetes.md), [Lab 20: Google Cloud: desplegar un contenedor en Cloud Run](../../laboratorios/cloud/gcp-cloud-run.md) |

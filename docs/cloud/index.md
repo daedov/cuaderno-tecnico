@@ -8,6 +8,7 @@ Cada tema se ve también desde [DevOps](../devops/index.md) (cómo se automatiza
 
 - [Modelos de servicio y regiones](fundamentos/modelos-de-servicio-y-regiones.md): IaaS, PaaS, SaaS, regiones y Availability Zones
 - [Shared Responsibility Model](fundamentos/responsabilidad-compartida.md)
+- [IAM: AWS, Azure y GCP](fundamentos/iam-comparativa.md): identidades, permisos y equivalencias entre proveedores
 - [Well-Architected Framework](fundamentos/well-architected.md)
 - [FinOps y costos](fundamentos/finops-costos.md)
 
@@ -22,14 +23,9 @@ Cada tema se ve también desde [DevOps](../devops/index.md) (cómo se automatiza
 - [Redes en la nube](redes-y-datos/redes.md): VPC, subnets, routing, security groups, DNS, load balancers, VPN, CDN
 - [Almacenamiento y datos](redes-y-datos/almacenamiento-datos.md): object, block y file storage, bases de datos, backups
 
-## Identidad y seguridad
-
-- [IAM: AWS, Azure y GCP](identidad-y-seguridad/iam-comparativa.md)
-- [Seguridad base en la nube](identidad-y-seguridad/seguridad-base.md): cifrado, KMS, secretos, WAF, detección de amenazas, auditoría
-
 ## Seguridad en la nube
 
-Controles y buenas prácticas de seguridad por servicio en AWS, Azure y Google Cloud: riesgos típicos, cómo verificarlos y configuración segura con IaC.
+Controles y buenas prácticas de seguridad por servicio en AWS, Azure y Google Cloud: riesgos típicos y cómo verificarlos.
 
 - [Fundamentos de seguridad cloud](seguridad/fundamentos-seguridad-cloud.md): principios, baselines oficiales y checklist de controles imprescindibles
 - [Identidades y accesos](seguridad/seguridad-identidades.md): cuentas raíz, MFA, SSO, sin llaves de larga duración, guardrails
@@ -43,6 +39,7 @@ Controles y buenas prácticas de seguridad por servicio en AWS, Azure y Google C
 - [Bases de datos](seguridad/seguridad-bases-datos.md): relacionales y NoSQL gestionadas
 - [APIs y aplicaciones](seguridad/seguridad-apis-aplicaciones.md): API gateways, autenticación, rate limiting, identidad de usuarios
 - [Servicios de IA](seguridad/seguridad-servicios-ia.md): Bedrock, Azure OpenAI, Vertex AI, prompt injection
+- Terraform seguro, con el código de todos los controles anteriores: [AWS](seguridad/terraform/aws.md), [Azure](seguridad/terraform/azure.md) y [Google Cloud](seguridad/terraform/google-cloud.md)
 
 ## Operación y gobierno
 

@@ -18,7 +18,7 @@ tags:
 1. **Authentication** (autenticación, a veces abreviado *AuthN*): ¿quién eres? (una persona, una aplicación, un servidor).
 2. **Authorization** (autorización, *AuthZ*): ¿qué puedes hacer y sobre qué recursos?
 
-Según el [Shared Responsibility Model](../fundamentos/responsabilidad-compartida.md), IAM **siempre es responsabilidad del cliente**, sea IaaS, PaaS o SaaS. Es también donde ocurren muchas brechas de seguridad (*security breaches*): permisos excesivos, credenciales filtradas o cuentas sin **MFA** (*Multi-Factor Authentication*, autenticación multifactor).
+Según el [Shared Responsibility Model](responsabilidad-compartida.md), IAM **siempre es responsabilidad del cliente**, sea IaaS, PaaS o SaaS. Es también donde ocurren muchas brechas de seguridad (*security breaches*): permisos excesivos, credenciales filtradas o cuentas sin **MFA** (*Multi-Factor Authentication*, autenticación multifactor).
 
 Las tres nubes comparten la misma idea de fondo:
 
@@ -198,24 +198,22 @@ Los permisos se **heredan hacia abajo** (*policy inheritance*): un role dado en 
 
 ## Best practices comunes
 
-Buenas prácticas, independientemente del proveedor:
+Las ideas que se repiten en cualquier proveedor (la lista completa, con controles y cómo verificarlos, está en [Seguridad de identidades](../seguridad/seguridad-identidades.md#buenas-practicas)):
 
-- **Least privilege** (mínimo privilegio): da solo los permisos necesarios y revísalos de forma periódica.
-- **MFA obligatorio** para todas las personas, y protege especialmente las cuentas con más privilegios (root user, Global Administrator, Owner de la organización).
-- **Temporary credentials** en lugar de *long-term credentials*: IAM roles en AWS, managed identities en Azure, attached service accounts en GCP.
-- **Federación con OIDC** (*OpenID Connect*) para pipelines CI/CD en lugar de guardar claves como *secrets* (secretos); ver [Secretos e identidades](../../devsecops/identidades-y-pipeline/secretos-identidades.md).
-- **Permisos a groups**, no a personas individuales.
+- **Least privilege** (mínimo privilegio), con permisos asignados a **groups** y no a personas, y revisados de forma periódica.
+- **MFA obligatorio** para todas las personas, sobre todo para las cuentas con más privilegios (root user, Global Administrator, Owner de la organización).
+- **Temporary credentials** en lugar de *long-term credentials*: IAM roles en AWS, managed identities en Azure, attached service accounts en GCP, y **federación con OIDC** (*OpenID Connect*) para los pipelines CI/CD (ver [Secretos e identidades](../../devsecops/identidades-y-pipeline/secretos-identidades.md)).
 - **Separar entornos** (dev, prod) en accounts, subscriptions o projects distintos.
-- **Logging y auditoría** (registro): CloudTrail (AWS), Activity Log y *sign-in logs* de Entra ID (Azure), Cloud Audit Logs (GCP).
+- **Auditar**: CloudTrail (AWS), Activity Log y *sign-in logs* de Entra ID (Azure), Cloud Audit Logs (GCP).
 
 !!! tip "Relación con Well-Architected"
-    IAM es la base del pilar de **Security** en los tres marcos. Ver [Well-Architected Framework](../fundamentos/well-architected.md).
+    IAM es la base del pilar de **Security** en los tres marcos. Ver [Well-Architected Framework](well-architected.md).
 
 ## Relación con otras secciones
 
 | Enfoque | Qué se mira desde ahí | Nota |
 | --- | --- | --- |
-| Cloud (el control) | Claves, secretos y audit logs protegidos con IAM; guardrails de organización (SCPs, Azure Policy, Organization Policy) | [Seguridad base](seguridad-base.md), [Gobernanza](../operacion-y-gobierno/gobernanza.md) |
+| Cloud (el control) | Claves, secretos y audit logs protegidos con IAM; guardrails de organización (SCPs, Azure Policy, Organization Policy) | [Seguridad de identidades](../seguridad/seguridad-identidades.md), [Seguridad de cifrado, claves y secretos](../seguridad/seguridad-cifrado-secretos.md), [Seguridad de logging y detección](../seguridad/seguridad-logging-deteccion.md), [Gobernanza](../operacion-y-gobierno/gobernanza.md) |
 | DevOps (la automatización) | Un rol por pipeline, creado con Terraform y con solo los permisos que necesita ese pipeline | [Terraform](../../devops/iac/terraform-basico.md), [Integración continua](../../devops/ci-cd/integracion-continua.md) |
 | DevSecOps (la verificación) | OIDC entre el pipeline y la nube en lugar de claves; auditoría de permisos del pipeline; fallar el build si una policy tiene `*:*` | [Secretos e identidades](../../devsecops/identidades-y-pipeline/secretos-identidades.md), [Seguridad del pipeline](../../devsecops/identidades-y-pipeline/seguridad-pipeline.md), [Seguridad de IaC](../../devsecops/infraestructura-y-contenedores/seguridad-iac.md) |
 | Laboratorios (la práctica) | Practicar esto paso a paso | [Lab 00: Preparar el entorno de laboratorio](../../laboratorios/fundamentos/preparar-entorno.md), [Lab 09: Terraform en AWS con remote state en S3](../../laboratorios/devops/terraform-aws-backend-remoto.md), [Lab 13: Desplegar en AWS desde GitHub Actions con OIDC (sin llaves)](../../laboratorios/devsecops/oidc-github-aws.md), [Lab 16: Auditar tu cuenta cloud con Prowler (CSPM)](../../laboratorios/devsecops/cspm-prowler.md), [Lab 17: AWS: VPC con subnets públicas y privadas y una EC2](../../laboratorios/cloud/aws-vpc-ec2.md), [Lab 18: AWS: API serverless con Lambda, API Gateway y DynamoDB](../../laboratorios/cloud/aws-serverless-api.md), [Lab 19: Azure: VNet, NSG y una VM con Azure CLI](../../laboratorios/cloud/azure-vnet-vm.md), [Lab 20: Google Cloud: desplegar un contenedor en Cloud Run](../../laboratorios/cloud/gcp-cloud-run.md) |

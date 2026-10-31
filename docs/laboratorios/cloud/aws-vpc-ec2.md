@@ -669,7 +669,7 @@ Para un método general, ver [Troubleshooting](../../devops/operacion/troublesho
 
 ## Notas relacionadas
 
-- **Cloud**: [Redes en la nube](../../cloud/redes-y-datos/redes.md) · [Máquinas virtuales](../../cloud/computo/maquinas-virtuales.md) · [IAM: AWS, Azure y GCP](../../cloud/identidad-y-seguridad/iam-comparativa.md) · [Seguridad base](../../cloud/identidad-y-seguridad/seguridad-base.md) · [Modelos de servicio y regiones](../../cloud/fundamentos/modelos-de-servicio-y-regiones.md) · [FinOps y costos](../../cloud/fundamentos/finops-costos.md)
+- **Cloud**: [Redes en la nube](../../cloud/redes-y-datos/redes.md) · [Máquinas virtuales](../../cloud/computo/maquinas-virtuales.md) · [IAM: AWS, Azure y GCP](../../cloud/fundamentos/iam-comparativa.md) · [Fundamentos de seguridad cloud](../../cloud/seguridad/fundamentos-seguridad-cloud.md) · [Modelos de servicio y regiones](../../cloud/fundamentos/modelos-de-servicio-y-regiones.md) · [FinOps y costos](../../cloud/fundamentos/finops-costos.md)
 - **DevOps**: [Infrastructure as Code](../../devops/iac/infraestructura-como-codigo.md) · [Terraform](../../devops/iac/terraform-basico.md) · [Troubleshooting](../../devops/operacion/troubleshooting.md)
 - **DevSecOps**: [Seguridad de IaC](../../devsecops/infraestructura-y-contenedores/seguridad-iac.md) · [Secretos e identidades](../../devsecops/identidades-y-pipeline/secretos-identidades.md)
 - **Networking**: [Direccionamiento IP](../../networking/basico/direccionamiento-ip.md) · [Routing y NAT](../../networking/intermedio/routing-nat.md) · [Capa de transporte](../../networking/intermedio/capa-transporte.md) · [Seguridad de red](../../networking/avanzado/seguridad-red.md) · [Troubleshooting de red](../../networking/avanzado/troubleshooting-red.md)

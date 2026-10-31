@@ -117,7 +117,7 @@ for pagina in paginator.paginate(Filters=filtros):
 ```
 
 !!! note "Credenciales"
-    boto3 toma las credenciales de la cadena estándar de AWS (variables de entorno, perfil de `~/.aws`, rol de la VM o del pipeline). Nunca las escribas en el código. Ver [IAM: AWS, Azure y GCP](../../cloud/identidad-y-seguridad/iam-comparativa.md).
+    boto3 toma las credenciales de la cadena estándar de AWS (variables de entorno, perfil de `~/.aws`, rol de la VM o del pipeline). Nunca las escribas en el código. Ver [IAM: AWS, Azure y GCP](../../cloud/fundamentos/iam-comparativa.md).
 
 ## systemd
 

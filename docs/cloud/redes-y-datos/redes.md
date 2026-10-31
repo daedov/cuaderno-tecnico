@@ -198,7 +198,7 @@ Una **CDN** (*Content Delivery Network*, red de distribución de contenido) guar
 | WAF en el edge | AWS WAF | WAF de Azure Front Door | Google Cloud Armor |
 | Protección DDoS | AWS Shield | Azure DDoS Protection | Google Cloud Armor |
 
-Los WAF y la protección DDoS se ven en [Seguridad base](../identidad-y-seguridad/seguridad-base.md).
+Los WAF y la protección DDoS se ven en [Seguridad de redes](../seguridad/seguridad-redes.md#waf-en-el-borde).
 
 ## Comandos básicos
 
@@ -226,7 +226,7 @@ Los WAF y la protección DDoS se ven en [Seguridad base](../identidad-y-segurida
 | Enfoque | Qué se mira desde ahí | Nota |
 | --- | --- | --- |
 | Networking (la base) | Subnetting y planificación de rangos; routing y NAT; firewalls, DMZ y VPN; spine-leaf, conectividad híbrida y hub-and-spoke | [Direccionamiento IP](../../networking/basico/direccionamiento-ip.md), [Routing y NAT](../../networking/intermedio/routing-nat.md), [Seguridad de red](../../networking/avanzado/seguridad-red.md), [Redes de datacenter e híbridas](../../networking/avanzado/redes-datacenter-hibridas.md) |
-| Cloud (el control) | Zonas y edge; alta disponibilidad con load balancers; WAF y DDoS; costos de NAT y egress | [Modelos de servicio y regiones](../fundamentos/modelos-de-servicio-y-regiones.md), [Resiliencia](../operacion-y-gobierno/resiliencia.md), [Seguridad base](../identidad-y-seguridad/seguridad-base.md), [FinOps y costos](../fundamentos/finops-costos.md) |
+| Cloud (el control) | Zonas y edge; alta disponibilidad con load balancers; WAF y DDoS; costos de NAT y egress | [Modelos de servicio y regiones](../fundamentos/modelos-de-servicio-y-regiones.md), [Resiliencia](../operacion-y-gobierno/resiliencia.md), [Seguridad de redes](../seguridad/seguridad-redes.md#waf-en-el-borde), [FinOps y costos](../fundamentos/finops-costos.md) |
 | DevOps (la automatización) | Fundamentos de redes (IP, DNS, HTTP); definir VPC, subnets y reglas como código | [Linux, redes y scripting](../../devops/fundamentos/linux-redes-scripting.md), [Infrastructure as Code](../../devops/iac/infraestructura-como-codigo.md), [Terraform](../../devops/iac/terraform-basico.md) |
 | DevSecOps (la verificación) | Escanear reglas abiertas a `0.0.0.0/0`; segmentación dentro del clúster con network policies | [Seguridad de IaC](../../devsecops/infraestructura-y-contenedores/seguridad-iac.md), [Seguridad de Kubernetes](../../devsecops/infraestructura-y-contenedores/seguridad-kubernetes.md), [Cumplimiento y gobierno](../../devsecops/gobierno-y-respuesta/cumplimiento.md) |
 | Laboratorios (la práctica) | Practicar esto paso a paso | [Lab 01: Diagnóstico de red desde Linux](../../laboratorios/fundamentos/linux-red-diagnostico.md), [Lab 02: Plan de direccionamiento IP para una VPC](../../laboratorios/fundamentos/subnetting-plan-ips.md), [Lab 17: AWS: VPC con subnets públicas y privadas y una EC2](../../laboratorios/cloud/aws-vpc-ec2.md), [Lab 19: Azure: VNet, NSG y una VM con Azure CLI](../../laboratorios/cloud/azure-vnet-vm.md) |

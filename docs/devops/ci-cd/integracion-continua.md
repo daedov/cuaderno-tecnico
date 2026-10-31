@@ -185,7 +185,7 @@ El pipeline necesita permisos para publicar en el registry o desplegar en la nub
 | Azure | Microsoft Entra ID: app registration o user-assigned managed identity con **federated identity credential** |
 | Google Cloud | **Workload Identity Federation** (workload identity pool + provider) asociada a una service account |
 
-Ver [IAM: AWS, Azure y GCP](../../cloud/identidad-y-seguridad/iam-comparativa.md) y [Secretos e identidades](../../devsecops/identidades-y-pipeline/secretos-identidades.md).
+Ver [IAM: AWS, Azure y GCP](../../cloud/fundamentos/iam-comparativa.md) y [Secretos e identidades](../../devsecops/identidades-y-pipeline/secretos-identidades.md).
 
 ## Buenas prácticas
 
@@ -200,7 +200,7 @@ Ver [IAM: AWS, Azure y GCP](../../cloud/identidad-y-seguridad/iam-comparativa.md
 
 | Enfoque | Qué se mira desde ahí | Nota |
 | --- | --- | --- |
-| Cloud (el control) | Rol del pipeline y registries nativos | [IAM: AWS, Azure y GCP](../../cloud/identidad-y-seguridad/iam-comparativa.md), [Contenedores gestionados](../../cloud/computo/contenedores-gestionados.md) |
+| Cloud (el control) | Rol del pipeline y registries nativos | [IAM: AWS, Azure y GCP](../../cloud/fundamentos/iam-comparativa.md), [Contenedores gestionados](../../cloud/computo/contenedores-gestionados.md) |
 | DevOps (la automatización) | De dónde vienen los cambios y a dónde va el artefacto | [Git y control de versiones](../fundamentos/git-control-versiones.md), [Pipeline CI/CD con GitHub Actions](ci-cd-github-actions.md), [Despliegue continuo](despliegue-continuo.md), [Docker](../contenedores/docker.md) |
 | DevSecOps (la verificación) | Escaneos en el pipeline y seguridad del propio pipeline | [Seguridad del código](../../devsecops/codigo-y-dependencias/seguridad-codigo.md), [Software supply chain](../../devsecops/codigo-y-dependencias/cadena-suministro.md), [Escaneo en el pipeline](../../devsecops/escaneos/escaneo-en-pipeline.md), [Seguridad de IaC](../../devsecops/infraestructura-y-contenedores/seguridad-iac.md), [Seguridad de contenedores](../../devsecops/infraestructura-y-contenedores/seguridad-contenedores.md), [Seguridad del pipeline](../../devsecops/identidades-y-pipeline/seguridad-pipeline.md), [Secretos e identidades](../../devsecops/identidades-y-pipeline/secretos-identidades.md) |
 | Laboratorios (la práctica) | Practicar esto paso a paso | [Lab 03: Script en Python para analizar logs](../../laboratorios/fundamentos/python-analizar-logs.md), [Lab 04: Flujo Git con ramas, pull requests y code review](../../laboratorios/devops/git-flujo-pull-request.md), [Lab 05: Imagen multi-stage y Docker Compose](../../laboratorios/devops/docker-multistage-compose.md), [Lab 07: Pipeline de CI con GitHub Actions](../../laboratorios/devops/github-actions-ci.md), [Lab 12: Escaneos de seguridad en el pipeline](../../laboratorios/devsecops/escaneos-en-pipeline.md), [Lab 20: Google Cloud: desplegar un contenedor en Cloud Run](../../laboratorios/cloud/gcp-cloud-run.md) |

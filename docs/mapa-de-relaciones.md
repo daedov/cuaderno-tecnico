@@ -44,11 +44,11 @@ flowchart TB
 
 | Concepto | Cloud (el control) | DevOps (la automatización) | DevSecOps (la verificación) |
 | --- | --- | --- | --- |
-| **IAM** | Crear roles y políticas: [IAM](cloud/identidad-y-seguridad/iam-comparativa.md) | Rol por pipeline vía Terraform: [Terraform](devops/iac/terraform-basico.md), [CI](devops/ci-cd/integracion-continua.md) | Fallar el build si hay `*:*`; OIDC: [Seguridad de IaC](devsecops/infraestructura-y-contenedores/seguridad-iac.md), [Secretos e identidades](devsecops/identidades-y-pipeline/secretos-identidades.md) |
+| **IAM** | Crear roles y políticas: [IAM](cloud/fundamentos/iam-comparativa.md) | Rol por pipeline vía Terraform: [Terraform](devops/iac/terraform-basico.md), [CI](devops/ci-cd/integracion-continua.md) | Fallar el build si hay `*:*`; OIDC: [Seguridad de IaC](devsecops/infraestructura-y-contenedores/seguridad-iac.md), [Secretos e identidades](devsecops/identidades-y-pipeline/secretos-identidades.md) |
 | **Redes** | VPC, security groups, subnets: [Redes](cloud/redes-y-datos/redes.md) | Definirlas como código: [Infrastructure as Code](devops/iac/infraestructura-como-codigo.md) | Escanear reglas abiertas (`0.0.0.0/0`): [Seguridad de IaC](devsecops/infraestructura-y-contenedores/seguridad-iac.md), [Seguridad de Kubernetes](devsecops/infraestructura-y-contenedores/seguridad-kubernetes.md) |
-| **Secretos** | KMS, Secrets Manager: [Seguridad base](cloud/identidad-y-seguridad/seguridad-base.md) | Inyectarlos en despliegues: [Despliegue continuo](devops/ci-cd/despliegue-continuo.md), [Ansible](devops/iac/ansible.md) | Detectarlos en commits; rotación: [Seguridad del código](devsecops/codigo-y-dependencias/seguridad-codigo.md), [Secretos e identidades](devsecops/identidades-y-pipeline/secretos-identidades.md) |
+| **Secretos** | KMS, Secrets Manager: [Seguridad de cifrado y secretos](cloud/seguridad/seguridad-cifrado-secretos.md) | Inyectarlos en despliegues: [Despliegue continuo](devops/ci-cd/despliegue-continuo.md), [Ansible](devops/iac/ansible.md) | Detectarlos en commits; rotación: [Seguridad del código](devsecops/codigo-y-dependencias/seguridad-codigo.md), [Secretos e identidades](devsecops/identidades-y-pipeline/secretos-identidades.md) |
 | **Contenedores** | ECS/EKS, registry: [Contenedores gestionados](cloud/computo/contenedores-gestionados.md) | Build y deploy: [Docker](devops/contenedores/docker.md), [Kubernetes](devops/contenedores/kubernetes.md) | Escaneo de imágenes y firma: [Seguridad de contenedores](devsecops/infraestructura-y-contenedores/seguridad-contenedores.md), [Software supply chain](devsecops/codigo-y-dependencias/cadena-suministro.md) |
-| **Logs** | CloudTrail, CloudWatch: [Observabilidad nativa](cloud/operacion-y-gobierno/observabilidad-nativa.md), [Seguridad base](cloud/identidad-y-seguridad/seguridad-base.md) | Centralizar y alertar: [Observabilidad](devops/operacion/observabilidad.md) | Detección, SIEM, auditoría: [Detección y respuesta](devsecops/gobierno-y-respuesta/deteccion-respuesta.md) |
+| **Logs** | CloudTrail, CloudWatch: [Observabilidad nativa](cloud/operacion-y-gobierno/observabilidad-nativa.md), [Seguridad de logging y detección](cloud/seguridad/seguridad-logging-deteccion.md) | Centralizar y alertar: [Observabilidad](devops/operacion/observabilidad.md) | Detección, SIEM, auditoría: [Detección y respuesta](devsecops/gobierno-y-respuesta/deteccion-respuesta.md) |
 | **Cambios** | Config, tags: [Gobernanza](cloud/operacion-y-gobierno/gobernanza.md) | CI/CD, GitOps: [Despliegue continuo](devops/ci-cd/despliegue-continuo.md) | Policy as code, aprobaciones: [Seguridad de IaC](devsecops/infraestructura-y-contenedores/seguridad-iac.md), [Seguridad del pipeline](devsecops/identidades-y-pipeline/seguridad-pipeline.md) |
 
 ### Conceptos transversales
@@ -72,8 +72,8 @@ Las flechas marcan dónde un tema de una capa se apoya en otro de otra capa.
 
 - [Cómputo](cloud/computo/maquinas-virtuales.md) → DevOps: despliegue sobre estos servicios ([Despliegue continuo](devops/ci-cd/despliegue-continuo.md)).
 - [Redes](cloud/redes-y-datos/redes.md) → DevSecOps: segmentación y políticas de red ([Seguridad de Kubernetes](devsecops/infraestructura-y-contenedores/seguridad-kubernetes.md), [Seguridad de IaC](devsecops/infraestructura-y-contenedores/seguridad-iac.md)).
-- [IAM](cloud/identidad-y-seguridad/iam-comparativa.md) → DevOps: roles para pipelines ([Integración continua](devops/ci-cd/integracion-continua.md)) → DevSecOps: auditoría de permisos ([Secretos e identidades](devsecops/identidades-y-pipeline/secretos-identidades.md)).
-- [Seguridad base](cloud/identidad-y-seguridad/seguridad-base.md) → DevSecOps: CSPM y cumplimiento ([Cumplimiento](devsecops/gobierno-y-respuesta/cumplimiento.md)).
+- [IAM](cloud/fundamentos/iam-comparativa.md) → DevOps: roles para pipelines ([Integración continua](devops/ci-cd/integracion-continua.md)) → DevSecOps: auditoría de permisos ([Secretos e identidades](devsecops/identidades-y-pipeline/secretos-identidades.md)).
+- [Fundamentos de seguridad cloud](cloud/seguridad/fundamentos-seguridad-cloud.md) → DevSecOps: CSPM y cumplimiento ([Cumplimiento](devsecops/gobierno-y-respuesta/cumplimiento.md)).
 - [Observabilidad nativa](cloud/operacion-y-gobierno/observabilidad-nativa.md) → DevOps: observabilidad ([Observabilidad](devops/operacion/observabilidad.md)).
 
 ### Desde DevOps
@@ -89,8 +89,8 @@ Las flechas marcan dónde un tema de una capa se apoya en otro de otra capa.
 - [Seguridad del código](devsecops/codigo-y-dependencias/seguridad-codigo.md) → DevOps: se ejecuta en CI ([Integración continua](devops/ci-cd/integracion-continua.md)).
 - [Seguridad de contenedores](devsecops/infraestructura-y-contenedores/seguridad-contenedores.md) → DevOps: contenedores ([Docker](devops/contenedores/docker.md)).
 - [Seguridad de IaC](devsecops/infraestructura-y-contenedores/seguridad-iac.md) → DevOps: IaC → Cloud: valida lo que se aprovisiona ([Gobernanza](cloud/operacion-y-gobierno/gobernanza.md)).
-- [Secretos e identidades](devsecops/identidades-y-pipeline/secretos-identidades.md) → Cloud: IAM y KMS ([IAM](cloud/identidad-y-seguridad/iam-comparativa.md), [Seguridad base](cloud/identidad-y-seguridad/seguridad-base.md)).
-- [Cumplimiento](devsecops/gobierno-y-respuesta/cumplimiento.md) → Cloud: Config y CloudTrail ([Seguridad base](cloud/identidad-y-seguridad/seguridad-base.md)).
+- [Secretos e identidades](devsecops/identidades-y-pipeline/secretos-identidades.md) → Cloud: IAM y KMS ([IAM](cloud/fundamentos/iam-comparativa.md), [Seguridad de cifrado y secretos](cloud/seguridad/seguridad-cifrado-secretos.md)).
+- [Cumplimiento](devsecops/gobierno-y-respuesta/cumplimiento.md) → Cloud: Config y CloudTrail ([Seguridad de logging y detección](cloud/seguridad/seguridad-logging-deteccion.md)).
 - [Detección y respuesta](devsecops/gobierno-y-respuesta/deteccion-respuesta.md) → DevOps: observabilidad e incidentes ([Operación y fiabilidad](devops/operacion/operacion-sre.md)).
 
 ## Diferencias por proveedor

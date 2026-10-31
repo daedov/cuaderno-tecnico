@@ -163,8 +163,8 @@ Para exponer funciones como una API pública se suele poner un **API gateway** d
 
 ## Seguridad en serverless
 
-- **Una función, un rol**: cada función con su propio execution role / managed identity / service account y permisos mínimos. Ver [IAM](../identidad-y-seguridad/iam-comparativa.md).
-- **Secretos fuera del código**: léelos de Secrets Manager, Key Vault o Secret Manager, no de variables en texto plano. Ver [Seguridad base](../identidad-y-seguridad/seguridad-base.md).
+- **Una función, un rol**: cada función con su propio execution role / managed identity / service account y permisos mínimos. Ver [IAM](../fundamentos/iam-comparativa.md).
+- **Secretos fuera del código**: léelos de Secrets Manager, Key Vault o Secret Manager, no de variables en texto plano. Ver [Seguridad de cifrado y secretos](../seguridad/seguridad-cifrado-secretos.md).
 - **Dependencias**: la función arrastra sus librerías; escanéalas (SCA). Ver [Software supply chain](../../devsecops/codigo-y-dependencias/cadena-suministro.md).
 - **Entrada no confiable**: los eventos también son entrada de usuario; valida y sanea. Ver [Pruebas dinámicas](../../devsecops/codigo-y-dependencias/pruebas-dinamicas.md) para seguridad de APIs.
 
@@ -188,7 +188,7 @@ Para exponer funciones como una API pública se suele poner un **API gateway** d
 
 | Enfoque | Qué se mira desde ahí | Nota |
 | --- | --- | --- |
-| Cloud (el control) | Otras opciones de cómputo; permisos y secretos de la función; costos | [Contenedores gestionados](contenedores-gestionados.md), [Máquinas virtuales](maquinas-virtuales.md), [IAM](../identidad-y-seguridad/iam-comparativa.md), [FinOps y costos](../fundamentos/finops-costos.md) |
+| Cloud (el control) | Otras opciones de cómputo; permisos y secretos de la función; costos | [Contenedores gestionados](contenedores-gestionados.md), [Máquinas virtuales](maquinas-virtuales.md), [IAM](../fundamentos/iam-comparativa.md), [FinOps y costos](../fundamentos/finops-costos.md) |
 | DevOps (la automatización) | Empaquetar y desplegar funciones desde el pipeline; versiones y alias para *canary* | [Despliegue continuo](../../devops/ci-cd/despliegue-continuo.md), [Infrastructure as Code](../../devops/iac/infraestructura-como-codigo.md), [Observabilidad](../../devops/operacion/observabilidad.md) |
 | DevSecOps (la verificación) | Dependencias de la función, secretos y seguridad de la API | [Software supply chain](../../devsecops/codigo-y-dependencias/cadena-suministro.md), [Secretos e identidades](../../devsecops/identidades-y-pipeline/secretos-identidades.md), [Pruebas dinámicas](../../devsecops/codigo-y-dependencias/pruebas-dinamicas.md) |
 | Laboratorios (la práctica) | Practicar esto paso a paso | [Lab 18: AWS: API serverless con Lambda, API Gateway y DynamoDB](../../laboratorios/cloud/aws-serverless-api.md), [Lab 20: Google Cloud: desplegar un contenedor en Cloud Run](../../laboratorios/cloud/gcp-cloud-run.md) |

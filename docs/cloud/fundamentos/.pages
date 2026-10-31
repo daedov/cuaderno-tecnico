@@ -1,6 +1,7 @@
 nav:
   - modelos-de-servicio-y-regiones.md
   - responsabilidad-compartida.md
+  - iam-comparativa.md
   - well-architected.md
   - finops-costos.md
   - ...

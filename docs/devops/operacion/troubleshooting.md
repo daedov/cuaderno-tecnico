@@ -202,7 +202,7 @@ Conceptos de probes, requests y limits en [Kubernetes](../contenedores/kubernete
     - **Policy Troubleshooter** explica qué política concede o deniega: `gcloud policy-troubleshoot iam //storage.googleapis.com/projects/_/buckets/mi-bucket --principal-email=<cuenta> --permission=storage.objects.create`.
     - Revisa también las *deny policies* y las restricciones de la organización.
 
-Conceptos de cada modelo de permisos en [IAM: AWS, Azure y GCP](../../cloud/identidad-y-seguridad/iam-comparativa.md).
+Conceptos de cada modelo de permisos en [IAM: AWS, Azure y GCP](../../cloud/fundamentos/iam-comparativa.md).
 
 **Cuotas y límites.** Errores como `LimitExceeded`, `QuotaExceeded`, `RESOURCE_EXHAUSTED`, `ThrottlingException` o HTTP `429` indican un límite de la cuenta o de la API, no un fallo del servicio. Consulta **Service Quotas** (AWS), **Usage + quotas** (Azure, o `az vm list-usage --location <región> -o table`) y la página **Quotas** de IAM & Admin (Google Cloud). Ante throttling, reintentos con backoff exponencial.
 
@@ -372,7 +372,7 @@ Las salidas de estos casos son ilustrativas, escritas en el formato real de cada
 
 | Enfoque | Qué se mira desde ahí | Nota |
 | --- | --- | --- |
-| Cloud (el control) | Permisos, cuotas, health checks y logs nativos de cada proveedor | [IAM: AWS, Azure y GCP](../../cloud/identidad-y-seguridad/iam-comparativa.md), [Observabilidad nativa](../../cloud/operacion-y-gobierno/observabilidad-nativa.md), [Resiliencia](../../cloud/operacion-y-gobierno/resiliencia.md) |
+| Cloud (el control) | Permisos, cuotas, health checks y logs nativos de cada proveedor | [IAM: AWS, Azure y GCP](../../cloud/fundamentos/iam-comparativa.md), [Observabilidad nativa](../../cloud/operacion-y-gobierno/observabilidad-nativa.md), [Resiliencia](../../cloud/operacion-y-gobierno/resiliencia.md) |
 | DevOps (la automatización) | Evidencia para diagnosticar, gestión del incidente, rollbacks y pipelines | [Cómo leer logs](leer-logs.md), [Observabilidad](observabilidad.md), [Operación y fiabilidad (SRE)](operacion-sre.md), [Kubernetes](../contenedores/kubernetes.md), [Despliegue continuo](../ci-cd/despliegue-continuo.md), [Linux, redes y scripting](../fundamentos/linux-redes-scripting.md) |
 | DevSecOps (la verificación) | Permisos del pipeline, OIDC y cuándo un fallo es en realidad un incidente de seguridad | [Seguridad del pipeline](../../devsecops/identidades-y-pipeline/seguridad-pipeline.md), [Secretos e identidades](../../devsecops/identidades-y-pipeline/secretos-identidades.md), [Detección y respuesta](../../devsecops/gobierno-y-respuesta/deteccion-respuesta.md) |
 | Networking (la base) | Metodología por capas y casos de conectividad, DNS y TLS | [Troubleshooting de red](../../networking/avanzado/troubleshooting-red.md), [Servicios de red](../../networking/intermedio/servicios-red.md), [Protocolos de aplicación](../../networking/intermedio/protocolos-aplicacion.md) |

@@ -357,7 +357,7 @@ Fíjate en que el ejemplo no menciona a ninguna persona como causa, cuantifica e
 
 | Enfoque | Qué se mira desde ahí | Nota |
 | --- | --- | --- |
-| Cloud (el control) | Logs de auditoría para reconstruir el timeline; servicios de certificados y alarmas nativas | [Observabilidad nativa](../../cloud/operacion-y-gobierno/observabilidad-nativa.md), [Seguridad base en la nube](../../cloud/identidad-y-seguridad/seguridad-base.md), [Resiliencia](../../cloud/operacion-y-gobierno/resiliencia.md) |
+| Cloud (el control) | Logs de auditoría para reconstruir el timeline; servicios de certificados y alarmas nativas | [Observabilidad nativa](../../cloud/operacion-y-gobierno/observabilidad-nativa.md), [Seguridad de logging y detección](../../cloud/seguridad/seguridad-logging-deteccion.md), [Resiliencia](../../cloud/operacion-y-gobierno/resiliencia.md) |
 | DevOps (la automatización) | Proceso de incidentes, SLOs, análisis de causas, runbooks y comunicación | [Operación y fiabilidad (SRE)](operacion-sre.md), [Análisis de causa raíz](analisis-causa-raiz.md), [Runbooks y playbooks](runbooks-playbooks.md), [Comunicación durante incidentes](comunicacion-incidentes.md), [Prácticas para aprender de incidentes](practicas-aprendizaje.md), [Observabilidad](observabilidad.md) |
 | DevSecOps (la verificación) | Lecciones aprendidas de incidentes de seguridad (NIST SP 800-61r3) | [Detección y respuesta](../../devsecops/gobierno-y-respuesta/deteccion-respuesta.md) |
 | Negocio TI (el porqué) | Problem management, SLAs y créditos, métricas MTx | [Gestión de servicios (ITSM) e ITIL](../../negocio/gestion-servicios-itil.md), [Niveles de servicio](../../negocio/niveles-de-servicio.md) |

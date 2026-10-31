@@ -171,13 +171,13 @@ La definición de **SLI/SLO** (indicadores y objetivos de nivel de servicio) y l
 
 ## Observabilidad y seguridad
 
-Los logs de plataforma también son una fuente de seguridad: los **audit logs** (CloudTrail, Activity Log, Cloud Audit Logs) se explican en [Seguridad base](../identidad-y-seguridad/seguridad-base.md), y enviarlos a un SIEM para detectar ataques se ve en [Detección y respuesta](../../devsecops/gobierno-y-respuesta/deteccion-respuesta.md). Conviene que los logs de seguridad vayan a una cuenta o proyecto central (ver [Gobernanza](gobernanza.md)).
+Los logs de plataforma también son una fuente de seguridad: los **audit logs** (CloudTrail, Activity Log, Cloud Audit Logs) se explican en [Seguridad de logging y detección](../seguridad/seguridad-logging-deteccion.md), y enviarlos a un SIEM para detectar ataques se ve en [Detección y respuesta](../../devsecops/gobierno-y-respuesta/deteccion-respuesta.md). Conviene que los logs de seguridad vayan a una cuenta o proyecto central (ver [Gobernanza](gobernanza.md)).
 
 ## Relación con otras secciones
 
 | Enfoque | Qué se mira desde ahí | Nota |
 | --- | --- | --- |
-| Cloud (el control) | Audit logs, health checks y cuentas centrales de logs | [Seguridad base](../identidad-y-seguridad/seguridad-base.md), [Resiliencia](resiliencia.md), [Gobernanza](gobernanza.md) |
+| Cloud (el control) | Audit logs, health checks y cuentas centrales de logs | [Seguridad de logging y detección](../seguridad/seguridad-logging-deteccion.md), [Resiliencia](resiliencia.md), [Gobernanza](gobernanza.md) |
 | DevOps (la automatización) | Centralizar y alertar con Prometheus, Grafana y OpenTelemetry; SLOs, on-call e incidentes | [Observabilidad](../../devops/operacion/observabilidad.md), [Operación y fiabilidad (SRE)](../../devops/operacion/operacion-sre.md) |
 | DevSecOps (la verificación) | Usar logs y métricas para detectar ataques, SIEM y auditoría | [Detección y respuesta](../../devsecops/gobierno-y-respuesta/deteccion-respuesta.md) |
 | Laboratorios (la práctica) | Practicar esto paso a paso | [Lab 11: Observabilidad con Prometheus y Grafana](../../laboratorios/devops/observabilidad-prometheus-grafana.md), [Lab 18: AWS: API serverless con Lambda, API Gateway y DynamoDB](../../laboratorios/cloud/aws-serverless-api.md), [Lab 20: Google Cloud: desplegar un contenedor en Cloud Run](../../laboratorios/cloud/gcp-cloud-run.md), [Lab 21: Game day: incidente simulado, troubleshooting y postmortem](../../laboratorios/operacion/game-day-incidente.md) |

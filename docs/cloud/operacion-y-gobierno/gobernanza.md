@@ -79,7 +79,7 @@ Un **guardrail** (barrera de protección) es una regla que se aplica a toda una 
 | Limitar **configuraciones** de recursos | Controles proactivos de Control Tower, AWS Config rules (detectivos) | **Azure Policy** (efecto `Deny`, `Audit`, `Modify`, `DeployIfNotExists`) | **Organization Policy** (*constraints* predefinidas y *custom constraints*) |
 
 !!! info "Los guardrails no dan permisos"
-    SCPs, RCPs, Azure Policy y Organization Policy **solo restringen**. El acceso se sigue concediendo con [IAM](../identidad-y-seguridad/iam-comparativa.md); el permiso efectivo es la intersección de ambos.
+    SCPs, RCPs, Azure Policy y Organization Policy **solo restringen**. El acceso se sigue concediendo con [IAM](../fundamentos/iam-comparativa.md); el permiso efectivo es la intersección de ambos.
 
 ### Ejemplos de guardrails habituales
 
@@ -167,7 +167,7 @@ Los logs de auditoría y los hallazgos de seguridad deben salir de las cuentas d
 | Seguridad y auditoría | Cuenta **Audit** con administrador delegado de GuardDuty y Security Hub | Microsoft Defender for Cloud y Microsoft Sentinel a nivel de management group | Security Command Center activado a nivel de organización |
 | Protección de los logs | S3 Object Lock, SCP que impide borrar el trail | Resource locks, RBAC restringido | Log bucket con *retention lock*, Organization Policy |
 
-Qué conviene registrar y vigilar se explica en [Seguridad base](../identidad-y-seguridad/seguridad-base.md) y [Observabilidad nativa](observabilidad-nativa.md).
+Qué conviene registrar y vigilar se explica en [Seguridad de logging y detección](../seguridad/seguridad-logging-deteccion.md) y [Observabilidad nativa](observabilidad-nativa.md).
 
 ## Comandos para ver la jerarquía
 
@@ -184,7 +184,7 @@ Qué conviene registrar y vigilar se explica en [Seguridad base](../identidad-y-
 
 | Enfoque | Qué se mira desde ahí | Nota |
 | --- | --- | --- |
-| Cloud (el control) | Permisos dentro de la jerarquía; costos por cuenta y etiqueta; logs y seguridad centralizados | [IAM: AWS, Azure y GCP](../identidad-y-seguridad/iam-comparativa.md), [FinOps y costos](../fundamentos/finops-costos.md), [Seguridad base](../identidad-y-seguridad/seguridad-base.md) |
+| Cloud (el control) | Permisos dentro de la jerarquía; costos por cuenta y etiqueta; logs y seguridad centralizados | [IAM: AWS, Azure y GCP](../fundamentos/iam-comparativa.md), [FinOps y costos](../fundamentos/finops-costos.md), [Fundamentos de seguridad cloud](../seguridad/fundamentos-seguridad-cloud.md) |
 | DevOps (la automatización) | Landing zone, cuentas, guardrails y etiquetas definidos como código | [Infrastructure as Code](../../devops/iac/infraestructura-como-codigo.md), [Terraform](../../devops/iac/terraform-basico.md) |
 | DevSecOps (la verificación) | Policy as code en el pipeline y auditoría continua contra marcos de cumplimiento | [Seguridad de IaC](../../devsecops/infraestructura-y-contenedores/seguridad-iac.md), [Cumplimiento y gobierno](../../devsecops/gobierno-y-respuesta/cumplimiento.md) |
 | Laboratorios (la práctica) | Practicar esto paso a paso | [Lab 00: Preparar el entorno de laboratorio](../../laboratorios/fundamentos/preparar-entorno.md), [Lab 09: Terraform en AWS con remote state en S3](../../laboratorios/devops/terraform-aws-backend-remoto.md), [Lab 16: Auditar tu cuenta cloud con Prowler (CSPM)](../../laboratorios/devsecops/cspm-prowler.md), [Lab 19: Azure: VNet, NSG y una VM con Azure CLI](../../laboratorios/cloud/azure-vnet-vm.md) |

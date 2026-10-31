@@ -208,7 +208,7 @@ Cada llamada a la API de AWS queda como un evento JSON. Los campos que importan 
 }
 ```
 
-Responde **quién** (`userIdentity.arn`), **qué** (`eventSource` + `eventName`), **cuándo** (`eventTime`, siempre UTC), **desde dónde** (`sourceIPAddress`) y **si falló** (`errorCode`). Los equivalentes son el Activity Log de Azure y Cloud Audit Logs de Google Cloud ([Seguridad base](../../cloud/identidad-y-seguridad/seguridad-base.md)).
+Responde **quién** (`userIdentity.arn`), **qué** (`eventSource` + `eventName`), **cuándo** (`eventTime`, siempre UTC), **desde dónde** (`sourceIPAddress`) y **si falló** (`errorCode`). Los equivalentes son el Activity Log de Azure y Cloud Audit Logs de Google Cloud ([Seguridad de logging y detección](../../cloud/seguridad/seguridad-logging-deteccion.md)).
 
 ### VPC Flow Logs
 
@@ -506,7 +506,7 @@ El gateway devolvió un 500. Tienes sus logs y los del servicio de pedidos:
 
 | Enfoque | Qué se mira desde ahí | Nota |
 | --- | --- | --- |
-| Cloud (el control) | Dónde viven los logs de cada nube, cómo se consultan y cuánto cuestan; logs de auditoría | [Observabilidad nativa](../../cloud/operacion-y-gobierno/observabilidad-nativa.md), [Seguridad base](../../cloud/identidad-y-seguridad/seguridad-base.md) |
+| Cloud (el control) | Dónde viven los logs de cada nube, cómo se consultan y cuánto cuestan; logs de auditoría | [Observabilidad nativa](../../cloud/operacion-y-gobierno/observabilidad-nativa.md), [Seguridad de logging y detección](../../cloud/seguridad/seguridad-logging-deteccion.md) |
 | DevOps (la automatización) | Centralizar logs, correlacionarlos con métricas y trazas, y usarlos para diagnosticar | [Observabilidad](observabilidad.md), [Troubleshooting](troubleshooting.md), [Operación y fiabilidad (SRE)](operacion-sre.md), [Kubernetes](../contenedores/kubernetes.md) |
 | DevSecOps (la verificación) | Los mismos logs como fuente de detección: escáneres, fuerza bruta, accesos denegados | [Detección y respuesta](../../devsecops/gobierno-y-respuesta/deteccion-respuesta.md) |
 | Networking (la base) | Flow logs, errores de conexión y su significado en la red | [Troubleshooting de red](../../networking/avanzado/troubleshooting-red.md) |

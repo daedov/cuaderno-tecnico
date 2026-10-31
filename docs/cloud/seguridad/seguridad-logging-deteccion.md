@@ -14,7 +14,7 @@ tags:
 > Qué logs tienen que estar activos sí o sí en AWS, Azure y Google Cloud, cómo protegerlos para que nadie los borre, dónde centralizarlos, qué servicios de detección activar y qué alertas mínimas configurar.
 
 !!! info "Antes de leer"
-    En el [Shared Responsibility Model](../fundamentos/responsabilidad-compartida.md), el proveedor **genera** buena parte de los logs, pero **activarlos, retenerlos, protegerlos y revisarlos** es tarea tuya: muchos (data events, Data Access audit logs, resource logs) vienen apagados por defecto. Conviene haber leído [Seguridad base](../identidad-y-seguridad/seguridad-base.md) (qué es cada tipo de log y cada servicio de detección), [Observabilidad nativa](../operacion-y-gobierno/observabilidad-nativa.md) (CloudWatch, Azure Monitor, Cloud Logging) y la parte de cuentas centrales de [Gobernanza](../operacion-y-gobierno/gobernanza.md).
+    En el [Shared Responsibility Model](../fundamentos/responsabilidad-compartida.md), el proveedor **genera** buena parte de los logs, pero **activarlos, retenerlos, protegerlos y revisarlos** es tarea tuya: muchos (data events, Data Access audit logs, resource logs) vienen apagados por defecto. Conviene haber leído [Observabilidad nativa](../operacion-y-gobierno/observabilidad-nativa.md) (CloudWatch, Azure Monitor, Cloud Logging) y la parte de cuentas centrales de [Gobernanza](../operacion-y-gobierno/gobernanza.md).
 
 ## ¿Por qué importa?
 
@@ -86,6 +86,17 @@ Un atacante con privilegios intentará **borrar o detener** los logs para oculta
 | Quién **no** puede borrar | Nadie de las cuentas de workload; SCP y Object Lock | Nadie fuera del equipo de plataforma; locks y RBAC | Nadie fuera del equipo de plataforma; retención bloqueada |
 
 Los mismos principios aplican a los hallazgos de seguridad: una **cuenta o proyecto de seguridad** con el administrador delegado de la detección y del CSPM (ver [Fundamentos de seguridad en la nube](fundamentos-seguridad-cloud.md)).
+
+## Registro de configuración
+
+Los audit logs dicen **quién hizo un cambio**; el **registro de configuración** dice **cómo está configurado cada recurso ahora y cómo estaba antes**. Sirve para inventario, para detectar *drift* (desvíos respecto a lo esperado) y para evaluar reglas de cumplimiento de forma continua. Actívalo en todas las regiones que uses.
+
+| | AWS Config | Azure | Cloud Asset Inventory (GCP) |
+| --- | --- | --- | --- |
+| Inventario de recursos | *Configuration items* | **Azure Resource Graph** (consultas KQL) | Asset inventory y búsqueda de recursos |
+| Historial de cambios | Configuration timeline | Change analysis en Resource Graph | Historial de assets (5 semanas) y exportaciones |
+| Reglas de cumplimiento | **AWS Config rules** y *conformance packs* | **Azure Policy** (efectos `Audit`, `Deny`, `DeployIfNotExists`…) | Security Health Analytics (SCC) y Organization Policy |
+| Remediación automática | Remediation con SSM Automation | `DeployIfNotExists` / `Modify` con tareas de remediación | Mediante Cloud Functions o Workflows propios |
 
 ## Detección
 
@@ -185,6 +196,9 @@ Comandos de solo lectura.
     aws guardduty get-detector --detector-id <id> --query 'Features[].{feature:Name, estado:Status}'
     aws guardduty list-organization-admin-accounts
 
+    # AWS Config: cumplimiento por regla
+    aws configservice describe-compliance-by-config-rule
+
     # Alarmas y metric filters del log group del trail
     aws logs describe-metric-filters --log-group-name <log-group> \
       --query 'metricFilters[].{filtro:filterName, patron:filterPattern}'
@@ -209,6 +223,9 @@ Comandos de solo lectura.
     # Planes de Defender for Cloud activos
     az security pricing list --query "value[].{plan:name, tier:pricingTier}" -o table
 
+    # Inventario con Resource Graph: storage accounts y acceso público a blobs
+    az graph query -q "Resources | where type =~ 'microsoft.storage/storageaccounts' | project name, properties.allowBlobPublicAccess"
+
     # Activity log alerts configuradas
     az monitor activity-log alert list --query "[].{alerta:name, activa:enabled}" -o table
     ```
@@ -219,6 +236,10 @@ Comandos de solo lectura.
     # Sinks de la organización (aggregated sinks)
     gcloud logging sinks list --organization=<org-id> \
       --format="table(name, destination, includeChildren, filter)"
+
+    # Inventario con Cloud Asset Inventory: buckets de un proyecto
+    gcloud asset search-all-resources --scope=projects/<proyecto> \
+      --asset-types=storage.googleapis.com/Bucket
 
     # Retención y bloqueo de los log buckets del proyecto de logging
     gcloud logging buckets list --project=<proyecto-logs> --location=global \
@@ -254,254 +275,7 @@ Comandos de solo lectura.
 
 ## Configuración segura con IaC
 
-=== "AWS"
-
-    ```hcl title="logging.tf"
-    # Bucket de logs en la cuenta Log Archive, inmutable 1 año
-    resource "aws_s3_bucket" "trail" {
-      bucket              = "org-cloudtrail-logs-111122223333"
-      object_lock_enabled = true
-    }
-
-    resource "aws_s3_bucket_object_lock_configuration" "trail" {
-      bucket = aws_s3_bucket.trail.id
-      rule {
-        default_retention {
-          mode = "COMPLIANCE"
-          days = 365
-        }
-      }
-    }
-
-    # Organization trail (desde la management account o el admin delegado)
-    resource "aws_cloudtrail" "org" {
-      name                          = "org-trail"
-      s3_bucket_name                = aws_s3_bucket.trail.id
-      is_organization_trail         = true
-      is_multi_region_trail         = true
-      include_global_service_events = true
-      enable_log_file_validation    = true
-      kms_key_id                    = aws_kms_key.trail.arn
-      cloud_watch_logs_group_arn    = "${aws_cloudwatch_log_group.trail.arn}:*"
-      cloud_watch_logs_role_arn     = aws_iam_role.trail_to_cwl.arn
-
-      advanced_event_selector {
-        name = "Management events"
-        field_selector {
-          field  = "eventCategory"
-          equals = ["Management"]
-        }
-      }
-
-      advanced_event_selector {
-        name = "S3 data events solo en buckets sensibles"
-        field_selector {
-          field  = "eventCategory"
-          equals = ["Data"]
-        }
-        field_selector {
-          field  = "resources.type"
-          equals = ["AWS::S3::Object"]
-        }
-        field_selector {
-          field       = "resources.ARN"
-          starts_with = ["arn:aws:s3:::pagos-prod-datos/"]
-        }
-      }
-    }
-
-    # Alerta CIS: uso del root user
-    resource "aws_cloudwatch_log_metric_filter" "root" {
-      name           = "uso-root"
-      log_group_name = aws_cloudwatch_log_group.trail.name
-      pattern        = "{$.userIdentity.type=\"Root\" && $.userIdentity.invokedBy NOT EXISTS && $.eventType !=\"AwsServiceEvent\"}"
-
-      metric_transformation {
-        name      = "RootUsage"
-        namespace = "CISBenchmark"
-        value     = "1"
-      }
-    }
-
-    resource "aws_cloudwatch_metric_alarm" "root" {
-      alarm_name          = "uso-root"
-      namespace           = "CISBenchmark"
-      metric_name         = "RootUsage"
-      statistic           = "Sum"
-      period              = 300
-      evaluation_periods  = 1
-      threshold           = 1
-      comparison_operator = "GreaterThanOrEqualToThreshold"
-      alarm_actions       = [aws_sns_topic.seguridad.arn]
-    }
-
-    # GuardDuty para toda la organización (en la cuenta administradora delegada)
-    resource "aws_guardduty_detector" "this" {
-      enable = true
-    }
-
-    resource "aws_guardduty_organization_configuration" "this" {
-      detector_id                      = aws_guardduty_detector.this.id
-      auto_enable_organization_members = "ALL"
-    }
-    ```
-
-    ```json title="scp-proteger-logs-y-deteccion.json"
-    {
-      "Version": "2012-10-17",
-      "Statement": [
-        {
-          "Sid": "ProtegerLogsYDeteccion",
-          "Effect": "Deny",
-          "Action": [
-            "cloudtrail:StopLogging", "cloudtrail:DeleteTrail", "cloudtrail:UpdateTrail",
-            "cloudtrail:PutEventSelectors",
-            "guardduty:DeleteDetector", "guardduty:UpdateDetector",
-            "guardduty:DisassociateFromAdministratorAccount",
-            "securityhub:DisableSecurityHub",
-            "config:StopConfigurationRecorder", "config:DeleteConfigurationRecorder",
-            "config:DeleteDeliveryChannel"
-          ],
-          "Resource": "*",
-          "Condition": {
-            "ArnNotLike": { "aws:PrincipalArn": "arn:aws:iam::*:role/plataforma-seguridad" }
-          }
-        }
-      ]
-    }
-    ```
-
-=== "Azure"
-
-    ```hcl title="logging.tf"
-    # Activity Log de la suscripción hacia el workspace central
-    resource "azurerm_monitor_diagnostic_setting" "activity" {
-      name                       = "activity-a-central"
-      target_resource_id         = data.azurerm_subscription.actual.id
-      log_analytics_workspace_id = var.workspace_central_id
-
-      dynamic "enabled_log" {
-        for_each = ["Administrative", "Security", "Policy", "Alert", "Recommendation", "ServiceHealth", "ResourceHealth", "Autoscale"]
-        content {
-          category = enabled_log.value
-        }
-      }
-    }
-
-    # Logs de Microsoft Entra ID hacia el workspace central
-    resource "azurerm_monitor_aad_diagnostic_setting" "entra" {
-      name                       = "entra-a-central"
-      log_analytics_workspace_id = var.workspace_central_id
-
-      dynamic "enabled_log" {
-        for_each = ["SignInLogs", "NonInteractiveUserSignInLogs", "ServicePrincipalSignInLogs", "ManagedIdentitySignInLogs", "AuditLogs", "RiskyUsers", "UserRiskEvents"]
-        content {
-          category = enabled_log.value
-        }
-      }
-    }
-
-    # Planes de Defender for Cloud
-    resource "azurerm_security_center_subscription_pricing" "planes" {
-      for_each      = toset(["CloudPosture", "VirtualMachines", "StorageAccounts", "KeyVaults", "Arm", "Containers"])
-      tier          = "Standard"
-      resource_type = each.value
-    }
-
-    # Alerta: borrado de una asignación de Azure Policy
-    resource "azurerm_monitor_activity_log_alert" "policy_delete" {
-      name                = "borrado-policy-assignment"
-      resource_group_name = azurerm_resource_group.seguridad.name
-      location            = "global"
-      scopes              = [data.azurerm_subscription.actual.id]
-
-      criteria {
-        category       = "Administrative"
-        operation_name = "Microsoft.Authorization/policyAssignments/delete"
-      }
-
-      action {
-        action_group_id = azurerm_monitor_action_group.seguridad.id
-      }
-    }
-
-    # Evitar que se borre el workspace central
-    resource "azurerm_management_lock" "workspace" {
-      name       = "no-borrar-workspace-seguridad"
-      scope      = var.workspace_central_id
-      lock_level = "CanNotDelete"
-    }
-    ```
-
-    En azurerm v5 ya no existen el bloque `enabled_log.retention_policy` ni el bloque `metric` (usa `enabled_metric`): la retención se define en el workspace, no en el diagnostic setting.
-
-    Para desplegar diagnostic settings en **todas** las suscripciones y recursos, asigna las iniciativas integradas de Azure Policy de *resource logging* (`DeployIfNotExists`) en el management group en lugar de repetir este bloque.
-
-=== "Google Cloud"
-
-    ```hcl title="logging.tf"
-    # Log bucket central con retención bloqueada (irreversible)
-    resource "google_logging_project_bucket_config" "auditoria" {
-      project        = var.logging_project_id
-      location       = "global"
-      bucket_id      = "auditoria-org"
-      retention_days = 400
-      locked         = true
-    }
-
-    # Aggregated sink: audit logs de toda la organización
-    resource "google_logging_organization_sink" "auditoria" {
-      name             = "auditoria-org"
-      org_id           = var.org_id
-      include_children = true
-      destination      = "logging.googleapis.com/${google_logging_project_bucket_config.auditoria.id}"
-      filter           = "logName:\"cloudaudit.googleapis.com\""
-    }
-
-    resource "google_project_iam_member" "sink_writer" {
-      project = var.logging_project_id
-      role    = "roles/logging.bucketWriter"
-      member  = google_logging_organization_sink.auditoria.writer_identity
-    }
-
-    # Data Access logs selectivos: solo secretos y claves
-    resource "google_organization_iam_audit_config" "secretos" {
-      for_each = toset(["secretmanager.googleapis.com", "cloudkms.googleapis.com"])
-      org_id   = var.org_id
-      service  = each.value
-
-      audit_log_config {
-        log_type = "DATA_READ"
-      }
-      audit_log_config {
-        log_type = "DATA_WRITE"
-      }
-    }
-
-    # Alerta CIS: cambios en la configuración de auditoría
-    resource "google_monitoring_alert_policy" "audit_config" {
-      project      = var.security_project_id
-      display_name = "Cambio en audit config"
-      combiner     = "OR"
-
-      conditions {
-        display_name = "SetIamPolicy con auditConfigDeltas"
-        condition_matched_log {
-          filter = "protoPayload.methodName=\"SetIamPolicy\" AND protoPayload.serviceData.policyDelta.auditConfigDeltas:*"
-        }
-      }
-
-      alert_strategy {
-        notification_rate_limit {
-          period = "300s"
-        }
-      }
-
-      notification_channels = [google_monitoring_notification_channel.seguridad.id]
-    }
-    ```
-
-    Una **log-based alert** solo ve los logs del proyecto donde se define (o los que le lleguen por sink): defínela en el proyecto central o usa un *log scope* que cubra los proyectos que quieres vigilar.
+Los fragmentos de Terraform con estos controles (y los guardrails de organización, cuando aplican) están en las páginas por proveedor: [AWS](terraform/aws.md#logging-y-deteccion), [Azure](terraform/azure.md#logging-y-deteccion) y [Google Cloud](terraform/google-cloud.md#logging-y-deteccion).
 
 ## Errores comunes
 
@@ -518,7 +292,7 @@ Comandos de solo lectura.
 
 | Enfoque | Qué se mira desde ahí | Nota |
 | --- | --- | --- |
-| Cloud (el control) | Qué es cada log y servicio de detección; observabilidad; cuentas centrales | [Seguridad base](../identidad-y-seguridad/seguridad-base.md), [Observabilidad nativa](../operacion-y-gobierno/observabilidad-nativa.md), [Gobernanza](../operacion-y-gobierno/gobernanza.md), [Seguridad de identidades](seguridad-identidades.md), [Seguridad de redes](seguridad-redes.md) |
+| Cloud (el control) | Observabilidad; cuentas centrales; identidades y red | [Observabilidad nativa](../operacion-y-gobierno/observabilidad-nativa.md), [Gobernanza](../operacion-y-gobierno/gobernanza.md), [Seguridad de identidades](seguridad-identidades.md), [Seguridad de redes](seguridad-redes.md) |
 | DevOps (la automatización) | Centralizar logs y alertas como código; observabilidad y guardias | [Observabilidad](../../devops/operacion/observabilidad.md), [Operación y fiabilidad (SRE)](../../devops/operacion/operacion-sre.md), [Infrastructure as Code](../../devops/iac/infraestructura-como-codigo.md) |
 | DevSecOps (la verificación) | SIEM, triage, playbooks y forense; auditoría continua y retención por cumplimiento | [Detección y respuesta](../../devsecops/gobierno-y-respuesta/deteccion-respuesta.md), [Cumplimiento y gobierno](../../devsecops/gobierno-y-respuesta/cumplimiento.md), [CSPM](../../devsecops/escaneos/cspm.md) |
 | Networking (la base) | Flow logs y herramientas para investigar tráfico | [Troubleshooting de red](../../networking/avanzado/troubleshooting-red.md) |
@@ -531,6 +305,9 @@ Comandos de solo lectura.
 - [CloudTrail log file integrity validation](https://docs.aws.amazon.com/es_es/awscloudtrail/latest/userguide/cloudtrail-log-file-validation-intro.html)
 - [Security Hub CSPM controls for CloudTrail](https://docs.aws.amazon.com/securityhub/latest/userguide/cloudtrail-controls.html) y [for CloudWatch](https://docs.aws.amazon.com/securityhub/latest/userguide/cloudwatch-controls.html)
 - [Amazon GuardDuty: multi-account](https://docs.aws.amazon.com/guardduty/latest/ug/guardduty_organizations.html)
+- [AWS Config](https://docs.aws.amazon.com/es_es/config/latest/developerguide/WhatIsConfig.html)
+- [Información general de Azure Resource Graph](https://learn.microsoft.com/es-es/azure/governance/resource-graph/overview)
+- [Cloud Asset Inventory](https://cloud.google.com/asset-inventory/docs/overview)
 - [Registro de actividad de Azure: diagnostic settings](https://learn.microsoft.com/es-es/azure/azure-monitor/platform/activity-log)
 - [Integrar los logs de Microsoft Entra con Azure Monitor](https://learn.microsoft.com/es-es/entra/identity/monitoring-health/howto-integrate-activity-logs-with-azure-monitor-logs)
 - [Almacenamiento inmutable para Azure Blob Storage](https://learn.microsoft.com/es-es/azure/storage/blobs/immutable-storage-overview)

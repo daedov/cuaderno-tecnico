@@ -150,7 +150,7 @@ Migrar es el principio. La **modernization** (modernización) consiste en ir apr
 | **Dependencias ocultas** | Al migrar una app se rompe otra que la llamaba por una IP fija | Discovery con mapeo de dependencias, migrar por olas, DNS en vez de IPs |
 | **Costos inesperados** | La factura supera el business case: VMs sobredimensionadas, transferencia de datos, entornos olvidados | **Rightsizing** con datos reales de uso, tagging, presupuestos y alertas desde el día uno (ver [FinOps y costos](../fundamentos/finops-costos.md)) |
 | **Lift and shift eterno** | Se migra todo "tal cual" y nunca se moderniza; se paga la nube con la arquitectura del datacenter | Plan de modernización post-migración con fechas y dueños |
-| **Seguridad trasladada sin revisar** | Reglas de firewall abiertas y cuentas compartidas copiadas a la nube | Landing zone con guardrails, revisión de IAM y red antes del cutover (ver [Seguridad base](../identidad-y-seguridad/seguridad-base.md)) |
+| **Seguridad trasladada sin revisar** | Reglas de firewall abiertas y cuentas compartidas copiadas a la nube | Landing zone con guardrails, revisión de IAM y red antes del cutover (ver [Fundamentos de seguridad cloud](../seguridad/fundamentos-seguridad-cloud.md)) |
 | **Licencias** | Licencias que no se pueden llevar a la nube o cuestan más allí | Revisar contratos y opciones de **BYOL** (*bring your own license*, trae tu propia licencia) en la fase assess |
 | **Latencia híbrida** | App en la nube y base de datos on-premises: todo lento | Migrar juntas las piezas que se hablan mucho |
 | **Downtime en el cutover** | La ventana de corte se alarga o falla | Replicación continua, ensayos del cutover, plan de rollback probado |

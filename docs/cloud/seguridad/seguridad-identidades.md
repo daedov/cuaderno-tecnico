@@ -13,7 +13,7 @@ tags:
 > Cómo proteger las identidades más poderosas (root, Global Administrator, Super Admin), eliminar credenciales de larga duración, mantener el mínimo privilegio y poner guardrails en AWS, Azure y Google Cloud.
 
 !!! info "Antes de leer"
-    En el [Shared Responsibility Model](../fundamentos/responsabilidad-compartida.md), **la identidad siempre es responsabilidad tuya**, en IaaS, PaaS y SaaS. Esta nota supone que conoces los conceptos de [IAM: AWS, Azure y GCP](../identidad-y-seguridad/iam-comparativa.md) (policies, role assignments, allow policies, managed identities, service accounts) y los guardrails de [Gobernanza](../operacion-y-gobierno/gobernanza.md). Aquí se ve cómo **endurecerlos y comprobarlos**.
+    En el [Shared Responsibility Model](../fundamentos/responsabilidad-compartida.md), **la identidad siempre es responsabilidad tuya**, en IaaS, PaaS y SaaS. Esta nota supone que conoces los conceptos de [IAM: AWS, Azure y GCP](../fundamentos/iam-comparativa.md) (policies, role assignments, allow policies, managed identities, service accounts) y los guardrails de [Gobernanza](../operacion-y-gobierno/gobernanza.md). Aquí se ve cómo **endurecerlos y comprobarlos**.
 
 ## ¿Por qué la identidad es el nuevo perímetro?
 
@@ -98,7 +98,7 @@ Una **workload identity** (identidad de carga de trabajo) es la identidad con la
 
 - **Una identidad por aplicación y entorno**, nunca compartida entre dev y prod.
 - **Sin roles amplios** (`AdministratorAccess`, `Owner`, `roles/editor`) en identidades de workload.
-- **Condiciones de confianza estrictas** en la federación: en OIDC desde GitHub, limita el `sub` al repositorio **y** a la rama o entorno (`repo:org/app:environment:prod`), nunca `repo:org/*`.
+- **Condiciones de confianza estrictas** en la federación: en OIDC desde GitHub, limita el `sub` al repositorio **y** a la rama o entorno (`repo:org/app:environment:prod`), nunca `repo:org/*`. El flujo completo del pipeline con OIDC en las tres nubes está en [Secretos e identidades](../../devsecops/identidades-y-pipeline/secretos-identidades.md#oidc-entre-el-pipeline-y-la-nube).
 - **Evita las identidades por defecto**: el *default service account* de Compute Engine con `roles/editor` o un rol de instancia compartido por todas las VMs.
 
 Detalle por servicio: [máquinas virtuales](seguridad-maquinas-virtuales.md), [contenedores y Kubernetes](seguridad-contenedores-kubernetes.md) y [serverless](seguridad-serverless.md).
@@ -272,135 +272,7 @@ Comandos de solo lectura.
 
 ## Configuración segura con IaC
 
-=== "AWS"
-
-    ```hcl title="identidades.tf"
-    # Gestión centralizada del root (desde la management account)
-    resource "aws_iam_organizations_features" "root" {
-      enabled_features = ["RootCredentialsManagement", "RootSessions"]
-    }
-
-    # IAM Access Analyzer: accesos externos y accesos sin uso en toda la organización
-    resource "aws_accessanalyzer_analyzer" "externo" {
-      analyzer_name = "org-external-access"
-      type          = "ORGANIZATION"
-    }
-
-    resource "aws_accessanalyzer_analyzer" "sin_uso" {
-      analyzer_name = "org-unused-access"
-      type          = "ORGANIZATION_UNUSED_ACCESS"
-
-      configuration {
-        unused_access {
-          unused_access_age = 90
-        }
-      }
-    }
-    ```
-
-    ```json title="scp-sin-claves-de-larga-duracion.json"
-    {
-      "Version": "2012-10-17",
-      "Statement": [
-        {
-          "Sid": "DenyLongTermCredentials",
-          "Effect": "Deny",
-          "Action": ["iam:CreateUser", "iam:CreateAccessKey", "iam:CreateLoginProfile"],
-          "Resource": "*",
-          "Condition": {
-            "ArnNotLike": {
-              "aws:PrincipalArn": "arn:aws:iam::*:role/plataforma-excepciones-iam"
-            }
-          }
-        }
-      ]
-    }
-    ```
-
-=== "Azure"
-
-    ```hcl title="identidades.tf"
-    # Identidad de workload sin secretos: user-assigned managed identity
-    resource "azurerm_user_assigned_identity" "api" {
-      name                = "id-api-pagos-prod"
-      resource_group_name = azurerm_resource_group.app.name
-      location            = azurerm_resource_group.app.location
-    }
-
-    # Permiso mínimo y acotado: solo leer secretos de su propio Key Vault
-    resource "azurerm_role_assignment" "api_secretos" {
-      scope                = azurerm_key_vault.app.id
-      role_definition_name = "Key Vault Secrets User"
-      principal_id         = azurerm_user_assigned_identity.api.principal_id
-    }
-
-    # Owner solo como asignación eligible en PIM, con justificación
-    data "azurerm_subscription" "prod" {
-      subscription_id = var.subscription_prod_id
-    }
-
-    data "azurerm_role_definition" "owner" {
-      name = "Owner"
-    }
-
-    resource "azurerm_pim_eligible_role_assignment" "owner_plataforma" {
-      scope              = data.azurerm_subscription.prod.id
-      role_definition_id = "${data.azurerm_subscription.prod.id}${data.azurerm_role_definition.owner.id}"
-      principal_id       = var.grupo_plataforma_object_id
-      justification      = "Administración de la suscripción de producción"
-
-      schedule {
-        expiration {
-          duration_days = 180
-        }
-      }
-    }
-    ```
-
-    Las políticas de **Conditional Access** y las emergency access accounts se gestionan con el provider `hashicorp/azuread` (`azuread_conditional_access_policy`), no con `azurerm`.
-
-=== "Google Cloud"
-
-    ```hcl title="identidades.tf"
-    # Solo identidades del dominio de la organización
-    resource "google_org_policy_policy" "dominios" {
-      name   = "organizations/${var.org_id}/policies/iam.allowedPolicyMemberDomains"
-      parent = "organizations/${var.org_id}"
-
-      spec {
-        rules {
-          values {
-            allowed_values = [var.customer_id] # ID de cliente de Cloud Identity, p. ej. C0xxxxxxx
-          }
-        }
-      }
-    }
-
-    # Sin service account keys
-    resource "google_org_policy_policy" "sin_keys" {
-      name   = "organizations/${var.org_id}/policies/iam.managed.disableServiceAccountKeyCreation"
-      parent = "organizations/${var.org_id}"
-
-      spec {
-        rules {
-          enforce = "TRUE"
-        }
-      }
-    }
-
-    # Service account propia de la aplicación con un rol predefinido acotado
-    resource "google_service_account" "api" {
-      project      = var.project_id
-      account_id   = "api-pagos"
-      display_name = "API de pagos (prod)"
-    }
-
-    resource "google_project_iam_member" "api_secretos" {
-      project = var.project_id
-      role    = "roles/secretmanager.secretAccessor"
-      member  = "serviceAccount:${google_service_account.api.email}"
-    }
-    ```
+Los fragmentos de Terraform con estos controles (y los guardrails de organización, cuando aplican) están en las páginas por proveedor: [AWS](terraform/aws.md#identidades), [Azure](terraform/azure.md#identidades) y [Google Cloud](terraform/google-cloud.md#identidades).
 
 ## Errores comunes
 
@@ -416,7 +288,7 @@ Comandos de solo lectura.
 
 | Enfoque | Qué se mira desde ahí | Nota |
 | --- | --- | --- |
-| Cloud (el control) | Conceptos de IAM, jerarquía y guardrails; resto de controles del bloque | [IAM: AWS, Azure y GCP](../identidad-y-seguridad/iam-comparativa.md), [Gobernanza](../operacion-y-gobierno/gobernanza.md), [Fundamentos de seguridad en la nube](fundamentos-seguridad-cloud.md), [Seguridad de cifrado y secretos](seguridad-cifrado-secretos.md), [Seguridad de logging y detección](seguridad-logging-deteccion.md) |
+| Cloud (el control) | Conceptos de IAM, jerarquía y guardrails; resto de controles del bloque | [IAM: AWS, Azure y GCP](../fundamentos/iam-comparativa.md), [Gobernanza](../operacion-y-gobierno/gobernanza.md), [Fundamentos de seguridad en la nube](fundamentos-seguridad-cloud.md), [Seguridad de cifrado y secretos](seguridad-cifrado-secretos.md), [Seguridad de logging y detección](seguridad-logging-deteccion.md) |
 | DevOps (la automatización) | Un rol por pipeline creado con Terraform; OIDC en GitHub Actions | [Terraform](../../devops/iac/terraform-basico.md), [Pipeline CI/CD con GitHub Actions](../../devops/ci-cd/ci-cd-github-actions.md) |
 | DevSecOps (la verificación) | OIDC en lugar de claves, permisos mínimos del pipeline, detectar `*:*` en IaC y secretos en commits | [Secretos e identidades](../../devsecops/identidades-y-pipeline/secretos-identidades.md), [Seguridad del pipeline](../../devsecops/identidades-y-pipeline/seguridad-pipeline.md), [Seguridad de IaC](../../devsecops/infraestructura-y-contenedores/seguridad-iac.md), [Secret scanning](../../devsecops/escaneos/secret-scanning.md) |
 | Laboratorios (la práctica) | Practicar esto paso a paso | [Lab 16: Auditar tu cuenta cloud con Prowler (CSPM)](../../laboratorios/devsecops/cspm-prowler.md) |

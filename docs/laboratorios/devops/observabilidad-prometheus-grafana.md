@@ -814,7 +814,7 @@ Para un método general, ver [Troubleshooting](../../devops/operacion/troublesho
 - **Tres pilares**: métricas para saber **que** algo pasa, logs para saber **qué** pasó, trazas para saber **dónde**. Ver [Observabilidad](../../devops/operacion/observabilidad.md#los-tres-pilares).
 - **SLI, SLO y error budget**: el SLI es la medida, el SLO el objetivo, el error budget lo que te puedes permitir fallar. Ver [SLI, SLO, SLA y error budget](../../devops/operacion/observabilidad.md#sli-slo-sla-y-error-budget) y, desde negocio, [Niveles de servicio](../../negocio/niveles-de-servicio.md#sli-slo-y-sla-quien-los-usa).
 - **Alertar sobre síntomas**: la alerta del lab mide lo que sufre el usuario (errores, latencia), no la CPU. Ver [Alertas accionables](../../devops/operacion/observabilidad.md#alertas-accionables).
-- **Logs estructurados**: una línea JSON por petición, con `request_id`, permite filtrar en Loki por campos. Ver [Logs JSON estructurados](../../devops/operacion/leer-logs.md#logs-json-estructurados).
+- **Logs estructurados**: una línea JSON por petición, con `request_id`, permite filtrar en Loki por campos. Ver [Logs JSON estructurados](../../recursos/formatos-de-logs.md#logs-json-estructurados).
 - **En la nube**: los equivalentes gestionados son Amazon Managed Service for Prometheus y Amazon Managed Grafana, Azure Monitor y Azure Managed Grafana, Google Cloud Managed Service for Prometheus. Ver [Observabilidad nativa](../../cloud/operacion-y-gobierno/observabilidad-nativa.md).
 - **En el trabajo real**: el stack suele ir en Kubernetes con el chart `kube-prometheus-stack`, los dashboards y reglas viven en Git y se revisan como código, y cada alerta enlaza a su runbook. Ver [Runbooks y playbooks](../../devops/operacion/runbooks-playbooks.md).
 

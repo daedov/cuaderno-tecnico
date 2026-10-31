@@ -7,7 +7,7 @@ tags:
 
 # Operación y fiabilidad (SRE)
 
-> Principios de *Site Reliability Engineering*, cómo gestionar un incidente, guardias sostenibles, postmortems sin culpables, runbooks, capacity planning y chaos engineering.
+> Principios de *Site Reliability Engineering*, política de error budget, severidades y ciclo de vida de un incidente, guardias sostenibles y capacity planning, con el mapa de las notas que desarrollan cada práctica (postmortem, runbooks, comunicación, chaos engineering).
 
 ## ¿Qué es?
 
@@ -20,15 +20,15 @@ DevOps describe una cultura y unas prácticas; SRE es una forma concreta de llev
 Los principios del libro *Site Reliability Engineering* de Google (disponible gratis en su web):
 
 - **Embracing risk** (aceptar el riesgo): el 100 % de fiabilidad no es un objetivo realista ni deseable. Cada "nueve" extra cuesta mucho más y el usuario no lo nota (su wifi o su móvil fallan más que tu servicio).
-- **Service Level Objectives**: la fiabilidad se define con SLIs y SLOs medibles desde el punto de vista del usuario (ver [Observabilidad](observabilidad.md)).
+- **Service Level Objectives**: la fiabilidad se define con SLIs y SLOs medibles desde el punto de vista del usuario (ver [Observabilidad](observabilidad.md#sli-slo-sla-y-error-budget)).
 - **Error budget** (presupuesto de errores): `100 % − SLO` es el margen que se puede "gastar" en cambios, experimentos y fallos. Equilibra velocidad y estabilidad con datos, no con opiniones.
-- **Eliminating toil** (eliminar el trabajo repetitivo): **toil** es el trabajo manual, repetitivo, automatizable, reactivo y que crece con el servicio sin aportar valor duradero (reiniciar un servicio a mano cada semana, crear usuarios uno a uno). Google propone que el toil no supere el **50 %** del tiempo de un SRE.
+- **Eliminating toil** (eliminar el trabajo repetitivo): **toil** es el trabajo manual y repetitivo que crece con el servicio sin aportar valor duradero (reiniciar un servicio a mano cada semana, crear usuarios uno a uno). Google propone que no supere el **50 %** del tiempo de un SRE. Definición completa y cómo medirlo y reducirlo en [Prácticas para aprender de incidentes](practicas-aprendizaje.md#medir-y-reducir-el-toil).
 - **Automation** (automatización): lo que se hace más de dos veces se automatiza; la automatización es más rápida, consistente y no se cansa.
 - **Simplicity** (simplicidad): los sistemas simples fallan menos y se arreglan antes.
 
 ### Política de error budget
 
-Acordarla **antes** de necesitarla, entre producto y ingeniería:
+Cómo se calcula el error budget y cómo alertar por *burn rate* está en [Observabilidad](observabilidad.md#sli-slo-sla-y-error-budget); el error budget como acuerdo de negocio, en [Niveles de servicio](../../negocio/niveles-de-servicio.md#error-budget-como-acuerdo-de-negocio). Aquí, qué se hace con él. La política se acuerda **antes** de necesitarla, entre producto y ingeniería:
 
 | Situación | Qué se hace |
 | --- | --- |
@@ -56,14 +56,7 @@ Cada organización define las suyas; un esquema típico:
 
 ### Roles
 
-| Rol | Responsabilidad |
-| --- | --- |
-| **Incident Commander** (IC, responsable del incidente) | Coordina, decide, asigna tareas. **No** arregla el problema con sus manos: mantiene la visión global |
-| **Operations lead** / responsables técnicos | Investigan y aplican la mitigación |
-| **Communications lead** (responsable de comunicación) | Informa a *stakeholders* (partes interesadas), soporte y clientes (página de estado) con frecuencia fija |
-| **Scribe** (escriba) | Registra la línea de tiempo y las decisiones para el postmortem |
-
-En incidentes pequeños una misma persona cubre varios roles; lo importante es que esté claro quién es el IC.
+Todo incidente tiene un **Incident Commander** (IC, responsable del incidente) que coordina sin arreglar con sus manos, y según el tamaño, responsables técnicos, un communications lead y un scribe (escriba). La tabla de roles y qué hace cada uno está en [Comunicación durante incidentes](comunicacion-incidentes.md#roles).
 
 ### Ciclo de vida
 
@@ -87,68 +80,24 @@ flowchart LR
 !!! note "Mitigar antes que entender"
     El objetivo durante el incidente es reducir el impacto, no encontrar la causa raíz. La investigación profunda viene después, con calma, en el postmortem.
 
-Las métricas típicas de esta fase son **MTTD** (*Mean Time To Detect*, tiempo medio hasta detectar) y **MTTR** (*Mean Time To Restore/Recover*, tiempo medio hasta restablecer). El tiempo para restablecer el servicio también es una de las métricas DORA.
+Las métricas típicas de esta fase son **MTTD** (*Mean Time To Detect*, tiempo medio hasta detectar) y **MTTR** (*Mean Time To Restore/Recover*, tiempo medio hasta restablecer); ver [Niveles de servicio](../../negocio/niveles-de-servicio.md#mtbf-mttr-mtta-y-mttd). El tiempo para restablecer el servicio también es una de las métricas DORA.
 
 ## On-call (guardias) sostenible
 
 - **Rotaciones** con suficiente gente: el SRE Book sugiere un mínimo de 8 personas para una rotación en un solo lugar (o 6 por sitio en dos zonas horarias), para que nadie esté de guardia más de una semana de cada varias.
 - **Follow-the-sun** (seguir al sol): equipos en distintas zonas horarias para que nadie haga guardia de noche.
-- **Pocas alertas y buenas**: Google sugiere como máximo unos 2 incidentes por turno de 12 horas; más que eso genera **alert fatigue** (fatiga de alertas) y errores.
+- **Pocas alertas y buenas**: demasiadas páginas por turno generan **alert fatigue** (fatiga de alertas) y errores. Los umbrales de referencia y la revisión semanal de alertas están en [Prácticas para aprender de incidentes](practicas-aprendizaje.md#revision-semanal-de-operaciones-y-de-alertas).
 - **Escalado claro**: primario, secundario y a quién llamar si no responden. Herramientas como PagerDuty u Opsgenie, o las de la propia plataforma de alertas, gestionan rotaciones y escalados.
 - **Compensación y descanso** después de una noche con incidentes.
-- Revisión periódica de las alertas: cada alerta que no requirió acción se ajusta o se elimina.
+- **Traspaso de guardia** (*handoff*) al cambiar de turno; plantilla en [Prácticas para aprender de incidentes](practicas-aprendizaje.md#traspaso-de-guardia-on-call-handoff).
 
 ## Postmortems blameless
 
-Un **blameless postmortem** (postmortem sin culpables) analiza el incidente buscando **qué falló en el sistema y en los procesos**, no a quién culpar. Si la gente teme las consecuencias, oculta información y no se aprende nada. Una persona que ejecutó un comando equivocado revela un sistema que permitía ejecutarlo sin protección.
-
-!!! tip "En profundidad"
-    Esta sección es un resumen. Para la guía completa, con plantilla, ejemplo y seguimiento de acciones, ver [Postmortem](postmortem.md); para las técnicas de análisis, [Análisis de causa raíz](analisis-causa-raiz.md); y para comunicar durante el incidente, [Comunicación de incidentes](comunicacion-incidentes.md).
-
-```markdown title="postmortem-plantilla.md"
-# Postmortem: <título breve>
-
-**Fecha:** 2026-10-24 · **Severidad:** SEV2 · **Duración:** 47 min · **Autoras/es:** …
-**Estado:** borrador | revisado
-
-## Resumen
-Qué pasó, en dos o tres frases, y su impacto en usuarios.
-
-## Impacto
-- Usuarios afectados, peticiones fallidas, error budget consumido, impacto económico.
-
-## Línea de tiempo (UTC)
-- 14:02 Despliegue de la versión 1.4.3
-- 14:05 Alerta de burn rate en la API de pagos
-- 14:09 Se declara SEV2, IC: …
-- 14:21 Rollback a 1.4.2
-- 14:49 Métricas normales, se cierra el incidente
-
-## Causa raíz y factores contribuyentes
-Qué condiciones técnicas y de proceso lo permitieron (no "error humano").
-
-## Qué funcionó y qué no
-Detección, comunicación, herramientas, runbooks.
-
-## Acciones
-| Acción | Tipo (prevenir/detectar/mitigar) | Responsable | Fecha |
-| --- | --- | --- | --- |
-```
-
-Las **acciones** son lo importante: con responsable, fecha y seguimiento. Un postmortem sin acciones cerradas no sirve.
+Después de cada incidente relevante se escribe un **blameless postmortem** (postmortem sin culpables): busca **qué falló en el sistema y en los procesos**, no a quién culpar, y termina en acciones con responsable y fecha. Cuándo es obligatorio, plantilla, ejemplo y seguimiento de acciones en [Postmortem](postmortem.md); las técnicas de análisis, en [Análisis de causa raíz](analisis-causa-raiz.md).
 
 ## Runbooks
 
-Un **runbook** (manual de operación) describe paso a paso cómo diagnosticar y resolver un problema concreto. Cada alerta debería enlazar al suyo.
-
-Un buen runbook incluye:
-
-- Qué significa la alerta y qué impacto tiene en usuarios.
-- Paneles y consultas para diagnosticar (enlaces directos).
-- Pasos de mitigación con los comandos exactos.
-- Cuándo y a quién escalar.
-
-El siguiente paso es convertir el runbook en automatización (por ejemplo, con AWS Systems Manager Automation, Azure Automation o un job de CI), lo que reduce el toil y los errores manuales. Plantilla, ejemplo y automatización en detalle: [Runbooks y playbooks](runbooks-playbooks.md).
+Un **runbook** (manual de operación) describe paso a paso cómo diagnosticar y resolver un problema concreto; cada alerta debería enlazar al suyo, y el siguiente paso es automatizarlo para reducir el toil. Plantilla, ejemplo y automatización en [Runbooks y playbooks](runbooks-playbooks.md).
 
 ## Capacity planning (planificación de capacidad)
 
@@ -164,16 +113,7 @@ El autoscaling ayuda, pero no sustituye la planificación: tiene límites, tarda
 
 ## Chaos engineering
 
-**Chaos engineering** (ingeniería del caos) es provocar fallos **a propósito y de forma controlada** para comprobar que el sistema resiste como esperas: apagar instancias, añadir latencia, cortar una dependencia, simular la caída de una zona.
-
-Pasos:
-
-1. Define el **steady state** (estado estable) con métricas: por ejemplo, el SLI de éxito de peticiones.
-2. Formula una hipótesis: "si cae una zona, el SLI no baja del 99,9 %".
-3. Inyecta el fallo empezando por un **blast radius** (radio de impacto) pequeño, en un entorno de pruebas y luego, con cuidado, en producción.
-4. Compara con el steady state y corrige lo que falle.
-
-Herramientas: **AWS Fault Injection Service**, **Azure Chaos Studio**, y *open source* como **Chaos Mesh** o **LitmusChaos** para Kubernetes. Los **game days** (simulacros) practican además la respuesta del equipo. Más contexto en [Resiliencia](../../cloud/operacion-y-gobierno/resiliencia.md); game days, pre-mortems, Wheel of Misfortune y otras prácticas en [Prácticas de aprendizaje](practicas-aprendizaje.md).
+**Chaos engineering** (ingeniería del caos) es provocar fallos a propósito y de forma controlada para comprobar que el sistema resiste como esperas. Método, herramientas y su relación con los game days en [Prácticas para aprender de incidentes](practicas-aprendizaje.md#chaos-engineering); aplicado a disaster recovery, en [Resiliencia](../../cloud/operacion-y-gobierno/resiliencia.md#probar-el-dr-game-days-y-chaos-engineering).
 
 ## Relación con otras secciones
 
@@ -194,6 +134,3 @@ Herramientas: **AWS Fault Injection Service**, **Azure Chaos Studio**, y *open s
 - [SRE Book: Postmortem Culture](https://sre.google/sre-book/postmortem-culture/)
 - [SRE Workbook: Incident Response](https://sre.google/workbook/incident-response/)
 - [PagerDuty Incident Response](https://response.pagerduty.com/)
-- [Principles of Chaos Engineering](https://principlesofchaos.org/)
-- [AWS Fault Injection Service](https://docs.aws.amazon.com/fis/latest/userguide/what-is.html)
-- [Azure Chaos Studio](https://learn.microsoft.com/es-es/azure/chaos-studio/chaos-studio-overview)

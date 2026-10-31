@@ -45,95 +45,42 @@ Ver [Máquinas virtuales](../../cloud/computo/maquinas-virtuales.md) para el lad
 
 ## Dockerfile
 
-El **Dockerfile** describe cómo construir la imagen. Instrucciones principales:
-
-| Instrucción | Para qué sirve |
-| --- | --- |
-| `FROM` | Imagen base de la que partes |
-| `WORKDIR` | Directorio de trabajo para las siguientes instrucciones |
-| `COPY` | Copia archivos del **build context** (contexto de build: la carpeta que envías a Docker) a la imagen |
-| `RUN` | Ejecuta un comando durante el build (instalar dependencias, compilar) |
-| `ENV` | Variables de entorno disponibles en build y en ejecución |
-| `ARG` | Variables solo para el build (`--build-arg`) |
-| `EXPOSE` | Documenta el puerto en el que escucha la app (no lo publica) |
-| `USER` | Usuario con el que se ejecutan las siguientes instrucciones y el contenedor |
-| `ENTRYPOINT` / `CMD` | Comando que se ejecuta al arrancar el contenedor; `CMD` da argumentos por defecto que se pueden sobrescribir |
-| `HEALTHCHECK` | Comando para comprobar si el contenedor está sano |
+El **Dockerfile** describe cómo construir la imagen: parte de una imagen base (`FROM`), copia archivos del **build context** (contexto de build: la carpeta que envías a Docker) con `COPY`, ejecuta comandos de build con `RUN` y define cómo arranca el contenedor (`USER`, `EXPOSE`, `ENTRYPOINT`/`CMD`, `HEALTHCHECK`). Cada instrucción, con su obligatoriedad y valores típicos, está en [Anatomía de los archivos de Docker: referencia de instrucciones](../../recursos/anatomia/docker.md#referencia-de-instrucciones-del-dockerfile).
 
 !!! tip "Forma exec"
-    Escribe `CMD` y `ENTRYPOINT` en **exec form** (forma exec, con corchetes): `CMD ["node", "server.js"]`. Así la aplicación es el proceso principal y recibe las señales de parada (`SIGTERM`) para cerrarse limpiamente.
+    Escribe `CMD` y `ENTRYPOINT` en **exec form** (forma exec, con corchetes): `CMD ["node", "server.js"]`. Así la aplicación es el proceso principal y recibe las señales de parada (`SIGTERM`) para cerrarse limpiamente. Cómo se combinan ambos: [ENTRYPOINT frente a CMD](../../recursos/anatomia/docker.md#entrypoint-frente-a-cmd).
 
 ## Multi-stage builds
 
 Un **multi-stage build** (build en varias etapas) usa una imagen grande con compiladores y herramientas para construir, y copia **solo el resultado** a una imagen final pequeña. La imagen final no lleva el compilador, el código fuente ni las dependencias de desarrollo: pesa menos y tiene menos vulnerabilidades.
 
-=== "Go"
+```dockerfile title="Dockerfile"
+# Etapa 1: compilar
+FROM golang:1.23 AS build
+WORKDIR /src
 
-    ```dockerfile title="Dockerfile"
-    # Etapa 1: compilar
-    FROM golang:1.23 AS build
-    WORKDIR /src
+# Primero las dependencias, para aprovechar la caché
+COPY go.mod go.sum ./
+RUN go mod download
 
-    # Primero las dependencias, para aprovechar la caché
-    COPY go.mod go.sum ./
-    RUN go mod download
+COPY . .
+RUN CGO_ENABLED=0 GOOS=linux go build -o /out/api ./cmd/api
 
-    COPY . .
-    RUN CGO_ENABLED=0 GOOS=linux go build -o /out/api ./cmd/api
+# Etapa 2: imagen final mínima, sin shell y sin root
+FROM gcr.io/distroless/static-debian12:nonroot
+COPY --from=build /out/api /api
+EXPOSE 8080
+USER nonroot:nonroot
+ENTRYPOINT ["/api"]
+```
 
-    # Etapa 2: imagen final mínima, sin shell y sin root
-    FROM gcr.io/distroless/static-debian12:nonroot
-    COPY --from=build /out/api /api
-    EXPOSE 8080
-    USER nonroot:nonroot
-    ENTRYPOINT ["/api"]
-    ```
-
-=== "Node.js"
-
-    ```dockerfile title="Dockerfile"
-    # Etapa 1: dependencias y build
-    FROM node:22-alpine AS build
-    WORKDIR /app
-    COPY package.json package-lock.json ./
-    RUN npm ci
-    COPY . .
-    RUN npm run build
-
-    # Etapa 2: solo dependencias de producción
-    FROM node:22-alpine AS deps
-    WORKDIR /app
-    COPY package.json package-lock.json ./
-    RUN npm ci --omit=dev
-
-    # Etapa 3: imagen final
-    FROM node:22-alpine
-    ENV NODE_ENV=production
-    WORKDIR /app
-    COPY --from=deps /app/node_modules ./node_modules
-    COPY --from=build /app/dist ./dist
-    USER node
-    EXPOSE 3000
-    CMD ["node", "dist/server.js"]
-    ```
-
-Las versiones de las imágenes base son de ejemplo: usa las versiones soportadas en el momento en que construyas.
+Las versiones de las imágenes base son de ejemplo: usa las versiones soportadas en el momento en que construyas. Un Dockerfile multi-stage completo (Python, con `LABEL`, usuario sin privilegios, caché de BuildKit y `HEALTHCHECK`) comentado instrucción por instrucción está en [Anatomía de los archivos de Docker](../../recursos/anatomia/docker.md#dockerfile-comentado-instruccion-por-instruccion).
 
 ## .dockerignore
 
 El `.dockerignore` excluye archivos del build context. Hace el build más rápido y evita meter en la imagen cosas que no deben estar ahí (secretos, `.git`).
 
-```text title=".dockerignore"
-.git
-node_modules
-dist
-*.log
-.env
-.env.*
-Dockerfile
-docker-compose*.yml
-coverage/
-```
+Lo típico: `.git`, dependencias y builds locales (`node_modules`, `dist`, `.venv`), logs y, sobre todo, `.env` y cualquier secreto. Archivo comentado y reglas de los patrones (`**`, `!`): [.dockerignore comentado](../../recursos/anatomia/docker.md#dockerignore-comentado).
 
 !!! danger "Nunca metas secretos en la imagen"
     Cualquiera que pueda descargar la imagen puede leer todas sus capas, incluso un archivo que borraste en una capa posterior. Para secretos durante el build usa `RUN --mount=type=secret`; en ejecución, inyéctalos como variables de entorno o archivos desde un gestor de secretos.
@@ -197,6 +144,8 @@ docker compose down            # parar (añade -v para borrar los volúmenes)
 - Los servicios se encuentran por su **nombre** (`db`) gracias a la red que crea Compose.
 - `${DB_PASSWORD}` se toma del entorno o de un archivo `.env` (que no se sube a Git).
 - `depends_on` con `service_healthy` espera a que la base de datos esté lista, no solo arrancada.
+
+Ejemplo completo con secretos, redes internas, límites de recursos y *profiles*, y la diferencia entre `.env`, `env_file` y `environment`: [compose.yaml comentado línea por línea](../../recursos/anatomia/docker.md#composeyaml-comentado-linea-por-linea).
 
 ## Buenas prácticas de build
 

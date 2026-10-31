@@ -140,18 +140,57 @@ tags:
 | `>&2 echo "mensaje"` | Escribir un mensaje en stderr |
 
 ## 12. Ejemplo de referencia
-```bash
+
+Script robusto: modo estricto, argumento obligatorio, valor por defecto, logs a stderr, limpieza con `trap` y reintentos.
+
+```bash title="backup.sh"
 #!/usr/bin/env bash
+# Comprime un directorio y lo copia a un bucket. Uso: ./backup.sh <directorio>
 set -euo pipefail
 
-nombre="${1:?Debe indicar un nombre}"
+readonly ORIGEN="${1:?Uso: $0 <directorio>}"
+readonly DESTINO="${BACKUP_BUCKET:-s3://mi-bucket-backups}"
+readonly ARCHIVO="/tmp/backup-$(date +%Y%m%d-%H%M%S).tar.gz"
 
-saludar() {
-  local persona="$1"
-  echo "Hola, ${persona}"
+log() {
+  echo "[$(date +%H:%M:%S)] $*" >&2
 }
 
-for i in {1..3}; do
-  saludar "$nombre"
+limpiar() {
+  rm -f "$ARCHIVO"
+}
+trap limpiar EXIT
+
+if [[ ! -d "$ORIGEN" ]]; then
+  log "ERROR: $ORIGEN no es un directorio"
+  exit 1
+fi
+
+log "Comprimiendo $ORIGEN"
+tar -czf "$ARCHIVO" -C "$ORIGEN" .
+
+for intento in 1 2 3; do
+  if aws s3 cp "$ARCHIVO" "$DESTINO/"; then
+    log "Backup subido"
+    exit 0
+  fi
+  log "Fallo en intento $intento, reintentando..."
+  sleep 5
 done
+
+log "ERROR: no se pudo subir el backup"
+exit 2
 ```
+
+| Pieza | Para qué sirve |
+| --- | --- |
+| `set -e` | Termina el script si un comando falla (código distinto de 0) |
+| `set -u` | Falla si usas una variable no definida (evita `rm -rf "$DIR/"` con `DIR` vacío) |
+| `set -o pipefail` | Una tubería (`a \| b`) falla si falla cualquier comando, no solo el último |
+| `"${1:?mensaje}"` / `"${VAR:-defecto}"` | Argumento obligatorio / valor por defecto |
+| `trap limpiar EXIT` | Borra el temporal al salir, haya error o no |
+| `log ... >&2` | Los mensajes van a *stderr*, así no ensucian la salida útil |
+| `exit 1` / `exit 2` | Códigos distintos por tipo de fallo, para que el pipeline sepa qué pasó |
+
+!!! tip "Siempre comillas en las variables"
+    Escribe `"$VAR"`, no `$VAR`. Sin comillas, un valor con espacios se parte en varias palabras y un valor vacío desaparece. Usa **ShellCheck** (`shellcheck script.sh`) para detectar estos errores; se integra fácil en CI.

@@ -9,74 +9,36 @@ tags:
 
 # Linux, redes y scripting
 
-> Lo esencial que un perfil DevOps usa a diario: scripts en Bash y Python, servicios con systemd, SSH, DNS, HTTP y cómo diagnosticar problemas de red.
+> Nota puente: qué necesita un perfil DevOps de Bash, Python, systemd, SSH, DNS, HTTP y el diagnóstico de red, con lo esencial de cada tema y enlaces a las notas que lo explican a fondo.
 
 ## ¿Qué es?
 
-Casi todo en la nube termina corriendo sobre **Linux**: VMs, nodos de Kubernetes, contenedores, *runners* de CI. Y casi todo problema en producción termina siendo **de red** (DNS que no resuelve, un puerto cerrado, un certificado vencido). Esta nota reúne lo que necesitas entender, no una lista exhaustiva de comandos.
+Casi todo en la nube termina corriendo sobre **Linux**: VMs, nodos de Kubernetes, contenedores, *runners* de CI. Y casi todo problema en producción termina siendo **de red** (DNS que no resuelve, un puerto cerrado, un certificado vencido). Cada tema tiene su nota propia; aquí está el mínimo que usas a diario y a dónde ir para profundizar.
+
+| Tema | Qué necesitas en DevOps | Nota a fondo |
+| --- | --- | --- |
+| Bash | Scripts de pipeline y de mantenimiento que fallen bien | [Shell / Bash](../../recursos/sintaxis/shell.md) |
+| Python | Automatización con lógica, APIs y SDKs de nube | [Python](../../python/index.md), [Automatización cloud con SDKs](../../python/scripting/automatizacion-cloud.md) |
+| systemd | Levantar un servicio y leer sus logs | [Linux Server: servicios con systemd](../../servidores/linux/linux-fundamentos-servidor.md#servicios-con-systemd) |
+| SSH | Entrar a servidores, saltar por un bastion, hacer túneles | [Redes en Linux Server: SSH](../../servidores/linux/linux-redes-servidor.md#ssh-del-lado-servidor) |
+| DNS | Saber qué registro tocar y comprobar qué responde | [Servicios de red: DNS en profundidad](../../networking/intermedio/servicios-red.md#dns-en-profundidad) |
+| HTTP | Leer códigos de estado y probar endpoints con `curl` | [Protocolos de aplicación](../../networking/intermedio/protocolos-aplicacion.md#http) |
+| Red | Diagnosticar un "no conecta" capa por capa | [Troubleshooting de red](../../networking/avanzado/troubleshooting-red.md) |
 
 !!! note "Para las chuletas de comandos"
-    Esta nota explica conceptos y da ejemplos. Para tablas de comandos ver [Linux](../../recursos/comandos/linux.md), [Shell / Bash](../../recursos/sintaxis/shell.md) y [Puertos comunes](../../recursos/puertos.md).
+    Tablas de comandos en [Linux](../../recursos/comandos/linux.md), [Shell / Bash](../../recursos/sintaxis/shell.md) y [Puertos comunes](../../recursos/puertos.md).
 
 ## Bash
 
 **Bash** es el *shell* (intérprete de comandos) por defecto en la mayoría de distribuciones y en los runners de CI. Sirve para **pegar comandos**: automatizar pasos que harías a mano en la terminal.
 
-### Estructura de un script robusto
+Lo mínimo para que un script no haga daño en silencio:
 
-```bash title="backup.sh"
-#!/usr/bin/env bash
-# Comprime un directorio y lo copia a un bucket. Uso: ./backup.sh <directorio>
-set -euo pipefail
+- Empieza con `#!/usr/bin/env bash` y `set -euo pipefail` (cortar ante errores, variables sin definir y fallos en tuberías).
+- Valida argumentos (`"${1:?Uso: $0 <dir>}"`), escribe los logs en *stderr* (`>&2`) y limpia temporales con `trap ... EXIT`.
+- Pon **siempre comillas** en las variables (`"$VAR"`) y pásale **ShellCheck** en CI.
 
-readonly ORIGEN="${1:?Uso: $0 <directorio>}"
-readonly DESTINO="${BACKUP_BUCKET:-s3://mi-bucket-backups}"
-readonly ARCHIVO="/tmp/backup-$(date +%Y%m%d-%H%M%S).tar.gz"
-
-log() {
-  echo "[$(date +%H:%M:%S)] $*" >&2
-}
-
-limpiar() {
-  rm -f "$ARCHIVO"
-}
-trap limpiar EXIT
-
-if [[ ! -d "$ORIGEN" ]]; then
-  log "ERROR: $ORIGEN no es un directorio"
-  exit 1
-fi
-
-log "Comprimiendo $ORIGEN"
-tar -czf "$ARCHIVO" -C "$ORIGEN" .
-
-for intento in 1 2 3; do
-  if aws s3 cp "$ARCHIVO" "$DESTINO/"; then
-    log "Backup subido"
-    exit 0
-  fi
-  log "Fallo en intento $intento, reintentando..."
-  sleep 5
-done
-
-log "ERROR: no se pudo subir el backup"
-exit 2
-```
-
-| Pieza | Para qué sirve |
-| --- | --- |
-| `#!/usr/bin/env bash` | **Shebang**: indica qué intérprete ejecuta el script (busca `bash` en el `PATH`) |
-| `set -e` | Termina el script si un comando falla (código distinto de 0) |
-| `set -u` | Falla si usas una variable no definida (evita `rm -rf "$DIR/"` con `DIR` vacío) |
-| `set -o pipefail` | Una tubería (`a \| b`) falla si falla cualquier comando, no solo el último |
-| `"${1:?mensaje}"` | Exige un argumento y muestra el mensaje si falta |
-| `"${VAR:-defecto}"` | Valor por defecto si la variable no existe |
-| `[[ ... ]]` | Condicional de Bash (más seguro que `[ ... ]`) |
-| `trap ... EXIT` | Ejecuta limpieza al salir, haya error o no |
-| `>&2` | Escribe en *stderr* (salida de errores), así no ensucias la salida útil |
-
-!!! tip "Siempre comillas en las variables"
-    Escribe `"$VAR"`, no `$VAR`. Sin comillas, un valor con espacios se parte en varias palabras y un valor vacío desaparece. Usa **ShellCheck** (`shellcheck script.sh`) para detectar estos errores; se integra fácil en CI.
+Script de ejemplo completo (backup con reintentos y limpieza): [Shell / Bash: ejemplo de referencia](../../recursos/sintaxis/shell.md#12-ejemplo-de-referencia).
 
 ### Exit codes (códigos de salida)
 
@@ -92,69 +54,28 @@ comando_a || exit 1      # si a falla, sal con error
 
 ## Python para automatización
 
-Bash es ideal para encadenar comandos, pero se vuelve frágil cuando hay lógica. Prefiere **Python** cuando:
+Bash es ideal para encadenar comandos, pero se vuelve frágil cuando hay lógica. Pasa a **Python** cuando trabajas con JSON/YAML o APIs, el script supera ~50–100 líneas o necesitas manejo de errores fino y tests (comparación completa en [¿Python o Bash?](../../python/scripting/sistema-procesos.md#python-o-bash)).
 
-- Trabajas con **JSON/YAML**, APIs o estructuras de datos (listas, diccionarios).
-- El script pasa de ~50–100 líneas o tiene mucha lógica condicional.
-- Necesitas manejo de errores fino, tests o reutilizar código.
-- Vas a usar el **SDK** de una nube: **boto3** (AWS), **azure-sdk-for-python** (Azure), **google-cloud-python** (Google Cloud).
-
-Ejemplo: listar las instancias EC2 en ejecución que **no** tienen la etiqueta `owner` (útil para gobernanza y costos):
-
-```python title="ec2_sin_owner.py"
-import boto3
-
-ec2 = boto3.client("ec2", region_name="us-east-1")
-paginator = ec2.get_paginator("describe_instances")
-
-filtros = [{"Name": "instance-state-name", "Values": ["running"]}]
-for pagina in paginator.paginate(Filters=filtros):
-    for reserva in pagina["Reservations"]:
-        for instancia in reserva["Instances"]:
-            tags = {t["Key"]: t["Value"] for t in instancia.get("Tags", [])}
-            if "owner" not in tags:
-                print(instancia["InstanceId"], instancia["InstanceType"])
-```
-
-!!! note "Credenciales"
-    boto3 toma las credenciales de la cadena estándar de AWS (variables de entorno, perfil de `~/.aws`, rol de la VM o del pipeline). Nunca las escribas en el código. Ver [IAM: AWS, Azure y GCP](../../cloud/fundamentos/iam-comparativa.md).
+Para hablar con la nube se usa el **SDK** de cada proveedor: **boto3** (AWS), **azure-sdk-for-python** (Azure), **google-cloud-python** (Google Cloud). Toman las credenciales de la cadena estándar del proveedor (sesión de la CLI, rol de la VM o del pipeline): nunca las escribas en el código. Ejemplos en las tres nubes en [Automatización cloud con SDKs](../../python/scripting/automatizacion-cloud.md).
 
 ## systemd
 
 **systemd** es el sistema de inicio y gestor de servicios de casi todas las distribuciones modernas. Arranca procesos, los reinicia si fallan y centraliza sus logs en el **journal**.
 
-- Una **unit** (unidad) describe algo que systemd gestiona. Las más comunes: `.service` (un proceso), `.timer` (tarea programada, alternativa a cron), `.socket`, `.mount`.
-- **`systemctl`** controla las units: `start`, `stop`, `restart`, `enable` (arrancar con el sistema), `status`.
-- **`journalctl`** lee los logs: `journalctl -u miapp -f` sigue los logs de un servicio en vivo.
-
-```ini title="/etc/systemd/system/miapp.service"
-[Unit]
-Description=API de ejemplo
-After=network-online.target
-Wants=network-online.target
-
-[Service]
-Type=simple
-User=miapp
-WorkingDirectory=/opt/miapp
-EnvironmentFile=/etc/miapp/env
-ExecStart=/opt/miapp/venv/bin/gunicorn -b 0.0.0.0:8000 app:app
-Restart=on-failure
-RestartSec=5
-
-[Install]
-WantedBy=multi-user.target
-```
+- Una **unit** (unidad) describe algo que systemd gestiona: `.service` (un proceso), `.timer` (tarea programada, alternativa a cron), `.socket`, `.mount`.
+- **`systemctl`** controla las units y **`journalctl`** lee sus logs:
 
 ```bash
 sudo systemctl daemon-reload          # recargar tras crear o editar la unit
 sudo systemctl enable --now miapp     # habilitar al arranque e iniciar ya
 systemctl status miapp
-journalctl -u miapp --since "10 min ago"
+journalctl -u miapp -f                # seguir los logs en vivo
 ```
 
 !!! tip "Usuario dedicado"
     Ejecuta cada servicio con un **usuario propio sin privilegios** (`User=miapp`), nunca como `root`. systemd también ofrece opciones de *hardening* como `NoNewPrivileges=yes` o `ProtectSystem=strict`.
+
+Unit file comentado, drop-ins y journald: [Linux Server: fundamentos de administración](../../servidores/linux/linux-fundamentos-servidor.md#servicios-con-systemd). Timers: [systemd timers](../../servidores/linux/linux-procesos-rendimiento.md#systemd-timers).
 
 ## SSH
 
@@ -164,31 +85,11 @@ journalctl -u miapp --since "10 min ago"
 ssh-keygen -t ed25519 -C "dani@laptop"    # generar llaves (ed25519 es el tipo recomendado hoy)
 ssh-copy-id usuario@servidor              # copiar la pública al servidor
 eval "$(ssh-agent -s)" && ssh-add         # cargar la llave en el agente (no repites la passphrase)
+ssh -J bastion usuario@10.0.2.15          # saltar por un bastion (servidor de salto)
+ssh -L 5433:db.interna:5432 bastion       # túnel: localhost:5433 -> base de datos privada
 ```
 
-El archivo `~/.ssh/config` evita recordar IPs, usuarios y llaves:
-
-```text title="~/.ssh/config"
-Host bastion
-    HostName 203.0.113.10
-    User ubuntu
-    IdentityFile ~/.ssh/id_ed25519
-
-Host app-privada
-    HostName 10.0.2.15
-    User ubuntu
-    ProxyJump bastion
-```
-
-Con eso, `ssh app-privada` salta por el **bastion** (servidor de salto) hasta una VM en una subred privada.
-
-**SSH tunneling** (túneles SSH) reenvía puertos a través de la conexión cifrada:
-
-```bash
-# Local forwarding: localhost:5433 -> base de datos privada a través del bastion
-ssh -L 5433:db.interna:5432 bastion
-# Ahora: psql -h localhost -p 5433
-```
+`~/.ssh/config` con `ProxyJump`, túneles, `scp`/`rsync` y permisos del lado servidor: [Redes en Linux Server: SSH del lado servidor](../../servidores/linux/linux-redes-servidor.md#ssh-del-lado-servidor). El protocolo por dentro: [Protocolos de aplicación: SSH](../../networking/intermedio/protocolos-aplicacion.md#ssh).
 
 !!! info "En la nube, mejor sin puertos abiertos"
     Los tres proveedores ofrecen acceso sin exponer el puerto 22 a internet: **Session Manager** (AWS), **Azure Bastion** y **IAP TCP forwarding** (Google Cloud). Ver [Máquinas virtuales](../../cloud/computo/maquinas-virtuales.md).
@@ -206,15 +107,15 @@ ssh -L 5433:db.interna:5432 bastion
 | **TXT** | Texto libre: verificación de dominio, SPF, DKIM, DMARC | `"v=spf1 include:_spf.google.com ~all"` |
 | **NS** | Servidores autoritativos de la zona | `ns1.proveedor-dns.com` |
 
-El **TTL** (*time to live*) indica cuántos segundos se puede guardar en caché una respuesta. Antes de una migración, baja el TTL con tiempo para que el cambio se propague rápido.
+El **TTL** (*time to live*) indica cuántos segundos se puede guardar en caché una respuesta: bájalo con tiempo antes de una migración.
 
 ```bash
-dig api.ejemplo.com              # registro A
 dig api.ejemplo.com AAAA +short  # solo la respuesta
-dig ejemplo.com MX
 dig @8.8.8.8 api.ejemplo.com     # preguntar a un resolver concreto
 dig +trace api.ejemplo.com       # seguir la resolución desde la raíz
 ```
+
+Jerarquía, resolución paso a paso, otros registros (SOA, PTR, SRV, CAA), TTL y cómo leer `dig`: [Servicios de red: DNS en profundidad](../../networking/intermedio/servicios-red.md#dns-en-profundidad).
 
 ## HTTP
 
@@ -238,14 +139,14 @@ dig +trace api.ejemplo.com       # seguir la resolución desde la raíz
 | `500` | Error interno de la aplicación | Logs de la app |
 | `502` / `503` / `504` | Error en el *proxy* o *load balancer*: backend caído, sin capacidad o lento | *Health checks*, *timeouts* |
 
-Headers (cabeceras) que conviene reconocer: `Host`, `Authorization`, `Content-Type`, `Cache-Control`, `X-Forwarded-For` (IP original detrás de un *load balancer*).
-
 ```bash
 curl -i https://api.ejemplo.com/health                  # respuesta con headers
 curl -sS -o /dev/null -w "%{http_code} %{time_total}s\n" https://api.ejemplo.com/health
 curl -X POST -H "Content-Type: application/json" -d '{"nombre":"dani"}' https://api.ejemplo.com/usuarios
 curl -v --resolve api.ejemplo.com:443:10.0.1.20 https://api.ejemplo.com/   # probar contra una IP concreta
 ```
+
+Petición y respuesta por dentro, versiones, semántica de los métodos, headers y TLS: [Protocolos de aplicación](../../networking/intermedio/protocolos-aplicacion.md#http).
 
 ## Puertos y troubleshooting de red
 
@@ -259,14 +160,10 @@ flowchart TD
     D --> E[¿Responde bien la aplicación?<br/>curl -v, logs]
 ```
 
-| Comando | Qué te dice |
-| --- | --- |
-| `ip a` / `ip route` | IPs de las interfaces y la tabla de rutas (reemplazan a `ifconfig`/`route`) |
-| `ss -tulpn` | Qué puertos escuchan y qué proceso los usa. Ojo: `127.0.0.1:8000` solo acepta conexiones locales, `0.0.0.0:8000` acepta de cualquier interfaz |
-| `nc -zv host 443` | Si un puerto remoto acepta conexiones |
-| `traceroute host` / `mtr host` | Por qué saltos pasa el tráfico y dónde se corta |
-| `ping host` | Conectividad básica (muchas nubes bloquean ICMP por defecto, así que un *ping* fallido no prueba nada) |
-| `tcpdump -i any port 443` | Captura de paquetes para casos difíciles |
+- `ss -tulpn`: `127.0.0.1:8000` solo acepta conexiones locales; `0.0.0.0:8000`, de cualquier interfaz.
+- `ping` fallido no prueba nada: muchas nubes bloquean ICMP por defecto.
+
+Herramientas y cómo leer su salida: [Troubleshooting de red](../../networking/avanzado/troubleshooting-red.md#herramientas); `ss` en un servidor: [Puertos y sockets con ss](../../servidores/linux/linux-redes-servidor.md#puertos-y-sockets-con-ss); puertos bien conocidos: [Puertos comunes](../../recursos/puertos.md).
 
 !!! warning "En la nube, el firewall está fuera de la VM"
     Si `ss` muestra que el proceso escucha pero desde fuera no conecta, revisa el **security group / NSG / VPC firewall rule**, las tablas de rutas de la subred y los *network ACLs*, además del firewall del sistema operativo. Ver [Redes en la nube](../../cloud/redes-y-datos/redes.md).
@@ -276,6 +173,7 @@ flowchart TD
 | Enfoque | Qué se mira desde ahí | Nota |
 | --- | --- | --- |
 | Networking (la base) | DNS, DHCP y NTP en profundidad; HTTP, TLS y SSH por dentro; metodología y casos de troubleshooting de red | [Servicios de red](../../networking/intermedio/servicios-red.md), [Protocolos de aplicación](../../networking/intermedio/protocolos-aplicacion.md), [Troubleshooting de red](../../networking/avanzado/troubleshooting-red.md) |
+| Servidores (la administración) | systemd, journald, SSH del lado servidor, red y rendimiento del host | [Linux Server: fundamentos](../../servidores/linux/linux-fundamentos-servidor.md), [Redes en Linux Server](../../servidores/linux/linux-redes-servidor.md), [Procesos y rendimiento](../../servidores/linux/linux-procesos-rendimiento.md) |
 | Cloud (el control) | VPC, subredes, rutas, security groups, DNS gestionado y load balancers sobre los que aplicas todo esto | [Redes en la nube](../../cloud/redes-y-datos/redes.md), [Máquinas virtuales](../../cloud/computo/maquinas-virtuales.md) |
 | DevOps (la automatización) | Scripts que se convierten en pasos de pipeline o en configuración gestionada | [Integración continua](../ci-cd/integracion-continua.md), [Ansible](../iac/ansible.md), [Observabilidad](../operacion/observabilidad.md) |
 | DevSecOps (la verificación) | Hardening del host, acceso sin llaves expuestas, puertos abiertos a `0.0.0.0/0` | [Secretos e identidades](../../devsecops/identidades-y-pipeline/secretos-identidades.md), [Cumplimiento y gobierno](../../devsecops/gobierno-y-respuesta/cumplimiento.md) |

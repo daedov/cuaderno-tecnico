@@ -120,43 +120,84 @@ La **caché** reutiliza entre ejecuciones lo que no cambió, normalmente las dep
 
 ## Ejemplos de pipeline
 
-El ejemplo de GitHub Actions está en [Pipeline CI/CD con GitHub Actions](ci-cd-github-actions.md). El equivalente en GitLab, añadiendo la construcción de una imagen y su publicación en el registry del proyecto:
+El flujo más habitual: cada `push` y *pull request* pasa por build y test, y solo los cambios que llegan a `main` siguen hasta el despliegue.
 
-```yaml title=".gitlab-ci.yml"
-stages:
-  - test
-  - package
-
-variables:
-  IMAGE: $CI_REGISTRY_IMAGE:$CI_COMMIT_SHORT_SHA
-
-test:
-  stage: test
-  image: node:20
-  cache:
-    key:
-      files: [package-lock.json]
-    paths: [.npm/]
-  script:
-    - npm ci --cache .npm --prefer-offline
-    - npm run lint
-    - npm test
-
-package:
-  stage: package
-  image: docker:27
-  services: [docker:27-dind]
-  rules:
-    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
-  script:
-    - echo "$CI_REGISTRY_PASSWORD" | docker login -u "$CI_REGISTRY_USER" --password-stdin "$CI_REGISTRY"
-    - docker build -t "$IMAGE" .
-    - docker push "$IMAGE"
+```mermaid
+flowchart LR
+    A[Push / PR] --> B[Build]
+    B --> C[Test]
+    C --> D{¿main?}
+    D -->|sí| E[Deploy]
+    D -->|no| F[Fin]
 ```
 
-- `$CI_REGISTRY_*` y `$CI_COMMIT_SHORT_SHA` son **variables predefinidas** de GitLab.
-- La imagen se etiqueta con el SHA del commit (trazabilidad) y solo se publica desde la rama por defecto.
-- Para construir la imagen ver [Docker](../contenedores/docker.md).
+=== "GitHub Actions"
+
+    Workflow mínimo de build y test en cada `push` a `main` y en cada *pull request*, con caché de dependencias de npm:
+
+    ```yaml title=".github/workflows/ci.yml"
+    name: CI
+
+    on:
+      push:
+        branches: [main]
+      pull_request:
+
+    jobs:
+      build-test:
+        runs-on: ubuntu-latest
+        steps:
+          - uses: actions/checkout@v7
+          - uses: actions/setup-node@v4
+            with:
+              node-version: 20
+              cache: npm
+          - run: npm ci
+          - run: npm test
+    ```
+
+    - El deploy va en **otro job** con `needs: build-test` (solo corre si el anterior pasó) y `environment:` (aprobaciones y secretos por entorno; ver [Despliegue continuo](despliegue-continuo.md)).
+    - Workflow completo comentado línea por línea (permisos, matrix, environments, OIDC, reusable workflows): [Anatomía de los workflows de GitHub Actions](../../recursos/anatomia/github-actions.md#workflow-principal-comentado-linea-por-linea). Chuleta rápida: [sintaxis de GitHub Actions](../../recursos/sintaxis/github-actions.md).
+
+=== "GitLab CI"
+
+    El equivalente en GitLab, añadiendo la construcción de una imagen y su publicación en el registry del proyecto:
+
+    ```yaml title=".gitlab-ci.yml"
+    stages:
+      - test
+      - package
+
+    variables:
+      IMAGE: $CI_REGISTRY_IMAGE:$CI_COMMIT_SHORT_SHA
+
+    test:
+      stage: test
+      image: node:20
+      cache:
+        key:
+          files: [package-lock.json]
+        paths: [.npm/]
+      script:
+        - npm ci --cache .npm --prefer-offline
+        - npm run lint
+        - npm test
+
+    package:
+      stage: package
+      image: docker:27
+      services: [docker:27-dind]
+      rules:
+        - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+      script:
+        - echo "$CI_REGISTRY_PASSWORD" | docker login -u "$CI_REGISTRY_USER" --password-stdin "$CI_REGISTRY"
+        - docker build -t "$IMAGE" .
+        - docker push "$IMAGE"
+    ```
+
+    - `$CI_REGISTRY_*` y `$CI_COMMIT_SHORT_SHA` son **variables predefinidas** de GitLab.
+    - La imagen se etiqueta con el SHA del commit (trazabilidad) y solo se publica desde la rama por defecto.
+    - Para construir la imagen ver [Docker](../contenedores/docker.md).
 
 ## Dónde se insertan los escaneos de seguridad
 
@@ -201,9 +242,9 @@ Ver [IAM: AWS, Azure y GCP](../../cloud/fundamentos/iam-comparativa.md) y [Secre
 | Enfoque | Qué se mira desde ahí | Nota |
 | --- | --- | --- |
 | Cloud (el control) | Rol del pipeline y registries nativos | [IAM: AWS, Azure y GCP](../../cloud/fundamentos/iam-comparativa.md), [Contenedores gestionados](../../cloud/computo/contenedores-gestionados.md) |
-| DevOps (la automatización) | De dónde vienen los cambios y a dónde va el artefacto | [Git y control de versiones](../fundamentos/git-control-versiones.md), [Pipeline CI/CD con GitHub Actions](ci-cd-github-actions.md), [Despliegue continuo](despliegue-continuo.md), [Docker](../contenedores/docker.md) |
+| DevOps (la automatización) | De dónde vienen los cambios y a dónde va el artefacto | [Git y control de versiones](../fundamentos/git-control-versiones.md), [Anatomía de GitHub Actions](../../recursos/anatomia/github-actions.md), [Despliegue continuo](despliegue-continuo.md), [Docker](../contenedores/docker.md) |
 | DevSecOps (la verificación) | Escaneos en el pipeline y seguridad del propio pipeline | [Seguridad del código](../../devsecops/codigo-y-dependencias/seguridad-codigo.md), [Software supply chain](../../devsecops/codigo-y-dependencias/cadena-suministro.md), [Escaneo en el pipeline](../../devsecops/escaneos/escaneo-en-pipeline.md), [Seguridad de IaC](../../devsecops/infraestructura-y-contenedores/seguridad-iac.md), [Seguridad de contenedores](../../devsecops/infraestructura-y-contenedores/seguridad-contenedores.md), [Seguridad del pipeline](../../devsecops/identidades-y-pipeline/seguridad-pipeline.md), [Secretos e identidades](../../devsecops/identidades-y-pipeline/secretos-identidades.md) |
-| Laboratorios (la práctica) | Practicar esto paso a paso | [Lab 03: Script en Python para analizar logs](../../laboratorios/fundamentos/python-analizar-logs.md), [Lab 04: Flujo Git con ramas, pull requests y code review](../../laboratorios/devops/git-flujo-pull-request.md), [Lab 05: Imagen multi-stage y Docker Compose](../../laboratorios/devops/docker-multistage-compose.md), [Lab 07: Pipeline de CI con GitHub Actions](../../laboratorios/devops/github-actions-ci.md), [Lab 12: Escaneos de seguridad en el pipeline](../../laboratorios/devsecops/escaneos-en-pipeline.md), [Lab 20: Google Cloud: desplegar un contenedor en Cloud Run](../../laboratorios/cloud/gcp-cloud-run.md) |
+| Laboratorios (la práctica) | Practicar esto paso a paso | [Lab 03: Script en Python para analizar logs](../../laboratorios/fundamentos/python-analizar-logs.md), [Lab 04: Flujo Git con ramas, pull requests y code review](../../laboratorios/devops/git-flujo-pull-request.md), [Lab 05: Imagen multi-stage y Docker Compose](../../laboratorios/devops/docker-multistage-compose.md), [Lab 07: Pipeline de CI con GitHub Actions](../../laboratorios/devops/github-actions-ci.md), [Lab 12: Escaneos de seguridad en el pipeline](../../laboratorios/devsecops/escaneos-en-pipeline.md), [Lab 13: Desplegar en AWS desde GitHub Actions con OIDC (sin llaves)](../../laboratorios/devsecops/oidc-github-aws.md), [Lab 15: DAST con OWASP ZAP sobre OWASP Juice Shop](../../laboratorios/devsecops/dast-zap-juice-shop.md), [Lab 20: Google Cloud: desplegar un contenedor en Cloud Run](../../laboratorios/cloud/gcp-cloud-run.md) |
 
 ## Referencias
 

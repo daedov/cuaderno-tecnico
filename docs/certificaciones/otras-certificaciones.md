@@ -158,7 +158,7 @@ No técnicas, pero aparecen en ofertas de operaciones, soporte, FinOps y lideraz
 
 ## Plataformas DevOps
 
-Baratas y rápidas; demuestran algo concreto si la oferta usa esa plataforma (ver [CI con GitHub Actions](../devops/ci-cd/ci-cd-github-actions.md)).
+Baratas y rápidas; demuestran algo concreto si la oferta usa esa plataforma (ver [CI con GitHub Actions](../devops/ci-cd/integracion-continua.md#ejemplos-de-pipeline)).
 
 | Certificación | Emisor y examen | Objetivo profesional | Formato | Costo aprox. | Validez |
 | --- | --- | --- | --- | --- | --- |

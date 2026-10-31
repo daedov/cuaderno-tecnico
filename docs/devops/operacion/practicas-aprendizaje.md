@@ -8,13 +8,13 @@ tags:
 
 # Prácticas para aprender de incidentes
 
-> Pre-mortem, game days, Wheel of Misfortune, tabletop exercises, retrospectivas, traspaso de guardia, revisión semanal de alertas, medición del toil, near misses y learning reviews: cómo aprender antes, durante y después de que algo falle.
+> Pre-mortem, game days, chaos engineering, Wheel of Misfortune, tabletop exercises, retrospectivas, traspaso de guardia, revisión semanal de alertas, medición del toil, near misses y learning reviews: cómo aprender antes, durante y después de que algo falle.
 
 ## ¿Qué es?
 
 El [postmortem](postmortem.md) aprende de un incidente que ya pasó. Pero un equipo que solo aprende de sus incidentes aprende **tarde** y **caro**. Las prácticas de esta nota buscan aprender:
 
-- **Antes** de que falle algo: pre-mortem, game days, simulacros.
+- **Antes** de que falle algo: pre-mortem, game days, chaos engineering, simulacros.
 - **Del día a día**: traspaso de guardia, revisión de alertas, medición del toil.
 - **De lo que casi pasó**: near misses.
 - **Del conjunto** de incidentes: learning reviews y lecciones aprendidas que se aplican de verdad.
@@ -28,7 +28,7 @@ flowchart LR
     E --> A
 ```
 
-El *chaos engineering* (inyección controlada de fallos) también es una práctica de aprendizaje; se explica en [Operación y fiabilidad (SRE)](operacion-sre.md#chaos-engineering) y, aplicado a disaster recovery, en [Resiliencia](../../cloud/operacion-y-gobierno/resiliencia.md#probar-el-dr-game-days-y-chaos-engineering).
+El [chaos engineering](#chaos-engineering) (inyección controlada de fallos) también es una práctica de aprendizaje; aplicado a disaster recovery, se ve en [Resiliencia](../../cloud/operacion-y-gobierno/resiliencia.md#probar-el-dr-game-days-y-chaos-engineering).
 
 ## Pre-mortem
 
@@ -70,6 +70,19 @@ Cómo organizarlo:
 3. **Roles**: quien inyecta el fallo, quien responde (idealmente sin saber los detalles), quien observa y toma notas.
 4. **Ejecución** con cronómetro.
 5. **Debrief** inmediato y acciones, igual que un postmortem.
+
+## Chaos engineering
+
+**Chaos engineering** (ingeniería del caos) es provocar fallos **a propósito y de forma controlada** para comprobar que el sistema resiste como esperas: apagar instancias, añadir latencia, cortar una dependencia, simular la caída de una zona. Se centra en la resiliencia del sistema y a menudo se automatiza; los game days practican además la respuesta del equipo (ver la [comparativa de simulacros](#comparativa-de-simulacros)).
+
+Pasos:
+
+1. Define el **steady state** (estado estable) con métricas: por ejemplo, el SLI de éxito de peticiones (ver [Observabilidad](observabilidad.md#sli-slo-sla-y-error-budget)).
+2. Formula una hipótesis: "si cae una zona, el SLI no baja del 99,9 %".
+3. Inyecta el fallo empezando por un **blast radius** (radio de impacto) pequeño, en un entorno de pruebas y luego, con cuidado, en producción.
+4. Compara con el steady state y corrige lo que falle.
+
+Herramientas: **AWS Fault Injection Service**, **Azure Chaos Studio**, y *open source* como **Chaos Mesh** o **LitmusChaos** para Kubernetes. La comparativa por proveedor y su uso para probar el DR están en [Resiliencia](../../cloud/operacion-y-gobierno/resiliencia.md#probar-el-dr-game-days-y-chaos-engineering).
 
 ## Wheel of Misfortune
 
@@ -238,3 +251,5 @@ También se puede hacer una revisión **transversal**: cada trimestre, leer junt
 - [Learning from Incidents in Software](https://www.learningfromincidents.io/)
 - [PagerDuty Incident Response](https://response.pagerduty.com/)
 - [Principles of Chaos Engineering](https://principlesofchaos.org/)
+- [AWS Fault Injection Service](https://docs.aws.amazon.com/fis/latest/userguide/what-is.html)
+- [Azure Chaos Studio](https://learn.microsoft.com/es-es/azure/chaos-studio/chaos-studio-overview)

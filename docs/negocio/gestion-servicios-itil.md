@@ -87,7 +87,7 @@ En problem management aparecen dos términos útiles:
 - **Known error** (error conocido): un problema analizado cuya causa se conoce, aunque todavía no esté resuelto. Se documenta para que el service desk lo reconozca rápido.
 
 !!! tip "Postmortem y problem management"
-    Un [postmortem sin culpables](../devops/operacion/operacion-sre.md#postmortems-blameless) de SRE es, en lenguaje ITIL, una actividad de problem management: busca causas y acciones para que el incidente no se repita.
+    Un [postmortem sin culpables](../devops/operacion/postmortem.md#cultura-blameless-y-just-culture) de SRE es, en lenguaje ITIL, una actividad de problem management: busca causas y acciones para que el incidente no se repita.
 
 ### Tipos de cambio
 

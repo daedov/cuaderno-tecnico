@@ -49,6 +49,7 @@ Ejemplos completos con la explicación de cada línea al costado, para entender 
 ## Referencia rápida
 
 - [Puertos comunes](puertos.md)
+- [Formatos de logs](formatos-de-logs.md): syslog, journald, access log, JSON, stack traces, Kubernetes, CloudTrail, VPC Flow Logs y CI
 - [Documentación oficial](documentacion-oficial.md)
 
 ## Repositorios

@@ -207,7 +207,7 @@ Convenciones de estilo que el examen puede mencionar: 2 espacios, alinear `=` de
 ## Para profundizar
 
 - [Infrastructure as Code con Terraform](../../../devops/iac/terraform-basico.md#workflow-ciclo-de-trabajo): workflow, lectura del plan y guardar el plan.
-- [Infrastructure as Code: panorama y herramientas](../../../devops/iac/infraestructura-como-codigo.md#flujo-en-cicd) y [Pipeline CI/CD con GitHub Actions](../../../devops/ci-cd/ci-cd-github-actions.md): plan en el PR y aprobaciones.
+- [Infrastructure as Code: panorama y herramientas](../../../devops/iac/infraestructura-como-codigo.md#flujo-en-cicd) y [Integración continua](../../../devops/ci-cd/integracion-continua.md): plan en el PR y aprobaciones.
 - [Seguridad de IaC](../../../devsecops/infraestructura-y-contenedores/seguridad-iac.md#drift-detection): `-detailed-exitcode` para drift.
 - [Guía de comandos de Terraform](../../../recursos/comandos/terraform.md).
 - Siguiente: [Objetivo 4: Terraform configuration](objetivo-4-configuracion.md).

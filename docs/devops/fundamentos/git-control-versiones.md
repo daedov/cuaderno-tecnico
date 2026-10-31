@@ -56,6 +56,8 @@ flowchart LR
 !!! danger "Regla de oro del rebase"
     No hagas rebase (ni `push --force`) sobre una rama **compartida** que otras personas ya descargaron, y nunca sobre `main`. Si necesitas forzar en tu propia rama, usa `git push --force-with-lease`, que se niega a sobrescribir cambios ajenos.
 
+Comandos de merge, rebase y reescritura de historial (`rebase -i`, `cherry-pick`, `--autosquash`) en la chuleta: [Ramas y navegación](../../recursos/comandos/git.md#4-ramas-y-navegacion) y [Reescritura de historial](../../recursos/comandos/git.md#8-reescritura-de-historial). Para deshacer cambios (`revert` frente a `reset`, rollback de una release): [Volver atrás y rollback](../../recursos/comandos/git.md#7-volver-atras-y-rollback).
+
 En la interfaz de GitHub o GitLab al aceptar un PR puedes elegir **merge commit**, **squash merge** (todos los commits del PR se aplastan en uno) o **rebase merge**. Muchos equipos usan *squash* para que cada PR sea un solo commit en `main`.
 
 ## Estrategias de branching
@@ -161,7 +163,7 @@ ci: fijar actions de terceros por SHA
 feat!: eliminar soporte para la API v1
 ```
 
-Se puede validar con un hook `commit-msg` (por ejemplo con **commitlint**) y automatizar las versiones con herramientas como **semantic-release** o **release-please**.
+Se puede validar con un hook `commit-msg` (ver [Hooks útiles en DevOps](../../recursos/comandos/git.md#15-hooks-utiles-en-devops); por ejemplo con **commitlint**) y automatizar las versiones con herramientas como **semantic-release** o **release-please**.
 
 ## Tags y versionado semántico
 
@@ -175,7 +177,7 @@ Se puede validar con un hook `commit-msg` (por ejemplo con **commitlint**) y aut
 
 Además admite **pre-releases** (`2.0.0-rc.1`) y metadatos de build (`1.4.2+abc1234`). Mientras la versión empiece con `0.` se considera desarrollo inicial y la API puede cambiar en cualquier momento.
 
-En Git, cada versión publicada se marca con un **tag anotado** (`git tag -a v1.5.0 -m "..."`), y ese tag suele disparar el pipeline de *release*: construir el artefacto, etiquetar la imagen con `1.5.0` y publicar las notas de versión. Ver [Integración continua](../ci-cd/integracion-continua.md).
+En Git, cada versión publicada se marca con un **tag anotado** (`git tag -a v1.5.0 -m "..."`), y ese tag suele disparar el pipeline de *release*: construir el artefacto, etiquetar la imagen con `1.5.0` y publicar las notas de versión. Ver [Integración continua](../ci-cd/integracion-continua.md); comandos de tags en [Tags y releases](../../recursos/comandos/git.md#9-tags-y-releases-versionado-para-cicd).
 
 !!! tip "Versiones inmutables"
     Nunca muevas ni reutilices un tag publicado. Si `v1.5.0` tenía un error, publica `v1.5.1`. Lo mismo aplica a las imágenes de contenedor y los paquetes.

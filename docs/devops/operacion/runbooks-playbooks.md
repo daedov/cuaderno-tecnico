@@ -14,7 +14,7 @@ tags:
 
 Un **runbook** (manual de operación) es un documento con los pasos para diagnosticar y resolver una situación operativa concreta, escrito para que lo pueda seguir cualquier persona de guardia a las 3 de la mañana, aunque no conozca el servicio a fondo.
 
-La nota [Operación y fiabilidad (SRE)](operacion-sre.md#runbooks) introduce la idea. Aquí verás cómo distinguirlo de otros documentos parecidos, cómo escribir uno bueno, cómo automatizarlo y cómo evitar que quede obsoleto.
+Es una de las prácticas de [Operación y fiabilidad (SRE)](operacion-sre.md). Aquí verás cómo distinguirlo de otros documentos parecidos, cómo escribir uno bueno, cómo automatizarlo y cómo evitar que quede obsoleto.
 
 !!! info "Por qué importan"
     Un runbook reduce el **MTTR** (tiempo medio de recuperación) porque la persona no tiene que deducir los pasos bajo presión, y reduce la dependencia de "la única persona que sabe". Google observó que tener un *playbook* mejora el MTTR del orden de 3 veces frente a improvisar (*SRE Book*, capítulo *Introduction*).

@@ -289,7 +289,7 @@ Los fragmentos de Terraform con estos controles (y los guardrails de organizaci�
 | Enfoque | Qué se mira desde ahí | Nota |
 | --- | --- | --- |
 | Cloud (el control) | Conceptos de IAM, jerarquía y guardrails; resto de controles del bloque | [IAM: AWS, Azure y GCP](../fundamentos/iam-comparativa.md), [Gobernanza](../operacion-y-gobierno/gobernanza.md), [Fundamentos de seguridad en la nube](fundamentos-seguridad-cloud.md), [Seguridad de cifrado y secretos](seguridad-cifrado-secretos.md), [Seguridad de logging y detección](seguridad-logging-deteccion.md) |
-| DevOps (la automatización) | Un rol por pipeline creado con Terraform; OIDC en GitHub Actions | [Terraform](../../devops/iac/terraform-basico.md), [Pipeline CI/CD con GitHub Actions](../../devops/ci-cd/ci-cd-github-actions.md) |
+| DevOps (la automatización) | Un rol por pipeline creado con Terraform; OIDC en GitHub Actions | [Terraform](../../devops/iac/terraform-basico.md), [Integración continua: OIDC en el pipeline](../../devops/ci-cd/integracion-continua.md#identidad-del-pipeline-oidc-en-vez-de-llaves) |
 | DevSecOps (la verificación) | OIDC en lugar de claves, permisos mínimos del pipeline, detectar `*:*` en IaC y secretos en commits | [Secretos e identidades](../../devsecops/identidades-y-pipeline/secretos-identidades.md), [Seguridad del pipeline](../../devsecops/identidades-y-pipeline/seguridad-pipeline.md), [Seguridad de IaC](../../devsecops/infraestructura-y-contenedores/seguridad-iac.md), [Secret scanning](../../devsecops/escaneos/secret-scanning.md) |
 | Laboratorios (la práctica) | Practicar esto paso a paso | [Lab 16: Auditar tu cuenta cloud con Prowler (CSPM)](../../laboratorios/devsecops/cspm-prowler.md) |
 

@@ -651,7 +651,7 @@ Para el método general de diagnóstico, ver [Troubleshooting](../../devops/oper
 
 **DevOps**
 
-- [Pipeline CI/CD con GitHub Actions](../../devops/ci-cd/ci-cd-github-actions.md)
+- [Integración continua (OIDC en el pipeline)](../../devops/ci-cd/integracion-continua.md#identidad-del-pipeline-oidc-en-vez-de-llaves)
 - [Despliegue continuo](../../devops/ci-cd/despliegue-continuo.md)
 - [Infrastructure as Code con Terraform](../../devops/iac/terraform-basico.md)
 

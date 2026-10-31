@@ -141,7 +141,7 @@ service:
 | **SLA** (*Service Level Agreement*, acuerdo de nivel de servicio) | Compromiso contractual con clientes, con penalizaciones | 99,5 % mensual o devolución de créditos |
 | **Error budget** (presupuesto de errores) | Lo que puedes fallar sin incumplir el SLO: `100 % − SLO` | 0,1 % |
 
-El SLO interno debe ser **más estricto** que el SLA, para enterarte antes de incumplir el contrato.
+El SLO interno debe ser **más estricto** que el SLA, para enterarte antes de incumplir el contrato. Quién acuerda cada número, qué se firma y cómo funcionan los créditos está en [Niveles de servicio](../../negocio/niveles-de-servicio.md#sli-slo-y-sla-quien-los-usa).
 
 **Ejemplo numérico** con un SLO de disponibilidad del **99,9 % en 30 días**:
 
@@ -149,13 +149,7 @@ El SLO interno debe ser **más estricto** que el SLA, para enterarte antes de in
 - Error budget: 0,1 % × 43 200 = **43,2 minutos** de indisponibilidad total al mes.
 - Si la API recibe 10 millones de peticiones al mes: 0,1 % = **10 000 peticiones fallidas** permitidas.
 
-| SLO | Error budget en 30 días |
-| --- | --- |
-| 99 % | 7 h 12 min |
-| 99,9 % | 43 min 12 s |
-| 99,99 % | 4 min 19 s |
-
-Cómo se usa: si queda presupuesto, el equipo puede desplegar más rápido y asumir riesgos; si se agotó, se priorizan la fiabilidad y se frenan los cambios arriesgados. Ver [Operación y fiabilidad (SRE)](operacion-sre.md).
+El error budget de cada SLO (99 %, 99,9 %, 99,99 %…) por año, mes y semana está en [la tabla de los nueves](../../negocio/niveles-de-servicio.md#la-tabla-de-los-nueves). Qué hacer cuando queda o se agota el presupuesto lo decide la [política de error budget](operacion-sre.md#politica-de-error-budget).
 
 ## Alertas accionables
 
@@ -202,16 +196,7 @@ RED y golden signals son casi lo mismo visto desde el servicio; USE sirve para d
 
 ## Servicios gestionados
 
-Si no quieres operar Prometheus y Grafana tú misma, cada nube los ofrece gestionados, compatibles con PromQL y con los dashboards de Grafana:
-
-| | AWS | Azure | Google Cloud |
-| --- | --- | --- | --- |
-| Prometheus gestionado | **Amazon Managed Service for Prometheus** | **Azure Monitor managed service for Prometheus** | **Google Cloud Managed Service for Prometheus** |
-| Grafana gestionado | **Amazon Managed Grafana** | **Azure Managed Grafana** | Sin servicio propio: Cloud Monitoring tiene sus dashboards y también se puede añadir como fuente de datos en Grafana |
-| Trazas | AWS X-Ray, CloudWatch Application Signals | Application Insights | Cloud Trace |
-| Recibe OTLP | Sí (con ADOT, la distribución de AWS del Collector, o directamente) | Sí (Azure Monitor OpenTelemetry Distro) | Sí (Collector y Telemetry API) |
-
-Las herramientas nativas de cada nube (CloudWatch, Azure Monitor, Cloud Monitoring/Logging) se ven en [Observabilidad nativa](../../cloud/operacion-y-gobierno/observabilidad-nativa.md).
+Si no quieres operar Prometheus y Grafana tú misma, cada nube los ofrece gestionados, compatibles con PromQL y con los dashboards de Grafana, y los tres reciben OpenTelemetry. La tabla de servicios por proveedor (Prometheus y Grafana gestionados, trazas, OTLP) y las herramientas nativas de cada nube están en [Observabilidad nativa](../../cloud/operacion-y-gobierno/observabilidad-nativa.md#vista-rapida).
 
 ## Relación con otras secciones
 
@@ -233,6 +218,3 @@ Las herramientas nativas de cada nube (CloudWatch, Azure Monitor, Cloud Monitori
 - [OpenTelemetry (español)](https://opentelemetry.io/es/docs/)
 - [Google SRE Book: Service Level Objectives](https://sre.google/sre-book/service-level-objectives/)
 - [Google SRE Workbook: Alerting on SLOs](https://sre.google/workbook/alerting-on-slos/)
-- [Amazon Managed Service for Prometheus](https://docs.aws.amazon.com/prometheus/latest/userguide/what-is-Amazon-Managed-Service-Prometheus.html)
-- [Azure Monitor managed service for Prometheus](https://learn.microsoft.com/es-es/azure/azure-monitor/metrics/prometheus-metrics-overview)
-- [Google Cloud Managed Service for Prometheus](https://cloud.google.com/stackdriver/docs/managed-prometheus)

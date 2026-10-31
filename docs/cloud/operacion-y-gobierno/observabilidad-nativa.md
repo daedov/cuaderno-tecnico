@@ -50,7 +50,7 @@ flowchart LR
 | Grafana gestionado | Amazon Managed Grafana | Azure Managed Grafana | (sin servicio propio; Grafana se conecta a Cloud Monitoring) |
 
 !!! info "OpenTelemetry en los tres"
-    Los tres proveedores aceptan datos de **OpenTelemetry** (OTel), el estándar abierto para instrumentar aplicaciones: AWS Distro for OpenTelemetry (ADOT), la *Azure Monitor OpenTelemetry Distro* y el OpenTelemetry Collector con exportadores de Google Cloud. Instrumentar con OTel te permite cambiar de backend sin tocar el código.
+    Los tres proveedores aceptan datos de **OpenTelemetry** (OTel), el estándar abierto para instrumentar aplicaciones: AWS Distro for OpenTelemetry (ADOT), la *Azure Monitor OpenTelemetry Distro* y el OpenTelemetry Collector con exportadores de Google Cloud. AWS también admite enviar OTLP directamente, sin ADOT, y Google Cloud lo recibe con su Telemetry API. Instrumentar con OTel te permite cambiar de backend sin tocar el código.
 
 ## Cómo funciona en cada proveedor
 
@@ -197,3 +197,6 @@ Los logs de plataforma también son una fuente de seguridad: los **audit logs** 
 - [Cloud Monitoring](https://cloud.google.com/monitoring/docs/monitoring-overview)
 - [Cloud Trace](https://cloud.google.com/trace/docs/overview)
 - [OpenTelemetry](https://opentelemetry.io/docs/)
+- [Amazon Managed Service for Prometheus](https://docs.aws.amazon.com/prometheus/latest/userguide/what-is-Amazon-Managed-Service-Prometheus.html)
+- [Azure Monitor managed service for Prometheus](https://learn.microsoft.com/es-es/azure/azure-monitor/metrics/prometheus-metrics-overview)
+- [Google Cloud Managed Service for Prometheus](https://cloud.google.com/stackdriver/docs/managed-prometheus)

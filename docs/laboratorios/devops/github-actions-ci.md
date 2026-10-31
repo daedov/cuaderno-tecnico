@@ -31,7 +31,7 @@ tags:
 - Python 3.12+ en local para reproducir los pasos del pipeline antes de subirlos.
 - Git para consultar los SHA de las actions.
 
-Teoría recomendada: [Integración continua (CI)](../../devops/ci-cd/integracion-continua.md), [Pipeline CI/CD con GitHub Actions](../../devops/ci-cd/ci-cd-github-actions.md), [Despliegue continuo (CD)](../../devops/ci-cd/despliegue-continuo.md) y, sobre todo, [Seguridad del pipeline](../../devsecops/identidades-y-pipeline/seguridad-pipeline.md). Chuleta: [sintaxis de GitHub Actions](../../recursos/sintaxis/github-actions.md).
+Teoría recomendada: [Integración continua (CI)](../../devops/ci-cd/integracion-continua.md), [Despliegue continuo (CD)](../../devops/ci-cd/despliegue-continuo.md) y, sobre todo, [Seguridad del pipeline](../../devsecops/identidades-y-pipeline/seguridad-pipeline.md). Chuleta: [sintaxis de GitHub Actions](../../recursos/sintaxis/github-actions.md).
 
 ```bash
 cd lab-devops-app
@@ -419,7 +419,7 @@ En el trabajo real, este es el esqueleto de casi cualquier pipeline: el PR valid
 **DevOps**
 
 - [Integración continua (CI)](../../devops/ci-cd/integracion-continua.md)
-- [Pipeline CI/CD con GitHub Actions](../../devops/ci-cd/ci-cd-github-actions.md)
+- [Anatomía de los workflows de GitHub Actions](../../recursos/anatomia/github-actions.md)
 - [Despliegue continuo (CD) y estrategias](../../devops/ci-cd/despliegue-continuo.md)
 - [Docker: imágenes, multi-stage builds y Compose](../../devops/contenedores/docker.md)
 - [Git y control de versiones](../../devops/fundamentos/git-control-versiones.md)

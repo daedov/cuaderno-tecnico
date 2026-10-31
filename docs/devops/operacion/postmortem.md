@@ -20,7 +20,7 @@ Su objetivo es **aprender**, no buscar culpables. Un buen postmortem responde a 
 2. ¿Por qué tenía sentido, para las personas implicadas, actuar como actuaron con la información que tenían?
 3. ¿Qué cambiamos para que este tipo de incidente sea menos probable, se detecte antes o duela menos?
 
-La nota [Operación y fiabilidad (SRE)](operacion-sre.md#postmortems-blameless) presenta la idea y una plantilla corta. Aquí se profundiza en el proceso completo. Cómo buscar las causas con técnicas concretas está en [Análisis de causa raíz](analisis-causa-raiz.md).
+Esta nota es la referencia del proceso completo; [Operación y fiabilidad (SRE)](operacion-sre.md) lo sitúa dentro del ciclo de vida de un incidente. Cómo buscar las causas con técnicas concretas está en [Análisis de causa raíz](analisis-causa-raiz.md).
 
 !!! info "Nombres que vas a ver"
     *Postmortem*, *post-incident review* (Atlassian, PagerDuty), *incident review*, *learning review*, *retrospectiva de incidente*, *RCA document*. Algunas organizaciones evitan "postmortem" porque suena a muerte; lo importante es el proceso, no el nombre.

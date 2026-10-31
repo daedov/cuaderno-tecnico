@@ -477,7 +477,7 @@ Más casos en [Troubleshooting: contenedores](../../devops/operacion/troubleshoo
 ## Información complementaria
 
 - **Game day, Wheel of Misfortune y tabletop**: tipos de simulacro y cuándo usar cada uno; ver [Prácticas de aprendizaje](../../devops/operacion/practicas-aprendizaje.md#comparativa-de-simulacros).
-- **Roles y severidades**: IC, communications lead, scribe; ver [Operación y fiabilidad (SRE)](../../devops/operacion/operacion-sre.md#roles).
+- **Roles y severidades**: IC, communications lead, scribe; ver [Comunicación durante incidentes](../../devops/operacion/comunicacion-incidentes.md#roles) y las severidades en [Operación y fiabilidad (SRE)](../../devops/operacion/operacion-sre.md#severidades).
 - **Alertar por síntomas**: alertas que reflejan lo que nota el usuario, con `for` para evitar ruido; ver [Observabilidad](../../devops/operacion/observabilidad.md#alertas-accionables).
 - **Método de troubleshooting**: define el problema, pregunta qué cambió, una hipótesis cada vez; ver [Troubleshooting](../../devops/operacion/troubleshooting.md#mentalidad-y-metodo).
 - **Postmortem blameless y RCA**: ver [Postmortem](../../devops/operacion/postmortem.md#cultura-blameless-y-just-culture) y [Análisis de causa raíz](../../devops/operacion/analisis-causa-raiz.md).

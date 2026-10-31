@@ -190,7 +190,7 @@ pre-commit autoupdate           # actualiza cada `rev` a la última versión pub
 | Enfoque | Qué se mira desde ahí | Nota |
 | --- | --- | --- |
 | Cloud (el control) | Dónde se guardan y cifran los secretos que no deben estar en el código | [Seguridad de cifrado y secretos](../../cloud/seguridad/seguridad-cifrado-secretos.md), [IAM: AWS, Azure y GCP](../../cloud/fundamentos/iam-comparativa.md) |
-| DevOps (la automatización) | El pipeline y el flujo de *pull requests* donde corren SAST y secret scanning | [Integración continua](../../devops/ci-cd/integracion-continua.md), [Git y control de versiones](../../devops/fundamentos/git-control-versiones.md), [Pipeline CI/CD con GitHub Actions](../../devops/ci-cd/ci-cd-github-actions.md) |
+| DevOps (la automatización) | El pipeline y el flujo de *pull requests* donde corren SAST y secret scanning | [Integración continua](../../devops/ci-cd/integracion-continua.md), [Git y control de versiones](../../devops/fundamentos/git-control-versiones.md) |
 | DevSecOps (la verificación) | Herramientas de escaneo del código (SAST, secret scanning), dependencias y gestión de secretos | [Software supply chain](cadena-suministro.md), [Escaneo de seguridad en el pipeline](../escaneos/escaneo-en-pipeline.md), [SAST](../escaneos/sast.md), [Secret scanning](../escaneos/secret-scanning.md), [Secretos e identidades](../identidades-y-pipeline/secretos-identidades.md), [Fundamentos de DevSecOps](../fundamentos-devsecops.md) |
 | Laboratorios (la práctica) | Practicar esto paso a paso | [Lab 04: Flujo Git con ramas, pull requests y code review](../../laboratorios/devops/git-flujo-pull-request.md), [Lab 12: Escaneos de seguridad en el pipeline](../../laboratorios/devsecops/escaneos-en-pipeline.md) |
 

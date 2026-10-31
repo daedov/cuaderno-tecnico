@@ -314,7 +314,7 @@ Es el tipo de reporte que alimenta una revisión de gobernanza: repositorios aba
 | --- | --- | --- |
 | Networking (la base) | HTTP, códigos de estado, headers y TLS que hay debajo de cada petición | [Protocolos de aplicación](../../networking/intermedio/protocolos-aplicacion.md), [Troubleshooting de red](../../networking/avanzado/troubleshooting-red.md) |
 | Cloud (el control) | Diseño de APIs (paginación, idempotencia, errores) desde el lado de quien las construye | [Integración y APIs](../../cloud/arquitectura/integracion-apis.md) |
-| DevOps (la automatización) | Integraciones del pipeline con GitHub, Argo CD, Grafana o PagerDuty | [Integración continua](../../devops/ci-cd/integracion-continua.md), [Pipeline CI/CD con GitHub Actions](../../devops/ci-cd/ci-cd-github-actions.md) |
+| DevOps (la automatización) | Integraciones del pipeline con GitHub, Argo CD, Grafana o PagerDuty | [Integración continua](../../devops/ci-cd/integracion-continua.md) |
 | DevSecOps (la verificación) | Tokens con permisos mínimos, fuera del código y de los logs; pruebas de seguridad de APIs | [Secretos e identidades](../../devsecops/identidades-y-pipeline/secretos-identidades.md), [Pruebas dinámicas](../../devsecops/codigo-y-dependencias/pruebas-dinamicas.md) |
 | Python (la herramienta) | Variables de entorno, CLIs y manejo de excepciones | [Archivos y formatos](archivos-formatos.md#variables-de-entorno-y-env), [Scripts de línea de comandos](scripts-cli.md) |
 | Laboratorios (la práctica) | Practicar esto paso a paso | [Lab 11: Observabilidad con Prometheus y Grafana](../../laboratorios/devops/observabilidad-prometheus-grafana.md), [Lab 18: AWS: API serverless con Lambda, API Gateway y DynamoDB](../../laboratorios/cloud/aws-serverless-api.md) |

@@ -7,7 +7,7 @@ tags:
 
 # Comunicación durante incidentes
 
-> Quién comunica, por qué canales y con qué frecuencia; status page pública e interna; plantillas para clientes y para stakeholders internos en cada fase; qué no decir; incidentes de seguridad y relación con los SLA.
+> Roles durante un incidente, quién comunica, por qué canales y con qué frecuencia; status page pública e interna; plantillas para clientes y para stakeholders internos en cada fase; qué no decir; incidentes de seguridad y relación con los SLA.
 
 ## ¿Qué es?
 
@@ -15,19 +15,20 @@ Durante un incidente hay dos trabajos en paralelo: **arreglar** el problema y **
 
 Una buena comunicación de incidentes es **proactiva** (avisas antes de que pregunten), **regular** (con una cadencia conocida), **honesta** (lo que sabes y lo que no) y **consistente** (un único origen de la verdad).
 
-El proceso general de incidentes (severidades, roles, ciclo de vida) está en [Operación y fiabilidad (SRE)](operacion-sre.md#incident-management-gestion-de-incidentes). Esta nota se centra en la comunicación.
+Las severidades y el ciclo de vida de un incidente están en [Operación y fiabilidad (SRE)](operacion-sre.md#incident-management-gestion-de-incidentes). Esta nota recoge los roles del incidente y se centra en la comunicación.
 
 ## Roles
 
-| Rol | Qué hace en la comunicación |
+| Rol | Qué hace |
 | --- | --- |
-| **Incident Commander** (IC, responsable del incidente) | Decide la severidad, aprueba qué se comunica y cuándo se declara resuelto. No redacta los mensajes en incidentes grandes |
-| **Communications lead** (responsable de comunicación) | Redacta y publica las actualizaciones, mantiene la cadencia y filtra las preguntas de fuera para que no lleguen a quienes investigan |
+| **Incident Commander** (IC, responsable del incidente) | Coordina, decide y asigna tareas; **no** arregla el problema con sus manos: mantiene la visión global. Decide la severidad, aprueba qué se comunica y cuándo se declara resuelto. No redacta los mensajes en incidentes grandes |
+| **Operations lead** / responsables técnicos | Investigan y aplican la mitigación |
+| **Communications lead** (responsable de comunicación) | Redacta y publica las actualizaciones para *stakeholders* (partes interesadas), soporte y clientes (status page) con una cadencia fija, y filtra las preguntas de fuera para que no lleguen a quienes investigan |
 | **Customer Liaison** (enlace con clientes) | En el modelo de PagerDuty: status page pública, soporte y clientes con contratos especiales |
 | **Internal Liaison** (enlace interno) | En el modelo de PagerDuty: dirección, ventas, soporte y otros equipos internos |
-| **Scribe** (escriba) | Registra decisiones y horas; su registro alimenta las actualizaciones y el [postmortem](postmortem.md) |
+| **Scribe** (escriba) | Registra la línea de tiempo, las decisiones y las horas; su registro alimenta las actualizaciones y el [postmortem](postmortem.md) |
 
-En un SEV3 el IC suele hacer todo; en un SEV1 conviene separar al menos IC y communications lead.
+En incidentes pequeños una misma persona cubre varios roles (en un SEV3 el IC suele hacer todo); lo importante es que esté claro quién es el IC. En un SEV1 conviene separar al menos IC y communications lead.
 
 ```mermaid
 flowchart LR

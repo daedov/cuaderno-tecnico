@@ -490,7 +490,7 @@ Para errores del workflow en general, sigue el método de [Troubleshooting](../.
 **DevOps**
 
 - [Docker](../../devops/contenedores/docker.md)
-- [Pipeline CI/CD con GitHub Actions](../../devops/ci-cd/ci-cd-github-actions.md)
+- [Integración continua](../../devops/ci-cd/integracion-continua.md)
 - [Pruebas de infraestructura (entornos efímeros)](../../devops/iac/pruebas-infraestructura.md)
 
 **Cloud**

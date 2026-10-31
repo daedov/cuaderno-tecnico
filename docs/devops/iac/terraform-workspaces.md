@@ -181,7 +181,7 @@ jobs:
       - run: terraform plan -var-file=${{ matrix.entorno }}.tfvars
 ```
 
-Ver también [Pipeline CI/CD con GitHub Actions](../ci-cd/ci-cd-github-actions.md).
+Ver también [Integración continua](../ci-cd/integracion-continua.md) y el workflow comentado en [Anatomía de los workflows de GitHub Actions](../../recursos/anatomia/github-actions.md).
 
 ## ¿Cuándo usar workspaces?
 
@@ -198,20 +198,7 @@ HashiCorp indica que los CLI workspaces **no son adecuados** para separar entorn
 
 ### Alternativa: un directorio por entorno
 
-La alternativa más usada en equipos es tener **un directorio por entorno** que reutiliza los mismos *modules*, cada uno con su propio backend:
-
-```text
-infra/
-├── modules/
-│   └── app/            # lógica común
-└── envs/
-    ├── dev/
-    │   ├── main.tf     # module "app" { source = "../../modules/app" ... }
-    │   └── backend.tf  # state de dev (puede estar en otra cuenta)
-    └── prod/
-        ├── main.tf
-        └── backend.tf  # state de prod, con permisos propios
-```
+La alternativa más usada en equipos es tener **un directorio por entorno** (`envs/dev/`, `envs/prod/`) que reutiliza los mismos *modules*, cada uno con su propio backend: el state de `prod` puede estar en otra cuenta y con permisos propios. La estructura completa del repositorio está en [Infrastructure as Code: estructura de un repositorio de IaC](infraestructura-como-codigo.md#estructura-de-un-repositorio-de-iac).
 
 | | CLI workspaces | Directorio por entorno |
 | --- | --- | --- |

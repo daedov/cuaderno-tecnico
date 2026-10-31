@@ -25,7 +25,7 @@ tags:
 
 - Python 3.12 o superior y `uv` (o `venv` + `pip`), del [Lab 00](preparar-entorno.md).
 - **Teoría recomendada** (el lab la aplica, no la repite):
-    - [Leer logs](../../devops/operacion/leer-logs.md#access-log-de-nginx-y-apache-combined): el formato *combined* de NGINX campo a campo.
+    - [Formatos de logs](../../recursos/formatos-de-logs.md#access-log-de-nginx-y-apache-combined): el formato *combined* de NGINX campo a campo.
     - [Estructuras de datos](../../python/fundamentos/estructuras-datos.md#collections-counter-y-defaultdict): `Counter` y `defaultdict`.
     - [Archivos y formatos](../../python/scripting/archivos-formatos.md): `pathlib`, CSV y JSON.
     - [Scripts de línea de comandos](../../python/scripting/scripts-cli.md): `argparse`, exit codes y `logging`.

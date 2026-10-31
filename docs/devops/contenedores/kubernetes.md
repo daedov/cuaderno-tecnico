@@ -72,6 +72,8 @@ Otros que aparecen pronto: **StatefulSet** (aplicaciones con identidad y disco p
 
 ### Deployment con probes y recursos
 
+Lo esencial de un Deployment: cuántas réplicas, qué Pods gestiona (`selector`) y la plantilla de esos Pods, con sus recursos y probes.
+
 ```yaml title="deployment.yaml"
 apiVersion: apps/v1
 kind: Deployment
@@ -91,29 +93,16 @@ spec:
       containers:
         - name: api
           image: registry.ejemplo.com/tienda/api:1.4.2
-          ports:
-            - containerPort: 8080
-          envFrom:
-            - configMapRef:
-                name: api-config
           resources:
-            requests:
-              cpu: 250m
-              memory: 256Mi
-            limits:
-              memory: 512Mi
+            requests: { cpu: 250m, memory: 256Mi }
+            limits: { memory: 512Mi }
           readinessProbe:
-            httpGet:
-              path: /ready
-              port: 8080
-            periodSeconds: 5
+            httpGet: { path: /ready, port: 8080 }
           livenessProbe:
-            httpGet:
-              path: /health
-              port: 8080
-            initialDelaySeconds: 10
-            periodSeconds: 10
+            httpGet: { path: /health, port: 8080 }
 ```
+
+Versión completa (puertos con nombre, `envFrom`, `startupProbe`, `securityContext`, estrategia de rolling update) comentada línea por línea en [Anatomía de los manifiestos de Kubernetes: Deployment](../../recursos/anatomia/kubernetes.md#deployment-comentado-linea-por-linea).
 
 **Probes** (sondas):
 
@@ -154,59 +143,13 @@ spec:
 | **NodePort** | Un puerto (30000–32767) en cada node | Pruebas o integraciones concretas |
 | **LoadBalancer** | Internet o la red privada, mediante un load balancer de la nube | Exponer un servicio TCP/UDP directamente |
 
+Service comentado: [Anatomía: Service](../../recursos/anatomia/kubernetes.md#service-comentado-linea-por-linea).
+
 ### Ingress y Gateway API
 
 Un **Ingress** define reglas HTTP (dominio, ruta, TLS) y necesita un **Ingress controller** instalado que las aplique. La **Gateway API** es su evolución: separa roles (quien opera la infraestructura define el `Gateway`, cada equipo define sus `HTTPRoute`), es más expresiva (cabeceras, pesos para *canary*) y es la opción que recomienda hoy el proyecto Kubernetes para instalaciones nuevas.
 
-=== "Gateway API"
-
-    ```yaml title="httproute.yaml"
-    apiVersion: gateway.networking.k8s.io/v1
-    kind: HTTPRoute
-    metadata:
-      name: api
-      namespace: tienda
-    spec:
-      parentRefs:
-        - name: gateway-publico
-          namespace: infra
-      hostnames:
-        - api.ejemplo.com
-      rules:
-        - matches:
-            - path:
-                type: PathPrefix
-                value: /
-          backendRefs:
-            - name: api
-              port: 80
-    ```
-
-=== "Ingress"
-
-    ```yaml title="ingress.yaml"
-    apiVersion: networking.k8s.io/v1
-    kind: Ingress
-    metadata:
-      name: api
-      namespace: tienda
-    spec:
-      ingressClassName: <clase-del-controller>
-      tls:
-        - hosts: [api.ejemplo.com]
-          secretName: api-tls
-      rules:
-        - host: api.ejemplo.com
-          http:
-            paths:
-              - path: /
-                pathType: Prefix
-                backend:
-                  service:
-                    name: api
-                    port:
-                      number: 80
-    ```
+Los manifiestos (`GatewayClass`, `Gateway`, `HTTPRoute` y el `Ingress` clásico con TLS) están comentados en [Anatomía: Gateway y HTTPRoute](../../recursos/anatomia/kubernetes.md#gateway-y-httproute-comentados-linea-por-linea) e [Ingress (clásico)](../../recursos/anatomia/kubernetes.md#ingress-clasico).
 
 !!! warning "Ingress NGINX se retiró"
     El controller comunitario **Ingress NGINX** (`kubernetes/ingress-nginx`) dejó de mantenerse en marzo de 2026, según anunció el proyecto Kubernetes. Las instalaciones existentes siguen funcionando, pero sin parches de seguridad. Para clústeres nuevos, usa Gateway API o el controller del proveedor.
@@ -227,29 +170,11 @@ data:
 !!! danger "Un Secret no está cifrado por defecto"
     Los Secrets se guardan en **base64**, que es una codificación, no cifrado. Activa el cifrado de etcd (en los servicios gestionados suele ser una opción con KMS), limita con RBAC quién puede leerlos y no subas Secrets a Git en claro: usa External Secrets Operator, el CSI driver del gestor de secretos de tu nube o Sealed Secrets. Ver [Secretos e identidades](../../devsecops/identidades-y-pipeline/secretos-identidades.md).
 
+ConfigMap y Secret comentados (`data` frente a `stringData`, cómo se consumen): [Anatomía: ConfigMap](../../recursos/anatomia/kubernetes.md#configmap-comentado-linea-por-linea) y [Secret](../../recursos/anatomia/kubernetes.md#secret-comentado-linea-por-linea).
+
 ### HorizontalPodAutoscaler
 
-```yaml title="hpa.yaml"
-apiVersion: autoscaling/v2
-kind: HorizontalPodAutoscaler
-metadata:
-  name: api
-  namespace: tienda
-spec:
-  scaleTargetRef:
-    apiVersion: apps/v1
-    kind: Deployment
-    name: api
-  minReplicas: 3
-  maxReplicas: 10
-  metrics:
-    - type: Resource
-      resource:
-        name: cpu
-        target:
-          type: Utilization
-          averageUtilization: 70   # % sobre los requests
-```
+El HPA se define con un objetivo (`scaleTargetRef`, normalmente un Deployment), un rango (`minReplicas`–`maxReplicas`) y una métrica, por ejemplo **70 % de uso de CPU medido sobre los requests**. Por eso necesita que el Deployment tenga `requests` y que el clúster tenga metrics-server. Manifiesto comentado: [Anatomía: HorizontalPodAutoscaler](../../recursos/anatomia/kubernetes.md#horizontalpodautoscaler-comentado-linea-por-linea).
 
 El HPA añade **Pods**; para añadir **nodes** cuando no caben se usa Cluster Autoscaler o Karpenter (o el modo automático del proveedor).
 
@@ -263,6 +188,8 @@ Con varios entornos, copiar los YAML y cambiarlos a mano no escala. Hay dos enfo
 helm install api ./charts/api -n tienda -f values-prod.yaml
 helm upgrade api ./charts/api -n tienda -f values-prod.yaml --set image.tag=1.4.3
 ```
+
+Un chart completo (`Chart.yaml`, `values.yaml`, plantillas y helpers) comentado: [Anatomía de un chart de Helm](../../recursos/anatomia/helm.md).
 
 **Kustomize** no usa plantillas: parte de YAML válido (**base**) y aplica *patches* (parches) por entorno (**overlays**). Viene integrado en kubectl (`kubectl apply -k`).
 
@@ -295,6 +222,8 @@ patches:
         path: /spec/replicas
         value: 5
 ```
+
+Todos los campos de `kustomization.yaml` (`labels`, generadores de ConfigMap, tipos de parche): [Anatomía: kustomization.yaml](../../recursos/anatomia/kubernetes.md#kustomizationyaml-comentado-linea-por-linea).
 
 | | Helm | Kustomize |
 | --- | --- | --- |

@@ -103,7 +103,7 @@ Un plan que no se prueba falla cuando más se necesita: contactos desactualizado
 | **Parallel test** (prueba en paralelo) | Se levanta el entorno de recuperación mientras producción sigue funcionando | Medio-alto |
 | **Full interruption test** (prueba de interrupción completa) | Se hace failover real de producción al sitio de recuperación | Alto; solo con mucha madurez |
 
-En la nube, los **game days** y el **chaos engineering** son la versión técnica y frecuente de estas pruebas (ver [Resiliencia](../cloud/operacion-y-gobierno/resiliencia.md#probar-el-dr-game-days-y-chaos-engineering) y [Operación y fiabilidad (SRE)](../devops/operacion/operacion-sre.md#chaos-engineering)).
+En la nube, los **game days** y el **chaos engineering** son la versión técnica y frecuente de estas pruebas (ver [Resiliencia](../cloud/operacion-y-gobierno/resiliencia.md#probar-el-dr-game-days-y-chaos-engineering) y [Prácticas para aprender de incidentes](../devops/operacion/practicas-aprendizaje.md#chaos-engineering)).
 
 Después de cada prueba:
 

@@ -489,7 +489,7 @@ git ls-remote --tags https://github.com/actions/checkout.git | grep 'v7.0.1'
 
 - [Lab 07: Pipeline de CI con GitHub Actions](../../laboratorios/devops/github-actions-ci.md): el workflow de esta nota, paso a paso.
 - [Lab 12: Escaneos de seguridad en el pipeline](../../laboratorios/devsecops/escaneos-en-pipeline.md) y [Lab 13: OIDC entre GitHub Actions y AWS](../../laboratorios/devsecops/oidc-github-aws.md).
-- Teoría: [Integración continua](../../devops/ci-cd/integracion-continua.md), [Pipeline CI/CD con GitHub Actions](../../devops/ci-cd/ci-cd-github-actions.md), [Despliegue continuo](../../devops/ci-cd/despliegue-continuo.md) y [Seguridad del pipeline](../../devsecops/identidades-y-pipeline/seguridad-pipeline.md).
+- Teoría: [Integración continua](../../devops/ci-cd/integracion-continua.md), [Despliegue continuo](../../devops/ci-cd/despliegue-continuo.md) y [Seguridad del pipeline](../../devsecops/identidades-y-pipeline/seguridad-pipeline.md).
 - El mismo pipeline en GitLab: [Anatomía de `.gitlab-ci.yml`](gitlab-ci.md#equivalencias-con-github-actions).
 
 ## Referencias

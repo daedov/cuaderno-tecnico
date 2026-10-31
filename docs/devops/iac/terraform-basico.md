@@ -54,6 +54,8 @@ proyecto/
 └── .terraform.lock.hcl  # lock file: versiones exactas de providers (SÍ se sube a Git)
 ```
 
+Estructura completa con módulos propios y archivos por entorno: [Anatomía de los archivos de Terraform: dónde vive y cómo se organiza](../../recursos/anatomia/terraform.md#donde-vive-y-como-se-organiza).
+
 ## Workflow (ciclo de trabajo)
 
 HashiCorp resume el *core workflow* en tres pasos: **Write → Plan → Apply** (escribir, planificar, aplicar).
@@ -91,54 +93,15 @@ Cómo leer la salida de `plan`:
 
 ## Ejemplo mínimo
 
-Un S3 bucket privado, con *versioning* (versionado) y parametrizado con variables.
+Un S3 bucket con *versioning* (versionado), parametrizado con una variable:
 
-```hcl title="providers.tf"
-terraform {
-  required_version = ">= 1.10"
-
-  required_providers {
-    aws = {
-      source  = "hashicorp/aws"
-      version = "~> 6.0"
-    }
-  }
-}
-
-provider "aws" {
-  region = var.region
-
-  # Tags (etiquetas) que se aplican a todos los recursos
-  default_tags {
-    tags = {
-      Proyecto = "cuaderno-notas"
-      Entorno  = var.entorno
-      Gestion  = "terraform"
-    }
-  }
-}
-```
-
-```hcl title="variables.tf"
-variable "region" {
-  description = "Región de AWS donde se despliega"
-  type        = string
-  default     = "eu-west-1"
-}
-
+```hcl title="main.tf"
 variable "entorno" {
   description = "Nombre del entorno (dev, staging, prod)"
   type        = string
   default     = "dev"
-
-  validation {
-    condition     = contains(["dev", "staging", "prod"], var.entorno)
-    error_message = "El entorno debe ser dev, staging o prod."
-  }
 }
-```
 
-```hcl title="main.tf"
 resource "aws_s3_bucket" "notas" {
   # Los nombres de bucket son únicos a nivel mundial
   bucket = "cuaderno-notas-${var.entorno}-ejemplo"
@@ -152,22 +115,13 @@ resource "aws_s3_bucket_versioning" "notas" {
   }
 }
 
-resource "aws_s3_bucket_public_access_block" "notas" {
-  bucket = aws_s3_bucket.notas.id
-
-  block_public_acls       = true
-  block_public_policy     = true
-  ignore_public_acls      = true
-  restrict_public_buckets = true
-}
-```
-
-```hcl title="outputs.tf"
 output "bucket_arn" {
   description = "ARN del bucket creado"
   value       = aws_s3_bucket.notas.arn
 }
 ```
+
+En un proyecto real esto se reparte en varios archivos y se añade el bloque `terraform {}` (versión de Terraform, `required_providers` con su `version` y el backend) y el `provider "aws"` (región y `default_tags`). Cada uno está comentado línea por línea en [Anatomía de los archivos de Terraform](../../recursos/anatomia/terraform.md): [versions.tf](../../recursos/anatomia/terraform.md#versionstf-comentado-linea-por-linea), [providers.tf](../../recursos/anatomia/terraform.md#providerstf-comentado-linea-por-linea), [variables.tf](../../recursos/anatomia/terraform.md#variablestf-comentado-linea-por-linea) (tipos, `validation`, `sensitive`) y [outputs.tf](../../recursos/anatomia/terraform.md#outputstf-comentado-linea-por-linea). La sintaxis del lenguaje está en [HCL](../../recursos/sintaxis/hcl.md).
 
 !!! note "Referencias entre recursos"
     `aws_s3_bucket.notas.id` hace que Terraform sepa que el versionado depende del bucket y lo cree después. No hace falta indicar el orden a mano.
@@ -311,7 +265,7 @@ Ver más en [Escaneo de seguridad en el pipeline](../../devsecops/escaneos/escan
 | Enfoque | Qué se mira desde ahí | Nota |
 | --- | --- | --- |
 | Cloud (el control) | Los recursos que Terraform crea: redes, VMs, roles y políticas de IAM, estructura de cuentas | [Redes en la nube](../../cloud/redes-y-datos/redes.md), [Máquinas virtuales](../../cloud/computo/maquinas-virtuales.md), [IAM: AWS, Azure y GCP](../../cloud/fundamentos/iam-comparativa.md), [Gobernanza](../../cloud/operacion-y-gobierno/gobernanza.md) |
-| DevOps (la automatización) | Otras herramientas de IaC, entornos, pruebas y el pipeline que aplica los cambios; el rol de cada pipeline también se define con Terraform | [Infrastructure as Code: panorama y herramientas](infraestructura-como-codigo.md), [Terraform workspaces](terraform-workspaces.md), [Pruebas de infraestructura](pruebas-infraestructura.md), [Pipeline CI/CD con GitHub Actions](../ci-cd/ci-cd-github-actions.md) |
+| DevOps (la automatización) | Otras herramientas de IaC, entornos, pruebas y el pipeline que aplica los cambios; el rol de cada pipeline también se define con Terraform | [Infrastructure as Code: panorama y herramientas](infraestructura-como-codigo.md), [Terraform workspaces](terraform-workspaces.md), [Pruebas de infraestructura](pruebas-infraestructura.md), [Integración continua](../ci-cd/integracion-continua.md) |
 | DevSecOps (la verificación) | Escaneo del código Terraform, policy as code, drift y OIDC desde el pipeline | [Seguridad de IaC](../../devsecops/infraestructura-y-contenedores/seguridad-iac.md), [Secretos e identidades](../../devsecops/identidades-y-pipeline/secretos-identidades.md) |
 | Laboratorios (la práctica) | Practicar esto paso a paso | [Lab 08: Terraform sin nube: providers locales y workspaces](../../laboratorios/devops/terraform-local-workspaces.md), [Lab 09: Terraform en AWS con remote state en S3](../../laboratorios/devops/terraform-aws-backend-remoto.md), [Lab 13: Desplegar en AWS desde GitHub Actions con OIDC (sin llaves)](../../laboratorios/devsecops/oidc-github-aws.md), [Lab 16: Auditar tu cuenta cloud con Prowler (CSPM)](../../laboratorios/devsecops/cspm-prowler.md), [Lab 17: AWS: VPC con subnets públicas y privadas y una EC2](../../laboratorios/cloud/aws-vpc-ec2.md), [Lab 18: AWS: API serverless con Lambda, API Gateway y DynamoDB](../../laboratorios/cloud/aws-serverless-api.md) |
 

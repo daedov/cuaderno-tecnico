@@ -292,8 +292,8 @@ Certificate will expire
 ## Después de resolver
 
 1. **Verifica** que el servicio está bien con los mismos datos que mostraban el fallo (métricas, la petición que fallaba).
-2. **Postmortem** sin culpables, con causa raíz y acciones con responsable ([Operación y fiabilidad (SRE)](operacion-sre.md#postmortems-blameless)).
-3. **Runbook**: si el problema puede repetirse, escribe los pasos de diagnóstico y mitigación ([Runbooks](operacion-sre.md#runbooks)).
+2. **Postmortem** sin culpables, con causa raíz y acciones con responsable ([Postmortem](postmortem.md)).
+3. **Runbook**: si el problema puede repetirse, escribe los pasos de diagnóstico y mitigación ([Runbooks y playbooks](runbooks-playbooks.md)).
 4. **Alerta**: ¿qué señal lo habría detectado antes y desde el síntoma del usuario? Créala ([Alertas accionables](observabilidad.md#alertas-accionables)).
 5. **Prevención**: un test de regresión, una validación en el pipeline, una alerta de caducidad de certificados.
 

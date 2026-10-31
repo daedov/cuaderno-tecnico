@@ -973,7 +973,6 @@ Para errores de los jobs en general, sigue el método de [Troubleshooting](../..
 **DevOps**
 
 - [Integración continua](../../devops/ci-cd/integracion-continua.md)
-- [Pipeline CI/CD con GitHub Actions](../../devops/ci-cd/ci-cd-github-actions.md)
 - [Docker: imágenes, multi-stage builds y Compose](../../devops/contenedores/docker.md)
 - [Troubleshooting](../../devops/operacion/troubleshooting.md)
 

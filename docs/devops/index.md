@@ -13,7 +13,6 @@ Cada tema se ve también desde [Cloud](../cloud/index.md) (dónde corre) y [DevS
 ## CI/CD
 
 - [Integración continua (CI)](ci-cd/integracion-continua.md): build, tests, artifacts, registries
-- [Pipeline CI/CD con GitHub Actions](ci-cd/ci-cd-github-actions.md): ejemplo práctico
 - [Despliegue continuo (CD)](ci-cd/despliegue-continuo.md): blue/green, canary, rolling, feature flags, GitOps
 
 ## Infrastructure as Code
@@ -32,14 +31,14 @@ Cada tema se ve también desde [Cloud](../cloud/index.md) (dónde corre) y [DevS
 ## Operación
 
 - [Observabilidad](operacion/observabilidad.md): Prometheus, Grafana, Loki/ELK, OpenTelemetry, SLI/SLO
-- [Cómo leer logs](operacion/leer-logs.md): formatos, método, herramientas y ejercicios
+- [Cómo leer logs](operacion/leer-logs.md): anatomía de una línea, método, herramientas y ejercicios (formatos en [Recursos](../recursos/formatos-de-logs.md))
 - [Troubleshooting](operacion/troubleshooting.md): método de diagnóstico y checklists por capa
-- [Operación y fiabilidad (SRE)](operacion/operacion-sre.md): incident management, on-call, postmortems, capacity planning
+- [Operación y fiabilidad (SRE)](operacion/operacion-sre.md): principios, política de error budget, severidades y ciclo de vida de un incidente, on-call, capacity planning
 - [Postmortem](operacion/postmortem.md): cultura blameless, plantilla, timeline, seguimiento de acciones y ejemplo completo
 - [Análisis de causa raíz (RCA)](operacion/analisis-causa-raiz.md): 5 porqués, Ishikawa, fault tree, queso suizo y sesgos
 - [Runbooks y playbooks](operacion/runbooks-playbooks.md): estructura, plantilla, automatización y mantenimiento
-- [Comunicación de incidentes](operacion/comunicacion-incidentes.md): status page, roles, cadencia y plantillas de mensajes
-- [Prácticas de aprendizaje](operacion/practicas-aprendizaje.md): pre-mortem, game days, Wheel of Misfortune, handoff de guardia, toil
+- [Comunicación de incidentes](operacion/comunicacion-incidentes.md): roles del incidente, status page, cadencia y plantillas de mensajes
+- [Prácticas de aprendizaje](operacion/practicas-aprendizaje.md): pre-mortem, game days, chaos engineering, Wheel of Misfortune, handoff de guardia, toil
 
 !!! note "Añadir una nota"
     Crea un `.md` en la subcarpeta del bloque que corresponda dentro de `docs/devops/` y agrégalo a su archivo `.pages` para fijar su orden en el menú.

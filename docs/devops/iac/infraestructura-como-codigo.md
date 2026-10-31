@@ -239,7 +239,7 @@ flowchart LR
 3. `apply` aplica el plan revisado (`-out=plan.tfplan`).
 4. El pipeline se autentica con **OIDC** (*OpenID Connect*) y un rol con permisos acotados, sin claves de larga duración.
 
-Ver [Pipeline CI/CD con GitHub Actions](../ci-cd/ci-cd-github-actions.md), [Pruebas de infraestructura](pruebas-infraestructura.md) y [Seguridad del pipeline](../../devsecops/identidades-y-pipeline/seguridad-pipeline.md).
+Ver [Integración continua](../ci-cd/integracion-continua.md), [Pruebas de infraestructura](pruebas-infraestructura.md) y [Seguridad del pipeline](../../devsecops/identidades-y-pipeline/seguridad-pipeline.md).
 
 !!! warning "Drift"
     Si alguien cambia recursos a mano en la consola, el código deja de reflejar la realidad (**drift**, desviación). Programa un `plan` periódico (por ejemplo, diario) que avise si hay diferencias.

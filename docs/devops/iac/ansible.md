@@ -50,35 +50,20 @@ flowchart LR
 
 El **inventory** es la lista de servidores y cómo se agrupan.
 
-=== "INI"
+```ini title="inventory/hosts.ini"
+[web]
+web1.ejemplo.com
+web2.ejemplo.com
 
-    ```ini title="inventory/hosts.ini"
-    [web]
-    web1.ejemplo.com
-    web2.ejemplo.com
+[db]
+db1.ejemplo.com ansible_user=admin
 
-    [db]
-    db1.ejemplo.com ansible_user=admin
+[produccion:children]
+web
+db
+```
 
-    [produccion:children]
-    web
-    db
-    ```
-
-=== "YAML"
-
-    ```yaml title="inventory/hosts.yml"
-    all:
-      children:
-        web:
-          hosts:
-            web1.ejemplo.com:
-            web2.ejemplo.com:
-        db:
-          hosts:
-            db1.ejemplo.com:
-              ansible_user: admin
-    ```
+El mismo inventario se puede escribir en YAML (recomendado para proyectos nuevos). Los dos formatos comentados línea por línea, con variables de host y de grupo, `group_vars/` y `host_vars/`: [Anatomía de los archivos de Ansible: inventario](../../recursos/anatomia/ansible.md#inventario-comentado-linea-por-linea).
 
 ### Dynamic inventory (inventario dinámico)
 
@@ -116,28 +101,18 @@ ansible-inventory -i inventory/aws_ec2.yml --graph
 - name: Configurar servidores web
   hosts: web
   become: true            # ejecutar con sudo
-  vars:
-    nginx_port: 80
 
   tasks:
     - name: Instalar nginx
       ansible.builtin.apt:
         name: nginx
         state: present
-        update_cache: true
 
     - name: Copiar la configuración del sitio
       ansible.builtin.template:
         src: templates/sitio.conf.j2
         dest: /etc/nginx/conf.d/sitio.conf
-        mode: "0644"
       notify: Recargar nginx
-
-    - name: Asegurar que nginx está activo
-      ansible.builtin.service:
-        name: nginx
-        state: started
-        enabled: true
 
   handlers:
     - name: Recargar nginx
@@ -145,6 +120,8 @@ ansible-inventory -i inventory/aws_ec2.yml --graph
         name: nginx
         state: reloaded
 ```
+
+Playbook completo (`vars_files`, `pre_tasks`, roles, `register`, condiciones, bucles) y el orden en que se ejecutan las secciones de un play: [Anatomía: playbook comentado](../../recursos/anatomia/ansible.md#playbook-comentado-linea-por-linea).
 
 !!! tip "Usa el FQCN"
     Escribe los modules con su **FQCN** (*Fully Qualified Collection Name*, nombre completo con la colección): `ansible.builtin.copy` en lugar de `copy`. Evita ambigüedades y es lo que recomienda `ansible-lint`.
@@ -165,19 +142,9 @@ Las variables pueden venir de muchos sitios. Ansible tiene más de 20 niveles de
 
 ## Roles
 
-Un **role** empaqueta tasks, handlers, plantillas y variables para reutilizarlos. Se crea la estructura con `ansible-galaxy role init nginx`:
+Un **role** empaqueta tasks, handlers, plantillas y variables para reutilizarlos. `ansible-galaxy role init nginx` crea la estructura: `defaults/` (variables por defecto, prioridad baja), `vars/` (variables internas, prioridad alta), `tasks/`, `handlers/`, `templates/` (Jinja2), `files/` y `meta/`; muchos equipos añaden `molecule/` para sus pruebas (ver [Pruebas de infraestructura](pruebas-infraestructura.md#molecule-para-roles-de-ansible)). Cada archivo de un role comentado: [Anatomía: role comentado](../../recursos/anatomia/ansible.md#role-comentado).
 
-```text
-roles/nginx/
-├── defaults/main.yml    # variables por defecto (prioridad baja)
-├── vars/main.yml        # variables internas (prioridad alta)
-├── tasks/main.yml       # tareas
-├── handlers/main.yml    # handlers
-├── templates/           # plantillas Jinja2 (.j2)
-├── files/               # archivos que se copian tal cual
-├── meta/main.yml        # metadatos y dependencias
-└── molecule/            # pruebas del role (ver Pruebas de infraestructura)
-```
+Se usa desde un playbook:
 
 ```yaml title="site.yml"
 - name: Servidores web
@@ -193,20 +160,7 @@ roles/nginx/
 
 - **Ansible Galaxy** es el repositorio público de roles y collections.
 - Una **collection** (colección) agrupa modules, plugins y roles bajo un *namespace* (por ejemplo, `amazon.aws`, `community.general`, `ansible.posix`).
-- Declara las dependencias en un archivo y fíjalas por versión:
-
-```yaml title="requirements.yml"
-collections:
-  - name: amazon.aws
-    version: ">=9.0.0,<10.0.0"
-  - name: community.general
-roles:
-  - name: geerlingguy.docker
-```
-
-```bash
-ansible-galaxy install -r requirements.yml
-```
+- Declara las dependencias en un `requirements.yml` y fíjalas por versión (ejemplo comentado en [Anatomía: requirements.yml](../../recursos/anatomia/ansible.md#requirementsyml-comentado)); se instalan con `ansible-galaxy install -r requirements.yml`.
 
 ## Idempotencia
 
@@ -252,7 +206,7 @@ ansible-playbook site.yml --ask-vault-pass        # o --vault-password-file
 ```
 
 !!! tip "Convención útil"
-    Guarda los secretos cifrados como `vault_db_password` en `vault.yml` y referéncialos desde un archivo sin cifrar (`db_password: "{{ vault_db_password }}"`). Así se ve qué variables existen sin descifrar nada.
+    Guarda los secretos cifrados como `vault_db_password` en `vault.yml` y referéncialos desde un archivo sin cifrar (`db_password: "{{ vault_db_password }}"`). Así se ve qué variables existen sin descifrar nada. Ejemplo completo en [Anatomía: archivo cifrado con Ansible Vault](../../recursos/anatomia/ansible.md#archivo-cifrado-con-ansible-vault).
 
 Para equipos grandes, mejor leer los secretos en tiempo de ejecución desde un gestor central (HashiCorp Vault, AWS Secrets Manager, Azure Key Vault, Google Secret Manager) con los lookups de las collections correspondientes. Ver [Secretos e identidades](../../devsecops/identidades-y-pipeline/secretos-identidades.md).
 

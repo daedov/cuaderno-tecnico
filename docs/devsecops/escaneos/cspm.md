@@ -12,7 +12,7 @@ tags:
 !!! info "Dónde encaja"
     - **Fase**: **operación**. Corre de forma **continua** (servicios nativos) o **programada** (herramientas open source), sobre lo que ya está desplegado. Es el complemento *shift-right* del [IaC scanning](iac-scanning.md), que revisa el código antes del despliegue.
     - **Qué analiza**: la configuración de los recursos y de la propia cuenta, leída por las APIs del proveedor: IAM, almacenamiento, red, logs, cifrado.
-    - **Nota temática**: los marcos (CIS, ISO 27001, SOC 2, NIST) y el panorama de CSPM están en [Cumplimiento y gobierno](../gobierno-y-respuesta/cumplimiento.md); los servicios base que el CSPM revisa, en [Seguridad base en la nube](../../cloud/identidad-y-seguridad/seguridad-base.md). Vista de conjunto: [Escaneo de seguridad en el pipeline](escaneo-en-pipeline.md).
+    - **Nota temática**: los marcos (CIS, ISO 27001, SOC 2, NIST) y el panorama de CSPM están en [Cumplimiento y gobierno](../gobierno-y-respuesta/cumplimiento.md); los servicios base que el CSPM revisa, en [Fundamentos de seguridad cloud](../../cloud/seguridad/fundamentos-seguridad-cloud.md). Vista de conjunto: [Escaneo de seguridad en el pipeline](escaneo-en-pipeline.md).
 
 ## ¿Qué detecta?
 
@@ -222,7 +222,7 @@ Activa el CSPM desde una cuenta dedicada y no desde cada equipo: así los equipo
 
 ## Umbrales y cuándo fallar el build
 
-El CSPM mide **postura**, no un cambio concreto, así que casi nunca bloquea un PR. Los umbrales se expresan de otra forma:
+El CSPM mide **postura**, no un cambio concreto, así que casi nunca bloquea un PR (criterios generales en [Criterios comunes de gating](escaneo-en-pipeline.md#criterios-comunes-de-gating)). Los umbrales se expresan de otra forma:
 
 - **Alertas inmediatas** para hallazgos críticos nuevos (root sin MFA, bucket público, SSH abierto a internet): notificación al canal de seguridad o a un ticket automático.
 - **Objetivos de postura**: porcentaje de controles CIS en `PASS` por cuenta, *secure score* mínimo, cero críticos con más de N días.
@@ -231,16 +231,15 @@ El CSPM mide **postura**, no un cambio concreto, así que casi nunca bloquea un 
 
 ## Gestión de hallazgos
 
+El ciclo general está en [Gestión de hallazgos](escaneo-en-pipeline.md#gestion-de-hallazgos). Lo propio del CSPM:
+
 - **Triage**: confirma que el recurso es real y de quién es (por eso importa el *tagging*: `owner`, `environment`). Un bucket público puede ser correcto si sirve una web estática.
-- **Excepciones documentadas**:
+- **Excepciones** en cada herramienta:
     - Prowler: **mutelist** en YAML por cuenta, check, región, recurso o tag; usa `Description` para el motivo, el responsable y la fecha de revisión.
     - Security Hub CSPM: **automation rules** o el *workflow status* `SUPPRESSED`.
     - Defender for Cloud: **exemptions** (*waiver* o *mitigated*), que admiten fecha de expiración.
     - Security Command Center: **mute rules**.
-
-    Registra cada excepción como riesgo aceptado ([Detección y respuesta](../gobierno-y-respuesta/deteccion-respuesta.md#excepciones-y-riesgo-aceptado)).
-- **Priorización**: severidad del control, exposición a internet y sensibilidad de los datos. Los CNAPP y Defender CSPM combinan esas señales (*attack paths*).
-- **SLA**: aplica los plazos de [Detección y respuesta](../gobierno-y-respuesta/deteccion-respuesta.md#sla-de-remediacion).
+- **Priorización**: los CNAPP y Defender CSPM combinan severidad del control, exposición a internet y sensibilidad de los datos (*attack paths*).
 
 ### Remediar con IaC
 
@@ -284,7 +283,6 @@ La remediación **automática** (AWS Config remediation con SSM Automation, `Dep
 | Empezar por un benchmark (CIS Foundations) y los críticos | Activar todos los estándares a la vez y ahogarse en miles de hallazgos duplicados (en Security Hub CSPM, activa *consolidated control findings*) |
 | Cada corrección en IaC más un guardrail | Arreglar en la consola y ver volver el hallazgo |
 | Identidad de solo lectura con OIDC para el escáner | Ejecutar Prowler con credenciales de administrador guardadas en el CI |
-| Excepciones con motivo, responsable y fecha de revisión | Silenciar checks completos "porque molestan" |
 | Revisar costos (AWS Config graba cada cambio; Defender CSPM y SCC Premium son de pago) | Activar grabación continua de todo sin estimar el costo |
 | Verificar que una herramienta sigue mantenida (ScoutSuite) | Adoptar un escáner sin actividad que no conoce los servicios nuevos |
 
@@ -292,7 +290,7 @@ La remediación **automática** (AWS Config remediation con SSM Automation, `Dep
 
 | Enfoque | Qué se mira desde ahí | Nota |
 | --- | --- | --- |
-| Cloud (el control) | Los servicios y la configuración que el CSPM revisa; la cuenta de seguridad y los guardrails | [Seguridad base en la nube](../../cloud/identidad-y-seguridad/seguridad-base.md), [Gobernanza](../../cloud/operacion-y-gobierno/gobernanza.md), [IAM: AWS, Azure y GCP](../../cloud/identidad-y-seguridad/iam-comparativa.md), [Redes en la nube](../../cloud/redes-y-datos/redes.md) |
+| Cloud (el control) | Los servicios y la configuración que el CSPM revisa; la cuenta de seguridad y los guardrails | [Fundamentos de seguridad cloud](../../cloud/seguridad/fundamentos-seguridad-cloud.md), [Gobernanza](../../cloud/operacion-y-gobierno/gobernanza.md), [IAM: AWS, Azure y GCP](../../cloud/fundamentos/iam-comparativa.md), [Redes en la nube](../../cloud/redes-y-datos/redes.md) |
 | DevOps (la automatización) | El IaC donde se aplica cada corrección y el pipeline que la despliega | [Infrastructure as Code](../../devops/iac/infraestructura-como-codigo.md), [Terraform básico](../../devops/iac/terraform-basico.md) |
 | DevSecOps (la verificación) | Marcos de cumplimiento, el escaneo previo de IaC y de Kubernetes, y la respuesta a hallazgos | [Cumplimiento y gobierno](../gobierno-y-respuesta/cumplimiento.md), [IaC scanning](iac-scanning.md), [KSPM](kspm.md), [Seguridad de IaC](../infraestructura-y-contenedores/seguridad-iac.md), [Detección y respuesta](../gobierno-y-respuesta/deteccion-respuesta.md), [Escaneo de seguridad en el pipeline](escaneo-en-pipeline.md) |
 | Negocio TI (el porqué) | Riesgo aceptado, evidencia para auditorías y costo de las herramientas | [Gobierno y riesgo de TI](../../negocio/gobierno-riesgo-ti.md) |

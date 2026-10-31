@@ -7,7 +7,7 @@ tags: [devsecops, escaneo, sca]
 > Análisis de las dependencias de terceros: vulnerabilidades conocidas, licencias y actualizaciones, desde el lockfile o el SBOM hasta el gate del pipeline.
 
 !!! info "Dónde encaja"
-    El **SCA** (*Software Composition Analysis*, análisis de composición de software) corre en el **PR**, en el **build** y de forma **programada** sobre lo que ya está en producción (salen CVE nuevos cada día para versiones que ayer estaban limpias). Analiza los **manifiestos y lockfiles** (`package-lock.json`, `poetry.lock`, `go.sum`…), un **SBOM** o los paquetes dentro de una imagen. La visión general de la cadena de suministro (ataques, SBOM, firma, SLSA, pinning) está en [Software supply chain](../codigo-y-dependencias/cadena-suministro.md#sca); esta nota es el detalle operativo. Visión de conjunto: [Escaneo de seguridad en el pipeline](escaneo-en-pipeline.md).
+    El **SCA** (*Software Composition Analysis*, análisis de composición de software) corre en el **PR**, en el **build** y de forma **programada** sobre lo que ya está en producción (salen CVE nuevos cada día para versiones que ayer estaban limpias). Analiza los **manifiestos y lockfiles** (`package-lock.json`, `poetry.lock`, `go.sum`…), un **SBOM** o los paquetes dentro de una imagen. La visión general de la cadena de suministro (ataques, SBOM, firma, SLSA, pinning) está en [Software supply chain](../codigo-y-dependencias/cadena-suministro.md#version-pinning); esta nota es el detalle operativo. Visión de conjunto: [Escaneo de seguridad en el pipeline](escaneo-en-pipeline.md).
 
 ## ¿Qué detecta?
 
@@ -231,6 +231,8 @@ trivy fs --scanners license --severity HIGH,CRITICAL .
 
 ## Umbrales y cuándo fallar el build
 
+Los criterios generales están en [Criterios comunes de gating](escaneo-en-pipeline.md#criterios-comunes-de-gating). En SCA:
+
 | Señal | Gate recomendado |
 | --- | --- |
 | Vulnerabilidad **crítica o alta** con fix disponible en dependencia de producción | Fallar el PR que la introduce |
@@ -239,12 +241,13 @@ trivy fs --scanners license --severity HIGH,CRITICAL .
 | Dependencia solo de desarrollo o tests | Avisar, no fallar (`fail-on-scopes: runtime`, `npm audit --omit=dev`) |
 | Licencia fuera de la allowlist | Fallar el PR que la introduce |
 
-- **Solo nuevos**: dependency review y el modo PR de OSV-Scanner solo miran lo que cambia; el resto se gestiona como deuda desde el escaneo programado.
-- **Programado ≠ bloqueante**: un CVE publicado esta noche no debería romper el build de un cambio que no toca dependencias; trátalo en el backlog con su SLA.
+**Solo nuevos**: dependency review y el modo PR de OSV-Scanner solo miran lo que cambia; el resto se gestiona como deuda desde el escaneo programado, que no bloquea: un CVE publicado esta noche no debería romper el build de un cambio que no toca dependencias.
 
 ## Gestión de hallazgos
 
-1. **Triage**: ¿la dependencia está en producción?, ¿es alcanzable?, ¿está expuesta a internet?, ¿hay exploit (EPSS, KEV)? Ver [priorizar con CVSS, EPSS y KEV](../gobierno-y-respuesta/deteccion-respuesta.md#priorizar-con-cvss-epss-y-kev).
+El ciclo general está en [Gestión de hallazgos](escaneo-en-pipeline.md#gestion-de-hallazgos). Lo propio del SCA:
+
+1. **Triage**: ¿la dependencia está en producción?, ¿es alcanzable (*reachability*)?, ¿está expuesta a internet?, ¿hay exploit (EPSS, KEV)?
 2. **Remediar**: actualizar la dependencia directa (a menudo arrastra la transitiva), usar `overrides` (npm) o *constraints* (pip) para forzar una transitiva, o sustituir la librería.
 3. **Suprimir con fecha de expiración** cuando no hay fix o no aplica:
 
@@ -260,8 +263,7 @@ trivy fs --scanners license --severity HIGH,CRITICAL .
     CVE-2025-12345 exp:2027-01-31
     ```
 
-    En GitHub, las alertas de Dependabot se descartan con un motivo (*tolerable risk*, *inaccurate*, *no bandwidth*…); documenta también el porqué. Si eres el proveedor del software, un documento **VEX** comunica a tus clientes que la vulnerabilidad no les afecta.
-4. **SLA de remediación** según severidad: ver [SLA de remediación](../gobierno-y-respuesta/deteccion-respuesta.md#sla-de-remediacion).
+    En GitHub, las alertas de Dependabot se descartan con un motivo (*tolerable risk*, *inaccurate*, *no bandwidth*…); documenta también el porqué. Si eres el proveedor del software, un documento **VEX** comunica a tus clientes que la vulnerabilidad no les afecta (ver [VEX](container-scanning.md#vex-declarar-lo-que-no-es-explotable)).
 
 ## Buenas prácticas y errores comunes
 
@@ -270,8 +272,6 @@ trivy fs --scanners license --severity HIGH,CRITICAL .
 - **Agrupa actualizaciones** (grupos de Dependabot, `packageRules` de Renovate) para no ahogar al equipo en PR.
 - **Reescanea lo desplegado**: el SBOM de cada release, escaneado cada día, avisa de CVE nuevos en producción.
 - **No confíes en una sola base**: Trivy, Grype y OSV-Scanner usan fuentes distintas y pueden discrepar.
-- Error común: fallar el build por CVE sin fix disponible; el equipo aprende a desactivar el job.
-- Error común: ignorar vulnerabilidades sin fecha de revisión; las excepciones se convierten en permanentes.
 - Error común: olvidar las imágenes: el SCA del repositorio no ve los paquetes del sistema operativo de la imagen base (ver [Container scanning](container-scanning.md)).
 
 ## Relación con otras secciones

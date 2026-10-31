@@ -55,7 +55,8 @@ Reducir la superficie de ataque de sistemas y servicios con configuraciones segu
 - [Fundamentos de hardening](hardening/fundamentos-hardening.md): principios, baselines (CIS Benchmarks, DISA STIG, Microsoft), ciclo y excepciones
 - [Hardening de Linux](hardening/hardening-linux.md): SSH, sysctl, servicios, auditd, SELinux/AppArmor, firewall, Lynis y OpenSCAP
 - [Hardening de Windows Server](hardening/hardening-windows.md): security baselines, GPO, LAPS, ASR, Credential Guard, RDP, PowerShell logging
-- [Hardening de servicios](hardening/hardening-servicios.md): NGINX y TLS, cabeceras de seguridad, PostgreSQL, MySQL y el daemon de Docker
+- [Hardening de servidores web](hardening/hardening-servidores-web.md): NGINX y Apache, TLS y cabeceras de seguridad
+- [Hardening de servicios](hardening/hardening-servicios.md): PostgreSQL, MySQL y el daemon de Docker
 - [Hardening como código](hardening/hardening-como-codigo.md): Ansible, golden images, verificación continua y drift
 - Práctica: [Lab 22: Hardening de Linux con Ansible](../laboratorios/devsecops/hardening-linux-ansible.md)
 

@@ -30,22 +30,9 @@ Se apoya en la observabilidad (logs, métricas, alertas) de [Observabilidad](../
 
 ### Fuentes de logs
 
-Sin logs no hay detección ni investigación. Las fuentes clave en la nube:
+Sin logs no hay detección ni investigación. Qué logs de cada nube activar (CloudTrail, Activity Log y logs de Microsoft Entra ID, Cloud Audit Logs, flow logs), cómo hacerlos inmutables en una cuenta o proyecto de logs separado y qué servicios de **threat detection** (detección de amenazas) nativos encender (Amazon GuardDuty, Microsoft Defender for Cloud, Security Command Center) está en [Seguridad de logging y detección](../../cloud/seguridad/seguridad-logging-deteccion.md). Los audit logs del API server de Kubernetes se activan en el servicio gestionado (ver [Seguridad de contenedores y Kubernetes gestionado](../../cloud/seguridad/seguridad-contenedores-kubernetes.md#controles-por-proveedor)).
 
-| Fuente | Qué registra | Proveedor |
-| --- | --- | --- |
-| **AWS CloudTrail** | Cada llamada a la API de AWS: quién, qué, cuándo, desde dónde | AWS |
-| **Microsoft Entra ID sign-in y audit logs** | Inicios de sesión (con riesgo, MFA, ubicación) y cambios en el directorio | Azure |
-| **Azure Activity Log** | Operaciones sobre recursos de Azure | Azure |
-| **Cloud Audit Logs** | Admin Activity, Data Access, System Event y Policy Denied | Google Cloud |
-| **VPC Flow Logs** (y *VNet flow logs* en Azure) | Metadatos del tráfico de red: origen, destino, puerto, aceptado/rechazado | Los tres |
-| **Kubernetes audit logs** | Peticiones a la API del clúster | EKS, AKS, GKE (hay que activarlos o enviarlos) |
-| Logs de aplicación, WAF, DNS, load balancers | Comportamiento de la app y del tráfico | Los tres |
-
-Además están los servicios de **threat detection** (detección de amenazas) nativos, que analizan esas fuentes y generan hallazgos: **Amazon GuardDuty**, **Microsoft Defender for Cloud** y **Security Command Center** (Event Threat Detection). Ver [Seguridad base en la nube](../../cloud/identidad-y-seguridad/seguridad-base.md) y [Observabilidad nativa](../../cloud/operacion-y-gobierno/observabilidad-nativa.md).
-
-!!! warning "Protege los logs"
-    Lo primero que intenta un atacante es borrar su rastro. Centraliza los logs en una cuenta o proyecto separado, con acceso de solo escritura desde las cuentas de origen, retención definida e inmutabilidad (por ejemplo, S3 Object Lock).
+Para el SIEM, a esas fuentes de la nube se suman los logs de aplicación, WAF, DNS y load balancers, los de los hosts y los hallazgos de los servicios de detección. Lo primero que intenta un atacante es borrar su rastro, así que el SIEM debe leer de la copia central, no de cada cuenta.
 
 ### SIEM
 
@@ -83,7 +70,7 @@ flowchart LR
     D --> A
 ```
 
-- **Descubrir**: inventario de activos y escaneo de imágenes, dependencias, VMs e IaC (Trivy, Amazon Inspector, Defender for Cloud, Artifact Analysis; ver [Seguridad de contenedores](../infraestructura-y-contenedores/seguridad-contenedores.md)).
+- **Descubrir**: inventario de activos y escaneo de imágenes, dependencias, VMs e IaC (Trivy, Amazon Inspector, Defender for Cloud, Artifact Analysis; ver [Container scanning](../escaneos/container-scanning.md)).
 - **Priorizar**: no todo lo "crítico" es urgente.
 - **Remediar**: actualizar, reconstruir la imagen, cambiar la configuración o aplicar una mitigación temporal (regla de WAF, cerrar un puerto).
 - **Verificar**: el re-escaneo confirma que desapareció.
@@ -209,7 +196,7 @@ Ante una VM comprometida, el instinto es apagarla o borrarla. **No lo hagas**: p
 
 | Enfoque | Qué se mira desde ahí | Nota |
 | --- | --- | --- |
-| Cloud (el control) | Logs de auditoría y servicios de detección nativos (GuardDuty, Defender, SCC) | [Observabilidad nativa](../../cloud/operacion-y-gobierno/observabilidad-nativa.md), [Seguridad base en la nube](../../cloud/identidad-y-seguridad/seguridad-base.md) |
+| Cloud (el control) | Qué logs de auditoría activar y proteger, y servicios de detección nativos (GuardDuty, Defender, SCC) | [Seguridad de logging y detección](../../cloud/seguridad/seguridad-logging-deteccion.md), [Observabilidad nativa](../../cloud/operacion-y-gobierno/observabilidad-nativa.md) |
 | DevOps (la automatización) | Centralizar logs y alertas; gestión de incidentes, on-call y postmortems | [Observabilidad](../../devops/operacion/observabilidad.md), [Operación y fiabilidad (SRE)](../../devops/operacion/operacion-sre.md), [Postmortem](../../devops/operacion/postmortem.md), [Comunicación de incidentes](../../devops/operacion/comunicacion-incidentes.md), [Runbooks y playbooks](../../devops/operacion/runbooks-playbooks.md), [Cómo leer logs](../../devops/operacion/leer-logs.md) |
 | DevSecOps (la verificación) | De dónde salen las vulnerabilidades y los controles que evitan repetir el incidente | [Seguridad de contenedores](../infraestructura-y-contenedores/seguridad-contenedores.md), [Secretos e identidades](../identidades-y-pipeline/secretos-identidades.md), [Cumplimiento y gobierno](cumplimiento.md), [Fundamentos de CVE](../vulnerabilidades/fundamentos-cve.md), [Cómo investigar un CVE](../vulnerabilidades/investigar-un-cve.md) |
 | Laboratorios (la práctica) | Practicar esto paso a paso | [Lab 03: Script en Python para analizar logs](../../laboratorios/fundamentos/python-analizar-logs.md), [Lab 11: Observabilidad con Prometheus y Grafana](../../laboratorios/devops/observabilidad-prometheus-grafana.md), [Lab 12: Escaneos de seguridad en el pipeline](../../laboratorios/devsecops/escaneos-en-pipeline.md), [Lab 15: DAST con OWASP ZAP sobre OWASP Juice Shop](../../laboratorios/devsecops/dast-zap-juice-shop.md), [Lab 16: Auditar tu cuenta cloud con Prowler (CSPM)](../../laboratorios/devsecops/cspm-prowler.md), [Lab 21: Game day: incidente simulado, troubleshooting y postmortem](../../laboratorios/operacion/game-day-incidente.md) |

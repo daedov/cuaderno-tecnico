@@ -8,7 +8,7 @@ tags:
 
 # Seguridad de contenedores
 
-> Cómo verificar y endurecer imágenes y contenedores: escaneo de vulnerabilidades, imágenes base mínimas, ejecución sin root, secretos en el build y firma.
+> Cómo endurecer imágenes y contenedores: imágenes base mínimas, Dockerfile endurecido, ejecución sin root, secretos en el build y firma. Las herramientas de escaneo de imágenes están en [Container image scanning](../escaneos/container-scanning.md).
 
 ## ¿Qué es?
 
@@ -26,41 +26,12 @@ Para crear imágenes (Dockerfile, multi-stage builds, Compose) ver [Docker](../.
 
 ## Escaneo de imágenes
 
-Un **image scanner** (escáner de imágenes) identifica los paquetes de la imagen (del sistema y de la aplicación) y los cruza con bases de datos de **CVE** (*Common Vulnerabilities and Exposures*, vulnerabilidades públicas catalogadas).
+Un **image scanner** (escáner de imágenes) identifica los paquetes de la imagen (del sistema y de la aplicación) y los cruza con bases de datos de **CVE** (*Common Vulnerabilities and Exposures*, vulnerabilidades públicas catalogadas). Se escanea en el build, antes del push, y otra vez en el **registry**: una imagen limpia hoy puede tener una CVE nueva mañana, y los registries gestionados la re-escanean (ver [registries por proveedor](../codigo-y-dependencias/cadena-suministro.md#registries-por-proveedor) y [Contenedores gestionados](../../cloud/computo/contenedores-gestionados.md)).
 
-| Herramienta | Notas |
-| --- | --- |
-| **Trivy** (Aqua Security) | Imágenes, IaC, dependencias, secretos y SBOM en una sola CLI |
-| **Grype** (Anchore) | Escáner de vulnerabilidades; suele usarse junto a **Syft**, que genera el SBOM |
-
-```bash
-# Trivy: falla solo con críticas y altas que ya tienen parche disponible
-trivy image --severity HIGH,CRITICAL --ignore-unfixed --exit-code 1 mi-app:1.4.2
-
-# Grype: falla desde severidad alta
-grype mi-app:1.4.2 --fail-on high
-
-# Trivy también detecta secretos y malas configuraciones dentro de la imagen
-trivy image --scanners vuln,secret,misconfig mi-app:1.4.2
-```
-
-!!! tip "`--ignore-unfixed` con criterio"
-    Muchas CVEs del sistema operativo no tienen parche todavía. Ignorarlas evita bloquear el pipeline por algo que no puedes arreglar, pero **revísalas** en el reporte: si una es crítica y explotable, quizá convenga cambiar de imagen base.
-
-### Escaneo en el registry
-
-Escanear solo en el build no basta: una imagen limpia hoy puede tener una CVE nueva mañana. Los registries gestionados pueden re-escanear de forma continua:
-
-| | AWS | Azure | Google Cloud |
-| --- | --- | --- | --- |
-| Registry | Amazon ECR | Azure Container Registry (ACR) | Artifact Registry |
-| Escaneo | **ECR enhanced scanning** con **Amazon Inspector** (continuo, SO y lenguajes); *basic scanning* al hacer push | **Microsoft Defender for Containers** (evaluación de vulnerabilidades en ACR y en ejecución) | **Artifact Analysis** (escaneo automático al subir; re-análisis continuo durante un periodo limitado tras el push) |
-| Dónde ver los hallazgos | Inspector y Security Hub | Microsoft Defender for Cloud | Artifact Registry y Security Command Center |
-
-Más servicios gestionados de contenedores en [Contenedores gestionados](../../cloud/computo/contenedores-gestionados.md).
+Lo que más reduce los hallazgos no es el escáner sino la imagen: si casi todas las CVEs vienen de la base, la solución es actualizarla o pasar a una [imagen base mínima](#imagenes-base-minimas), no parchear paquete a paquete.
 
 !!! tip "Escaneo en detalle"
-    Cómo funciona el escaneo por capas, Docker Scout, la integración en el pipeline con SARIF, el re-escaneo de imágenes ya publicadas y VEX para documentar lo que no es explotable: [Container image scanning](../escaneos/container-scanning.md).
+    Trivy, Grype y Docker Scout, cómo funciona el escaneo por capas, vulnerabilidades sin parche (`--ignore-unfixed`), integración en el pipeline con SARIF, escaneo continuo en el registry, umbrales y VEX para documentar lo que no es explotable: [Container image scanning](../escaneos/container-scanning.md).
 
 ## Imágenes base mínimas
 
@@ -163,20 +134,13 @@ docker build --secret id=npmrc,src=$HOME/.npmrc -t mi-app:1.4.2 .
 
 ## Firma y verificación
 
-Escanear dice *qué hay* en la imagen; firmar garantiza *quién la construyó* y que no cambió desde entonces. El flujo habitual:
+Escanear dice *qué hay* en la imagen; firmar garantiza *quién la construyó* y que no cambió desde entonces. Para imágenes, el flujo habitual es:
 
 1. El pipeline construye la imagen y genera el **SBOM** (*Software Bill of Materials*, lista de componentes).
-2. La firma con **cosign** (Sigstore), idealmente *keyless* con la identidad OIDC del pipeline.
-3. El clúster solo admite imágenes firmadas por esa identidad (Kyverno, Gatekeeper o Ratify; ver [Seguridad de Kubernetes](seguridad-kubernetes.md)).
+2. La firma con **cosign** (Sigstore) **por digest** (`@sha256:...`), idealmente *keyless* con la identidad OIDC del pipeline.
+3. El clúster solo admite imágenes firmadas por esa identidad (Kyverno, Gatekeeper o Ratify; ver [Seguridad de Kubernetes](seguridad-kubernetes.md#admission-control)).
 
-```bash
-cosign sign registry.example.com/mi-app@sha256:<digest>
-cosign verify registry.example.com/mi-app@sha256:<digest> \
-  --certificate-identity-regexp 'https://github.com/mi-org/mi-app/' \
-  --certificate-oidc-issuer https://token.actions.githubusercontent.com
-```
-
-Detalles de SBOM, SLSA y Sigstore en [Software supply chain](../codigo-y-dependencias/cadena-suministro.md).
+Cómo funciona Sigstore, los comandos `cosign sign` y `cosign verify` (con `--certificate-identity` o `--certificate-identity-regexp`) y las attestations: [Firma de artefactos con Sigstore](../codigo-y-dependencias/cadena-suministro.md#firma-de-artefactos-con-sigstore).
 
 ## Checklist rápido
 
@@ -193,21 +157,16 @@ Detalles de SBOM, SLSA y Sigstore en [Software supply chain](../codigo-y-depende
 
 | Enfoque | Qué se mira desde ahí | Nota |
 | --- | --- | --- |
-| Cloud (el control) | Registries gestionados, ECS/EKS, AKS, GKE y Cloud Run donde corren las imágenes | [Contenedores gestionados](../../cloud/computo/contenedores-gestionados.md) |
+| Cloud (el control) | Registries gestionados, ECS/EKS, AKS, GKE y Cloud Run donde corren las imágenes, y sus controles de seguridad | [Contenedores gestionados](../../cloud/computo/contenedores-gestionados.md), [Seguridad de contenedores y Kubernetes gestionado](../../cloud/seguridad/seguridad-contenedores-kubernetes.md) |
 | DevOps (la automatización) | Cómo se construyen y publican las imágenes que aquí se escanean | [Docker](../../devops/contenedores/docker.md), [Integración continua](../../devops/ci-cd/integracion-continua.md) |
-| DevSecOps (la verificación) | Escaneo en CI, firma y políticas en el clúster | [Escaneo de seguridad en el pipeline](../escaneos/escaneo-en-pipeline.md), [Container image scanning](../escaneos/container-scanning.md), [Software supply chain](../codigo-y-dependencias/cadena-suministro.md), [Seguridad de Kubernetes](seguridad-kubernetes.md), [CVE en contenedores y Kubernetes](../vulnerabilidades/cve-contenedores-kubernetes.md) |
+| DevSecOps (la verificación) | Escaneo de imágenes (herramientas, CI y registry), firma y políticas en el clúster | [Escaneo de seguridad en el pipeline](../escaneos/escaneo-en-pipeline.md), [Container image scanning](../escaneos/container-scanning.md), [Software supply chain](../codigo-y-dependencias/cadena-suministro.md), [Seguridad de Kubernetes](seguridad-kubernetes.md), [CVE en contenedores y Kubernetes](../vulnerabilidades/cve-contenedores-kubernetes.md) |
 | Laboratorios (la práctica) | Practicar esto paso a paso | [Lab 05: Imagen multi-stage y Docker Compose](../../laboratorios/devops/docker-multistage-compose.md), [Lab 12: Escaneos de seguridad en el pipeline](../../laboratorios/devsecops/escaneos-en-pipeline.md), [Lab 14: Endurecer un clúster: Pod Security, NetworkPolicy y Kyverno](../../laboratorios/devsecops/seguridad-kubernetes.md), [Lab 20: Google Cloud: desplegar un contenedor en Cloud Run](../../laboratorios/cloud/gcp-cloud-run.md), [Lab 22: Endurecer un servidor Linux con Ansible y medirlo con Lynis y OpenSCAP](../../laboratorios/devsecops/hardening-linux-ansible.md) |
 
 ## Referencias
 
-- [Trivy: escaneo de imágenes](https://trivy.dev/latest/docs/target/container_image/)
-- [Grype](https://github.com/anchore/grype)
 - [Distroless images](https://github.com/GoogleContainerTools/distroless)
 - [Chainguard Images](https://edu.chainguard.dev/chainguard/chainguard-images/overview/)
 - [Docker: build secrets](https://docs.docker.com/build/building/secrets/)
 - [Docker: seguridad del daemon y rootless mode](https://docs.docker.com/engine/security/)
-- [Amazon ECR: escaneo de imágenes](https://docs.aws.amazon.com/AmazonECR/latest/userguide/image-scanning.html)
-- [Microsoft Defender for Containers](https://learn.microsoft.com/es-es/azure/defender-for-cloud/defender-for-containers-introduction)
-- [Artifact Analysis](https://cloud.google.com/artifact-analysis/docs/artifact-analysis)
 - [OWASP Docker Security Cheat Sheet](https://cheatsheetseries.owasp.org/cheatsheets/Docker_Security_Cheat_Sheet.html)
 - [Comandos de Docker](../../recursos/comandos/docker.md)

@@ -9,7 +9,7 @@ tags:
 
 # Seguridad de IaC
 
-> Cómo verificar que el código de infraestructura es seguro antes de aplicarlo: escaneo estático (Checkov, Trivy, KICS), *policy as code* (OPA, Sentinel, servicios nativos) y detección de *drift*.
+> Qué asegurar en el código de infraestructura antes de aplicarlo y cómo hacerlo cumplir: hallazgos típicos, *policy as code* (OPA, Sentinel, servicios nativos) y detección de *drift*. Los escáneres de IaC (Checkov, Trivy, KICS) están en [IaC scanning](../escaneos/iac-scanning.md).
 
 ## ¿Qué es?
 
@@ -34,50 +34,18 @@ flowchart LR
 ```
 
 !!! note "Esta nota amplía la de Terraform"
-    En [Infrastructure as Code con Terraform](../../devops/iac/terraform-basico.md) está el resumen (dos comandos para escanear). Aquí ves qué detectan, cómo fallar el *build* y cómo ir más allá con políticas propias.
+    En [Infrastructure as Code con Terraform](../../devops/iac/terraform-basico.md) está el resumen (dos comandos para escanear). Aquí ves qué se debe asegurar y cómo ir más allá con políticas propias; los escáneres, sus comandos y su integración en CI están en [IaC scanning](../escaneos/iac-scanning.md).
 
-## Escáneres de IaC
+## Escaneo estático de IaC
 
-Todos funcionan igual: leen el código (o el plan), lo comparan con cientos de reglas basadas en buenas prácticas y CIS Benchmarks, y devuelven hallazgos con severidad.
-
-| Herramienta | Mantenida por | Qué escanea | Puntos fuertes |
-| --- | --- | --- | --- |
-| **Checkov** | Prisma Cloud (Palo Alto Networks), *open source* | Terraform, plan JSON, CloudFormation, Bicep/ARM, Kubernetes, Helm, Dockerfile, GitHub Actions | Muchas reglas, políticas propias en Python o YAML, análisis de grafo entre recursos |
-| **Trivy** (`trivy config`) | Aqua Security, *open source* | Terraform, plan JSON, CloudFormation, ARM, Kubernetes, Helm, Dockerfile | Una sola herramienta para IaC, imágenes, dependencias y secretos |
-| **KICS** | Checkmarx, *open source* | Terraform, CloudFormation, Ansible, Kubernetes, Docker, OpenAPI y más | Muy amplio en formatos; reglas escritas en Rego |
-
-!!! info "tfsec ahora es Trivy"
-    **tfsec** ya no recibe desarrollo nuevo: Aqua Security integró sus reglas en Trivy. Si ves `tfsec .` en guías antiguas, el equivalente actual es `trivy config .`.
-
-### Comandos básicos
-
-```bash
-# Checkov: todo el directorio, solo Terraform
-checkov -d . --framework terraform
-
-# Trivy: solo hallazgos altos y críticos, falla si los hay
-trivy config --severity HIGH,CRITICAL --exit-code 1 .
-
-# KICS con Docker
-docker run --rm -v "$PWD":/src checkmarx/kics scan -p /src -o /src/kics-results
-```
-
-!!! tip "Escanea también el plan"
-    El código HCL puede tener variables y *modules* que el escáner no resuelve. El **plan en JSON** tiene los valores finales:
-
-    ```bash
-    terraform plan -out=plan.tfplan
-    terraform show -json plan.tfplan > plan.json
-    checkov -f plan.json
-    trivy config plan.json
-    ```
+Los **escáneres de IaC** (Checkov, Trivy con `trivy config`, KICS) leen el código o, mejor aún, el **plan en JSON** de Terraform (que tiene los valores finales de variables y *modules*), lo comparan con cientos de reglas basadas en buenas prácticas y CIS Benchmarks, y devuelven hallazgos con severidad. Lo que encuentran son los [hallazgos típicos](#hallazgos-tipicos) de la sección siguiente.
 
 !!! tip "Escaneo en detalle"
-    Código frente a plan, Dockerfiles, manifests de Kubernetes y Helm (con `helm template`), integración en el pull request con SARIF, baselines y supresiones con caducidad: [IaC scanning](../escaneos/iac-scanning.md).
+    Herramientas y comandos, código frente a plan, Dockerfiles, manifests de Kubernetes y Helm (con `helm template`), integración en el pull request con SARIF, umbrales, baselines y supresiones con caducidad: [IaC scanning](../escaneos/iac-scanning.md).
 
 ## Hallazgos típicos
 
-Estos son los errores que más aparecen y los que el temario relaciona con [Redes](../../cloud/redes-y-datos/redes.md) e [IAM](../../cloud/identidad-y-seguridad/iam-comparativa.md):
+Estos son los errores que más aparecen y los que el temario relaciona con [Redes](../../cloud/redes-y-datos/redes.md) e [IAM](../../cloud/fundamentos/iam-comparativa.md):
 
 === "Security group abierto"
 
@@ -143,7 +111,7 @@ Estos son los errores que más aparecen y los que el temario relaciona con [Rede
     }
     ```
 
-    **Corrección**: `storage_encrypted = true` y, si la organización lo exige, una *customer managed key* de KMS (ver [Seguridad base](../../cloud/identidad-y-seguridad/seguridad-base.md)).
+    **Corrección**: `storage_encrypted = true` y, si la organización lo exige, una *customer managed key* de KMS (ver [Seguridad de cifrado y secretos](../../cloud/seguridad/seguridad-cifrado-secretos.md#envelope-encryption-y-modelos-de-clave)).
 
 Una salida de Checkov para el primer caso se ve así (el ID de la regla puede variar entre versiones):
 
@@ -155,29 +123,7 @@ Check: CKV_AWS_24: "Ensure no security groups allow ingress from 0.0.0.0:0 to po
 
 ## Fallar el build
 
-Un escáner que solo avisa se acaba ignorando. En CI lo habitual es **fallar el pipeline** con hallazgos de severidad alta o crítica y dejar el resto como aviso.
-
-| Herramienta | Falla por defecto | Opciones útiles |
-| --- | --- | --- |
-| Checkov | Sí, si hay algún check fallido | `--soft-fail`, `--hard-fail-on HIGH`, `--skip-check CKV_AWS_XX` |
-| Trivy | No (sale con 0) | `--exit-code 1`, `--severity HIGH,CRITICAL` |
-| KICS | Sí, con código distinto según severidad | `--fail-on high,critical`, `--ignore-on-exit results` |
-
-```yaml title=".github/workflows/iac.yml (fragmento)"
-jobs:
-  iac-scan:
-    runs-on: ubuntu-latest
-    permissions:
-      contents: read
-    steps:
-      - uses: actions/checkout@v7
-      - name: Trivy config
-        uses: aquasecurity/trivy-action@ed142fd0673e97e23eac54620cfb913e5ce36c25 # v0.36.0
-        with:
-          scan-type: config
-          severity: HIGH,CRITICAL
-          exit-code: "1"
-```
+Un escáner que solo avisa se acaba ignorando. En CI lo habitual es **fallar el pipeline** con hallazgos de severidad alta o crítica y dejar el resto como aviso; las opciones de cada herramienta y el job de ejemplo están en [IaC scanning](../escaneos/iac-scanning.md).
 
 !!! warning "Excepciones documentadas, no silenciadas"
     A veces un hallazgo no aplica (un bucket que **debe** ser público para un sitio estático). Suprime la regla **solo en ese recurso** y con el motivo escrito, para que quede en la revisión del *pull request*. Usa el ID exacto que muestre el escáner:
@@ -322,7 +268,7 @@ jobs:
 | Momento | Control | Herramienta típica |
 | --- | --- | --- |
 | Editor / *pre-commit* | Escaneo rápido local | Checkov, Trivy (ver [Seguridad del código](../codigo-y-dependencias/seguridad-codigo.md)) |
-| Pull request | Escaneo + comentario con hallazgos | Checkov, Trivy, KICS en CI |
+| Pull request | Escaneo + comentario con hallazgos | Checkov, Trivy, KICS en CI (ver [IaC scanning](../escaneos/iac-scanning.md)) |
 | Después del `plan` | Políticas de la organización | Conftest, Sentinel, CloudFormation Guard |
 | En la nube | Guardrails | SCP, Azure Policy, Organization Policy |
 | Programado | Drift y cumplimiento | `plan -detailed-exitcode`, AWS Config, Azure Policy ([Cumplimiento](../gobierno-y-respuesta/cumplimiento.md)) |
@@ -331,16 +277,13 @@ jobs:
 
 | Enfoque | Qué se mira desde ahí | Nota |
 | --- | --- | --- |
-| Cloud (el control) | Los recursos que se validan: reglas de red, roles y políticas, guardrails de la organización | [Redes en la nube](../../cloud/redes-y-datos/redes.md), [IAM: AWS, Azure y GCP](../../cloud/identidad-y-seguridad/iam-comparativa.md), [Gobernanza](../../cloud/operacion-y-gobierno/gobernanza.md) |
+| Cloud (el control) | Los recursos que se validan: reglas de red, roles y políticas, guardrails de la organización | [Redes en la nube](../../cloud/redes-y-datos/redes.md), [IAM: AWS, Azure y GCP](../../cloud/fundamentos/iam-comparativa.md), [Gobernanza](../../cloud/operacion-y-gobierno/gobernanza.md) |
 | DevOps (la automatización) | Cómo se escribe, prueba y aplica el código que aquí se escanea | [Infrastructure as Code](../../devops/iac/infraestructura-como-codigo.md), [Infrastructure as Code con Terraform](../../devops/iac/terraform-basico.md), [Pruebas de infraestructura](../../devops/iac/pruebas-infraestructura.md) |
-| DevSecOps (la verificación) | Dónde corren los escaneos y qué se hace con los hallazgos | [Escaneo de seguridad en el pipeline](../escaneos/escaneo-en-pipeline.md), [IaC scanning](../escaneos/iac-scanning.md), [Cumplimiento y gobierno](../gobierno-y-respuesta/cumplimiento.md) |
+| DevSecOps (la verificación) | Las herramientas de escaneo de IaC, dónde corren y qué se hace con los hallazgos | [Escaneo de seguridad en el pipeline](../escaneos/escaneo-en-pipeline.md), [IaC scanning](../escaneos/iac-scanning.md), [Cumplimiento y gobierno](../gobierno-y-respuesta/cumplimiento.md) |
 | Laboratorios (la práctica) | Practicar esto paso a paso | [Lab 08: Terraform sin nube: providers locales y workspaces](../../laboratorios/devops/terraform-local-workspaces.md), [Lab 09: Terraform en AWS con remote state en S3](../../laboratorios/devops/terraform-aws-backend-remoto.md), [Lab 12: Escaneos de seguridad en el pipeline](../../laboratorios/devsecops/escaneos-en-pipeline.md), [Lab 13: Desplegar en AWS desde GitHub Actions con OIDC (sin llaves)](../../laboratorios/devsecops/oidc-github-aws.md), [Lab 14: Endurecer un clúster: Pod Security, NetworkPolicy y Kyverno](../../laboratorios/devsecops/seguridad-kubernetes.md), [Lab 16: Auditar tu cuenta cloud con Prowler (CSPM)](../../laboratorios/devsecops/cspm-prowler.md), [Lab 17: AWS: VPC con subnets públicas y privadas y una EC2](../../laboratorios/cloud/aws-vpc-ec2.md), [Lab 18: AWS: API serverless con Lambda, API Gateway y DynamoDB](../../laboratorios/cloud/aws-serverless-api.md), [Lab 19: Azure: VNet, NSG y una VM con Azure CLI](../../laboratorios/cloud/azure-vnet-vm.md) |
 
 ## Referencias
 
-- [Checkov](https://www.checkov.io/)
-- [Trivy: escaneo de misconfigurations](https://trivy.dev/latest/docs/scanner/misconfiguration/)
-- [KICS](https://docs.kics.io/)
 - [Conftest](https://www.conftest.dev/)
 - [Open Policy Agent: lenguaje Rego](https://www.openpolicyagent.org/docs/policy-language)
 - [HashiCorp Sentinel en HCP Terraform](https://developer.hashicorp.com/terraform/cloud-docs/policy-enforcement)

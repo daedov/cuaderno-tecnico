@@ -120,7 +120,7 @@ Una excepción sin dueño ni fecha de caducidad se vuelve permanente sin que nad
 | **Golden image** (imagen dorada) + infraestructura inmutable | Construyes una imagen ya endurecida y verificada; los servidores se crean desde ella y se reemplazan en vez de modificarse | Todos los servidores parten iguales, la imagen se escanea antes de usarla y el drift se reduce | Requiere pipeline de imágenes y que la aplicación tolere reemplazar instancias |
 | **Hardening en caliente** | Una herramienta de configuración (Ansible, SSM, DSC) endurece servidores que ya existen | Sirve para servidores heredados o de larga vida | Más drift, cambios sobre sistemas en producción |
 
-En la práctica se combinan: imagen endurecida como base y gestión de configuración para mantenerla y detectar drift. Los builders gestionados de cada nube y las imágenes CIS del Marketplace están en [Hardening como código](hardening-como-codigo.md).
+En la práctica se combinan: imagen endurecida como base y gestión de configuración para mantenerla y detectar drift. El pipeline de imágenes con Packer y Ansible está en [Hardening como código](hardening-como-codigo.md); los builders gestionados de cada nube y las imágenes CIS del Marketplace, en [Seguridad de máquinas virtuales](../../cloud/seguridad/seguridad-maquinas-virtuales.md#pipeline-de-imagenes-golden-images).
 
 ## Cómo medir
 
@@ -181,7 +181,8 @@ Los resultados reales de ambas herramientas, antes y después de aplicar cambios
 | --- | --- |
 | [Hardening de Linux](hardening-linux.md) | Usuarios y sudo, SSH, servicios, sysctl, montajes, auditd, SELinux/AppArmor, firewall, parches; verificación con Lynis, ssh-audit y OpenSCAP |
 | [Hardening de Windows](hardening-windows.md) | Microsoft Security Baselines, Windows LAPS, ASR, Credential Guard, protocolos heredados, RDP, logging; HardeningKitty |
-| [Hardening de servicios](hardening-servicios.md) | NGINX/Apache (cabeceras y TLS), PostgreSQL, MySQL/MariaDB y el daemon de Docker |
+| [Hardening de servidores web](hardening-servidores-web.md) | NGINX y Apache: TLS, cabeceras de seguridad, límites |
+| [Hardening de servicios](hardening-servicios.md) | PostgreSQL, MySQL/MariaDB y el daemon de Docker |
 | [Hardening como código](hardening-como-codigo.md) | Roles de Ansible (ansible-lockdown, devsec.hardening), golden images con Packer, verificación continua y drift |
 | [Lab 22: Endurecer un servidor Linux con Ansible](../../laboratorios/devsecops/hardening-linux-ansible.md) | Práctica: medir con Lynis y OpenSCAP, aplicar un rol, volver a medir |
 

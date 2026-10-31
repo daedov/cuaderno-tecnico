@@ -8,7 +8,7 @@ tags:
 
 # Pruebas dinámicas de seguridad
 
-> Probar la aplicación en ejecución como lo haría un atacante: DAST con OWASP ZAP, fuzzing, seguridad de APIs y pentesting básico.
+> Probar la aplicación en ejecución como lo haría un atacante: DAST frente a SAST e IAST, fuzzing, seguridad de APIs y pentesting básico. El detalle operativo del escaneo DAST (herramientas, comandos, pipeline, umbrales) está en [DAST](../escaneos/dast.md).
 
 ## ¿Qué es?
 
@@ -30,81 +30,15 @@ En el ciclo DevSecOps se ubican en la fase de **test**, sobre un entorno despleg
 !!! tip "Se complementan"
     Ninguna sustituye a las otras. Lo habitual es SAST y SCA en cada *pull request* y DAST en cada despliegue a staging (un *baseline scan* rápido) más un análisis completo programado.
 
-!!! tip "Escaneo en detalle"
-    El detalle operativo del DAST (ZAP baseline, full y API scan, Nuclei, escaneo autenticado, umbrales y gestión de hallazgos) está en [DAST](../escaneos/dast.md).
+## DAST en el pipeline
 
-## OWASP ZAP
-
-**ZAP** (*Zed Attack Proxy*, ahora mantenido por Checkmarx bajo el nombre ZAP by Checkmarx) es el escáner DAST *open source* más usado. Funciona como un proxy entre el navegador y la aplicación y también como escáner automático. Para CI se usan sus **packaged scans** (análisis empaquetados) en Docker:
-
-| Scan | Qué hace | Duración típica | Dónde usarlo |
-| --- | --- | --- | --- |
-| **Baseline scan** | Hace *spidering* (rastreo de las páginas) y solo **escaneo pasivo**: analiza las respuestas sin atacar | Minutos | En cada despliegue; es seguro en casi cualquier entorno |
-| **Full scan** | Rastreo, más **escaneo activo**: envía ataques reales (inyecciones, XSS…) | De minutos a horas | En staging o en un entorno efímero, programado |
-| **API scan** | Escaneo activo guiado por una definición OpenAPI, SOAP o GraphQL | Minutos | APIs sin interfaz web |
-
-### Con Docker
-
-```bash
-# Baseline: el informe queda en el directorio actual
-docker run --rm -v "$(pwd):/zap/wrk/:rw" -t ghcr.io/zaproxy/zaproxy:stable \
-  zap-baseline.py -t https://staging.mi-app.example -r informe-baseline.html
-
-# Full scan (ataca de verdad: solo contra entornos autorizados)
-docker run --rm -v "$(pwd):/zap/wrk/:rw" -t ghcr.io/zaproxy/zaproxy:stable \
-  zap-full-scan.py -t https://staging.mi-app.example -r informe-full.html
-```
-
-Códigos de salida: `0` sin problemas, `1` al menos un FAIL, `2` al menos un WARN (sin FAIL), `3` otro error. Por defecto todas las alertas son WARN; con un archivo de reglas (`-c reglas.tsv`) decides cuáles deben hacer fallar el pipeline y cuáles ignorar.
-
-### Con GitHub Actions
-
-```yaml title=".github/workflows/dast.yml"
-name: DAST
-on:
-  workflow_run:
-    workflows: ["Deploy staging"]
-    types: [completed]
-
-permissions:
-  contents: read
-  issues: write          # la action puede abrir un issue con el informe
-
-jobs:
-  zap-baseline:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v7
-      - name: ZAP baseline scan
-        uses: zaproxy/action-baseline@v0.15.0   # en un pipeline real, fíjala por SHA
-        with:
-          target: "https://staging.mi-app.example"
-          rules_file_name: ".zap/rules.tsv"     # reglas a ignorar o a tratar como FAIL
-          fail_action: true                     # falla el job si hay alertas
-          allow_issue_writing: false
-```
-
-Para el escaneo completo existe `zaproxy/action-full-scan` y para APIs `zaproxy/action-api-scan`, con entradas parecidas.
-
-!!! info "Escaneos con autenticación"
-    Sin iniciar sesión, ZAP solo ve las páginas públicas. Para probar las zonas privadas hay que configurar la autenticación (un usuario de prueba, un token en una cabecera o el **Automation Framework** de ZAP con un plan en YAML). Usa siempre cuentas de prueba, nunca de usuarios reales.
-
-## Dónde ejecutar las pruebas dinámicas
+El escáner DAST *open source* más usado es **OWASP ZAP** (*Zed Attack Proxy*, ahora mantenido por Checkmarx bajo el nombre ZAP by Checkmarx): funciona como un proxy entre el navegador y la aplicación y también como escáner automático. En el pipeline se usa con dos ritmos: un **baseline scan** (rastreo y **escaneo pasivo**, sin atacar; minutos) en cada despliegue, y un **full scan** (añade **escaneo activo**: envía ataques reales) programado.
 
 !!! danger "Nunca en producción sin permiso"
-    Un escaneo activo crea, modifica y borra datos, envía formularios, dispara correos y puede tumbar un servicio. Ejecútalo contra **staging** o un **entorno efímero** con datos de prueba. En producción, como mucho un baseline pasivo y solo con autorización expresa de quien es responsable del sistema.
+    Un escaneo activo crea, modifica y borra datos, envía formularios, dispara correos y puede tumbar un servicio. Ejecútalo contra **staging** o un **entorno efímero** (*ephemeral environment*: se crea para una rama o un *pull request* y se destruye al terminar) con datos de prueba. En producción, como mucho un baseline pasivo y solo con autorización expresa de quien es responsable del sistema.
 
-Los **entornos efímeros** (*ephemeral environments*: se crean para una rama o un *pull request* y se destruyen al terminar) son ideales para DAST: cada cambio se prueba aislado y no se contamina un staging compartido. Ver [Pruebas de infraestructura](../../devops/iac/pruebas-infraestructura.md) y [Despliegue continuo](../../devops/ci-cd/despliegue-continuo.md).
-
-```mermaid
-flowchart LR
-    A[Pull request] --> B[Build + SAST/SCA]
-    B --> C[Desplegar entorno efímero]
-    C --> D[ZAP baseline / API scan]
-    D --> E{¿Alertas FAIL?}
-    E -- Sí --> F[Bloquear merge]
-    E -- No --> G[Destruir entorno y permitir merge]
-```
+!!! tip "Escaneo en detalle"
+    ZAP baseline, full y API scan (Docker y GitHub Actions), archivo de reglas y códigos de salida, escaneo autenticado, Nuclei, dónde correrlo, umbrales y gestión de hallazgos: [DAST](../escaneos/dast.md). Los entornos efímeros se explican en [Pruebas de infraestructura](../../devops/iac/pruebas-infraestructura.md).
 
 ## Fuzzing
 
@@ -150,7 +84,7 @@ Controles básicos:
 - **Rate limiting** (limitación de peticiones) y cuotas, normalmente en el API gateway o el WAF.
 - **Inventario**: una especificación **OpenAPI** actualizada de cada API. Además de documentar, sirve para escanearla: ZAP (`zap-api-scan.py -t openapi.json -f openapi`) y Schemathesis la usan para generar las pruebas.
 
-Para el API gateway, el WAF y la protección DDoS de cada proveedor, ver [Seguridad base en la nube](../../cloud/identidad-y-seguridad/seguridad-base.md).
+Para el API gateway, el WAF y la protección DDoS de cada proveedor, ver [Seguridad de APIs y aplicaciones](../../cloud/seguridad/seguridad-apis-aplicaciones.md).
 
 ## Pentesting básico
 
@@ -184,18 +118,14 @@ Estas condiciones cambian: lee la versión vigente de cada política antes de ca
 
 | Enfoque | Qué se mira desde ahí | Nota |
 | --- | --- | --- |
-| Cloud (el control) | WAF, API gateway y protección DDoS que mitigan lo que encuentran las pruebas | [Seguridad base en la nube](../../cloud/identidad-y-seguridad/seguridad-base.md) |
+| Cloud (el control) | WAF, API gateway y protección DDoS que mitigan lo que encuentran las pruebas | [Seguridad de APIs y aplicaciones](../../cloud/seguridad/seguridad-apis-aplicaciones.md) |
 | DevOps (la automatización) | Entornos de staging y efímeros donde se ejecuta el DAST dentro del pipeline | [Despliegue continuo](../../devops/ci-cd/despliegue-continuo.md), [Pruebas de infraestructura](../../devops/iac/pruebas-infraestructura.md) |
-| DevSecOps (la verificación) | El análisis estático que complementa al dinámico y la gestión de los hallazgos | [Seguridad del código](seguridad-codigo.md), [Escaneo de seguridad en el pipeline](../escaneos/escaneo-en-pipeline.md), [DAST](../escaneos/dast.md), [Detección y respuesta](../gobierno-y-respuesta/deteccion-respuesta.md), [Fundamentos de DevSecOps](../fundamentos-devsecops.md) |
+| DevSecOps (la verificación) | El escaneo DAST en detalle, el análisis estático que lo complementa y la gestión de los hallazgos | [Seguridad del código](seguridad-codigo.md), [Escaneo de seguridad en el pipeline](../escaneos/escaneo-en-pipeline.md), [DAST](../escaneos/dast.md), [Detección y respuesta](../gobierno-y-respuesta/deteccion-respuesta.md), [Fundamentos de DevSecOps](../fundamentos-devsecops.md) |
 | Laboratorios (la práctica) | Practicar esto paso a paso | [Lab 15: DAST con OWASP ZAP sobre OWASP Juice Shop](../../laboratorios/devsecops/dast-zap-juice-shop.md), [Lab 18: AWS: API serverless con Lambda, API Gateway y DynamoDB](../../laboratorios/cloud/aws-serverless-api.md) |
 
 ## Referencias
 
 - [ZAP: documentación](https://www.zaproxy.org/docs/)
-- [ZAP: baseline scan](https://www.zaproxy.org/docs/docker/baseline-scan/)
-- [ZAP: full scan](https://www.zaproxy.org/docs/docker/full-scan/)
-- [ZAP: API scan](https://www.zaproxy.org/docs/docker/api-scan/)
-- [GitHub Action: ZAP baseline](https://github.com/zaproxy/action-baseline)
 - [OWASP API Security Top 10 2023](https://owasp.org/API-Security/editions/2023/en/0x11-t10/)
 - [OWASP Web Security Testing Guide](https://owasp.org/www-project-web-security-testing-guide/)
 - [ffuf](https://github.com/ffuf/ffuf)

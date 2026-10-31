@@ -46,12 +46,7 @@ Una **static credential** (credencial estática o de larga duración), como una 
 
 La alternativa es la **identity federation** (federación de identidad): la carga de trabajo demuestra *quién es* con un token firmado por un emisor de confianza y recibe **credenciales temporales** que caducan solas en minutos u horas.
 
-| Dónde corre | En lugar de llaves estáticas usa |
-| --- | --- |
-| VM o función en la nube | Instance profile / execution role (AWS), managed identity (Azure), attached service account (GCP) |
-| Pod en Kubernetes | IRSA / EKS Pod Identity, Entra Workload ID, Workload Identity Federation for GKE ([Seguridad de Kubernetes](../infraestructura-y-contenedores/seguridad-kubernetes.md)) |
-| Pipeline CI/CD | **OIDC** hacia la nube (ver más abajo) |
-| Personas | SSO con MFA (IAM Identity Center, Entra ID, Cloud Identity) |
+En la nube, las VMs y funciones usan instance profiles o execution roles (AWS), managed identities (Azure) o attached service accounts (GCP); los pods, workload identity; y las personas, SSO con MFA. Los controles de cada proveedor están en [Seguridad de identidades](../../cloud/seguridad/seguridad-identidades.md#eliminar-credenciales-de-larga-duracion) y, para pods, en [Seguridad de contenedores y Kubernetes gestionado](../../cloud/seguridad/seguridad-contenedores-kubernetes.md#identidad-de-pods-hacia-la-nube). Para el pipeline CI/CD la alternativa es **OIDC** hacia la nube, que se ve [más abajo](#oidc-entre-el-pipeline-y-la-nube).
 
 Si no puedes evitar un secreto (la contraseña de una API externa), guárdalo en un gestor de secretos, no en el código ni en variables de entorno de un servidor.
 
@@ -90,7 +85,7 @@ Ansible puede leer secretos de Vault al configurar servidores (ver [Ansible](../
 | Rotación | Integrada: *managed rotation* para algunos servicios (RDS, Redshift…) o función Lambda propia | Autorotación de **keys**; para secrets, eventos de Event Grid cerca de caducar + automatización propia | *Rotation schedules* que publican en Pub/Sub; tú implementas el cambio |
 | Acceso | IAM policies | Azure RBAC (recomendado) o access policies | IAM (`roles/secretmanager.secretAccessor`) |
 
-Los conceptos de cifrado y KMS están en [Seguridad base en la nube](../../cloud/identidad-y-seguridad/seguridad-base.md).
+Los controles de cifrado, KMS y gestores de secretos de cada proveedor están en [Seguridad de cifrado y secretos](../../cloud/seguridad/seguridad-cifrado-secretos.md).
 
 ### External Secrets Operator
 
@@ -262,7 +257,7 @@ permissions:
 
 | Enfoque | Qué se mira desde ahí | Nota |
 | --- | --- | --- |
-| Cloud (el control) | Roles, federación, KMS y gestores de secretos de cada proveedor | [IAM: AWS, Azure y GCP](../../cloud/identidad-y-seguridad/iam-comparativa.md), [Seguridad base en la nube](../../cloud/identidad-y-seguridad/seguridad-base.md) |
+| Cloud (el control) | Roles, federación, workload identities, break-glass y MFA; KMS y gestores de secretos de cada proveedor | [IAM: AWS, Azure y GCP](../../cloud/fundamentos/iam-comparativa.md), [Seguridad de identidades](../../cloud/seguridad/seguridad-identidades.md), [Seguridad de cifrado y secretos](../../cloud/seguridad/seguridad-cifrado-secretos.md) |
 | DevOps (la automatización) | Cómo el pipeline y la configuración inyectan los secretos | [Integración continua](../../devops/ci-cd/integracion-continua.md), [Ansible](../../devops/iac/ansible.md) |
 | DevSecOps (la verificación) | Detectar secretos filtrados, proteger el pipeline y responder a una fuga | [Seguridad del código](../codigo-y-dependencias/seguridad-codigo.md), [Seguridad del pipeline](seguridad-pipeline.md), [Detección y respuesta](../gobierno-y-respuesta/deteccion-respuesta.md) |
 | Laboratorios (la práctica) | Practicar esto paso a paso | [Lab 00: Preparar el entorno de laboratorio](../../laboratorios/fundamentos/preparar-entorno.md), [Lab 05: Imagen multi-stage y Docker Compose](../../laboratorios/devops/docker-multistage-compose.md), [Lab 06: Desplegar una app en Kubernetes local con kind](../../laboratorios/devops/kubernetes-local-kind.md), [Lab 09: Terraform en AWS con remote state en S3](../../laboratorios/devops/terraform-aws-backend-remoto.md), [Lab 10: Configurar servidores con Ansible](../../laboratorios/devops/ansible-configuracion.md), [Lab 12: Escaneos de seguridad en el pipeline](../../laboratorios/devsecops/escaneos-en-pipeline.md), [Lab 13: Desplegar en AWS desde GitHub Actions con OIDC (sin llaves)](../../laboratorios/devsecops/oidc-github-aws.md), [Lab 17: AWS: VPC con subnets públicas y privadas y una EC2](../../laboratorios/cloud/aws-vpc-ec2.md), [Lab 18: AWS: API serverless con Lambda, API Gateway y DynamoDB](../../laboratorios/cloud/aws-serverless-api.md), [Lab 19: Azure: VNet, NSG y una VM con Azure CLI](../../laboratorios/cloud/azure-vnet-vm.md), [Lab 20: Google Cloud: desplegar un contenedor en Cloud Run](../../laboratorios/cloud/gcp-cloud-run.md) |

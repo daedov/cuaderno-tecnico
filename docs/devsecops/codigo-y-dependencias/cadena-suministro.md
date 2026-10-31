@@ -9,7 +9,7 @@ tags:
 
 # Software supply chain
 
-> Cómo proteger todo lo que entra en tu software sin que lo escribas tú: dependencias, imágenes base, actions y herramientas de build, con SCA, SBOM, firma de artefactos, SLSA y version pinning.
+> Cómo proteger todo lo que entra en tu software sin que lo escribas tú: dependencias, imágenes base, actions y herramientas de build, con SBOM, firma de artefactos, SLSA y version pinning. Las herramientas de escaneo de dependencias (SCA) están en [SCA](../escaneos/sca.md).
 
 ## ¿Qué es?
 
@@ -42,41 +42,10 @@ flowchart LR
 
 ## SCA
 
-!!! tip "Escaneos en detalle"
-    Escáneres vs bots de actualización, SBOM como insumo, reachability, licencias, pipeline y gestión de hallazgos: [SCA](../escaneos/sca.md).
+El **SCA** (*Software Composition Analysis*, análisis de composición de software) es el control que responde a "¿mis dependencias tienen vulnerabilidades conocidas?": inventaría las dependencias directas y **transitivas** (las dependencias de tus dependencias), las compara con bases de datos de vulnerabilidades y, en algunas herramientas, revisa las **licencias**. Se complementa con un bot de actualización (Dependabot o Renovate) que propone las versiones nuevas como *pull requests*; su configuración básica está en [Version pinning](#version-pinning).
 
-El **SCA** (*Software Composition Analysis*, análisis de composición de software) inventaría las dependencias del proyecto (directas y **transitivas**, es decir, las dependencias de tus dependencias) y las compara con bases de datos de vulnerabilidades conocidas. Algunas herramientas también revisan las **licencias**.
-
-| Herramienta | Tipo | Qué aporta |
-| --- | --- | --- |
-| **Dependabot** | Integrado en GitHub | Alertas de vulnerabilidades y *pull requests* automáticos para actualizar dependencias y actions |
-| **Renovate** | *Open source* (Mend), multiplataforma | Actualizaciones automáticas muy configurables: agrupar, programar, automerge, fijar digests |
-| **Snyk** | Comercial con plan gratuito | SCA, contenedores, IaC y SAST; sugiere la versión mínima que corrige |
-| `npm audit` / `pip-audit` | CLI del ecosistema | Revisión rápida de un proyecto Node.js o Python |
-| **OSV** (OSV.dev, OSV-Scanner) | Base de datos abierta de Google | Base de vulnerabilidades *open source* con formato común; `osv-scanner` la consulta |
-| **Trivy** | *Open source* (Aqua) | SCA sobre el sistema de archivos y las imágenes (ver [Escaneo en el pipeline](../escaneos/escaneo-en-pipeline.md)) |
-
-```bash
-npm audit --audit-level=high          # falla si hay vulnerabilidades high o critical
-pip-audit -r requirements.txt         # Python, usando la base de datos de PyPI/OSV
-osv-scanner scan source -r .          # recorre los lockfiles del proyecto
-```
-
-```yaml title=".github/dependabot.yml"
-version: 2
-updates:
-  - package-ecosystem: "npm"
-    directory: "/"
-    schedule:
-      interval: "weekly"
-  - package-ecosystem: "github-actions"   # también mantiene actualizados los SHA de las actions
-    directory: "/"
-    schedule:
-      interval: "weekly"
-```
-
-!!! tip "Alertas que se puedan atender"
-    El SCA genera mucho ruido: una dependencia transitiva vulnerable en una función que nunca llamas. Prioriza con el contexto (¿es una dependencia de producción o solo de desarrollo?, ¿está expuesta?) y con señales como EPSS o CISA KEV, como se explica en [gestión de riesgo](../fundamentos-devsecops.md#gestion-de-riesgo).
+!!! tip "Escaneo en detalle"
+    Escáneres frente a bots de actualización, SBOM como insumo, reachability, licencias, pipeline, umbrales y gestión de hallazgos: [SCA](../escaneos/sca.md).
 
 ## SBOM
 
@@ -187,16 +156,34 @@ gh attestation verify oci://ghcr.io/mi-org/mi-app@sha256:3f1c... --owner mi-org
 !!! note "Pinning sin actualizaciones es deuda"
     Fijar versiones congela también las vulnerabilidades. Combínalo siempre con Dependabot o Renovate, que proponen las actualizaciones (con su nuevo SHA o digest) como *pull requests* revisables.
 
+Configuración mínima de Dependabot para las dependencias y las actions:
+
+```yaml title=".github/dependabot.yml"
+version: 2
+updates:
+  - package-ecosystem: "npm"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+  - package-ecosystem: "github-actions"   # también mantiene actualizados los SHA de las actions
+    directory: "/"
+    schedule:
+      interval: "weekly"
+```
+
+La configuración equivalente de Renovate está en [SCA](../escaneos/sca.md).
+
 Para la construcción de imágenes y los Dockerfiles, ver [Docker](../../devops/contenedores/docker.md); para el escaneo y el endurecimiento de esas imágenes, [Seguridad de contenedores](../infraestructura-y-contenedores/seguridad-contenedores.md).
 
 ## Registries por proveedor
 
-Los registries gestionados de cada nube guardan imágenes y otros artefactos OCI (incluidas firmas y attestations de cosign) y ofrecen escaneo de vulnerabilidades. Ver [Contenedores gestionados](../../cloud/computo/contenedores-gestionados.md).
+Los registries gestionados de cada nube guardan imágenes y otros artefactos OCI (incluidas firmas y attestations de cosign) y ofrecen escaneo de vulnerabilidades (cómo funciona cada uno: [Container image scanning](../escaneos/container-scanning.md)). Ver [Contenedores gestionados](../../cloud/computo/contenedores-gestionados.md).
 
 | | AWS | Azure | Google Cloud |
 | --- | --- | --- | --- |
 | Registry | Amazon ECR | Azure Container Registry (ACR) | Artifact Registry |
 | Escaneo de imágenes | Amazon Inspector (enhanced scanning) | Microsoft Defender for Containers | Artifact Analysis |
+| Dónde ver los hallazgos | Inspector y Security Hub | Microsoft Defender for Cloud | Artifact Registry y Security Command Center |
 | Tags inmutables / control de despliegue | Image tag immutability | Bloqueo de imágenes (*lock*) | Tags inmutables; Binary Authorization para exigir firmas al desplegar |
 
 ## Relación con otras secciones
@@ -205,7 +192,7 @@ Los registries gestionados de cada nube guardan imágenes y otros artefactos OCI
 | --- | --- | --- |
 | Cloud (el control) | Los registries donde se guardan y escanean las imágenes y sus firmas | [Contenedores gestionados](../../cloud/computo/contenedores-gestionados.md) |
 | DevOps (la automatización) | El build que produce los artefactos y los Dockerfiles que fijan la imagen base | [Integración continua](../../devops/ci-cd/integracion-continua.md), [Docker](../../devops/contenedores/docker.md) |
-| DevSecOps (la verificación) | Escaneo de imágenes, verificación de firmas al desplegar y protección del pipeline | [Seguridad de contenedores](../infraestructura-y-contenedores/seguridad-contenedores.md), [Seguridad de Kubernetes](../infraestructura-y-contenedores/seguridad-kubernetes.md), [Seguridad del pipeline](../identidades-y-pipeline/seguridad-pipeline.md), [Escaneo de seguridad en el pipeline](../escaneos/escaneo-en-pipeline.md), [SCA](../escaneos/sca.md), [Seguridad del código](seguridad-codigo.md), [CVE de supply chain y CI/CD](../vulnerabilidades/cve-supply-chain-cicd.md) |
+| DevSecOps (la verificación) | Escaneo de dependencias (SCA) y de imágenes, verificación de firmas al desplegar y protección del pipeline | [Seguridad de contenedores](../infraestructura-y-contenedores/seguridad-contenedores.md), [Seguridad de Kubernetes](../infraestructura-y-contenedores/seguridad-kubernetes.md), [Seguridad del pipeline](../identidades-y-pipeline/seguridad-pipeline.md), [Escaneo de seguridad en el pipeline](../escaneos/escaneo-en-pipeline.md), [SCA](../escaneos/sca.md), [Seguridad del código](seguridad-codigo.md), [CVE de supply chain y CI/CD](../vulnerabilidades/cve-supply-chain-cicd.md) |
 | Laboratorios (la práctica) | Practicar esto paso a paso | [Lab 05: Imagen multi-stage y Docker Compose](../../laboratorios/devops/docker-multistage-compose.md), [Lab 07: Pipeline de CI con GitHub Actions](../../laboratorios/devops/github-actions-ci.md), [Lab 12: Escaneos de seguridad en el pipeline](../../laboratorios/devsecops/escaneos-en-pipeline.md), [Lab 20: Google Cloud: desplegar un contenedor en Cloud Run](../../laboratorios/cloud/gcp-cloud-run.md) |
 
 ## Referencias
@@ -217,7 +204,6 @@ Los registries gestionados de cada nube guardan imágenes y otros artefactos OCI
 - [GitHub: fortalecimiento de seguridad para GitHub Actions](https://docs.github.com/es/actions/security-for-github-actions/security-guides/security-hardening-for-github-actions)
 - [Dependabot](https://docs.github.com/es/code-security/dependabot)
 - [Renovate](https://docs.renovatebot.com/)
-- [OSV.dev](https://osv.dev/)
 - [SPDX](https://spdx.dev/)
 - [CycloneDX](https://cyclonedx.org/)
 - [Syft](https://github.com/anchore/syft)

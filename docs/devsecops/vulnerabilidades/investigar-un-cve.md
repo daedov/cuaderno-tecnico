@@ -372,7 +372,7 @@ La lección: la segunda y tercera semanas fueron tan importantes como la primera
 
 | Enfoque | Qué se mira desde ahí | Nota |
 | --- | --- | --- |
-| Cloud (el control) | Escáneres nativos (Inspector, Defender, Artifact Analysis) y qué parchea el proveedor | [Seguridad base en la nube](../../cloud/identidad-y-seguridad/seguridad-base.md), [Shared Responsibility Model](../../cloud/fundamentos/responsabilidad-compartida.md) |
+| Cloud (el control) | Escáneres nativos (Inspector, Defender, Artifact Analysis) y qué parchea el proveedor | [Fundamentos de seguridad cloud](../../cloud/seguridad/fundamentos-seguridad-cloud.md), [Shared Responsibility Model](../../cloud/fundamentos/responsabilidad-compartida.md) |
 | DevOps (la automatización) | Reconstruir y desplegar rápido el parche | [Integración continua](../../devops/ci-cd/integracion-continua.md), [Despliegue continuo](../../devops/ci-cd/despliegue-continuo.md), [Docker](../../devops/contenedores/docker.md) |
 | DevSecOps (la verificación) | Escaneos que encuentran el CVE y el ciclo de gestión de vulnerabilidades | [SCA](../escaneos/sca.md), [Container scanning](../escaneos/container-scanning.md), [Software supply chain](../codigo-y-dependencias/cadena-suministro.md#sbom), [Detección y respuesta](../gobierno-y-respuesta/deteccion-respuesta.md), [Fundamentos de CVE](fundamentos-cve.md) |
 | Python (la herramienta) | Consumir APIs con `requests`, timeouts y reintentos | [APIs y HTTP](../../python/scripting/apis-http.md) |

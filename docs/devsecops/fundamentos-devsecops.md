@@ -80,7 +80,7 @@ La **tríada CIA** (*confidentiality, integrity, availability*: confidencialidad
 | **Integrity** (integridad) | Los datos y el software no se modifican sin autorización | Alguien con credenciales filtradas cambia una imagen en el registry | Firma de artefactos, control de versiones, logs de auditoría inmutables |
 | **Availability** (disponibilidad) | El servicio funciona cuando se necesita | Un ataque DDoS o un *ransomware* que cifra la base de datos | Multi-AZ, autoscaling, backups probados, WAF y protección DDoS |
 
-Para cifrado, KMS, WAF y logs de auditoría en cada proveedor, ver [Seguridad base en la nube](../cloud/identidad-y-seguridad/seguridad-base.md). Recuerda que la parte de la tríada que te toca depende del [Shared Responsibility Model](../cloud/fundamentos/responsabilidad-compartida.md).
+Para cifrado, KMS, WAF y logs de auditoría en cada proveedor, ver [Fundamentos de seguridad cloud](../cloud/seguridad/fundamentos-seguridad-cloud.md). Recuerda que la parte de la tríada que te toca depende del [Shared Responsibility Model](../cloud/fundamentos/responsabilidad-compartida.md).
 
 ## Threat modeling con STRIDE
 
@@ -189,7 +189,7 @@ Riesgo = Probabilidad × Impacto
 
 | Enfoque | Qué se mira desde ahí | Nota |
 | --- | --- | --- |
-| Cloud (el control) | Qué parte de la seguridad te toca y qué servicios nativos la implementan | [Shared Responsibility Model](../cloud/fundamentos/responsabilidad-compartida.md), [Well-Architected Framework](../cloud/fundamentos/well-architected.md), [Seguridad base en la nube](../cloud/identidad-y-seguridad/seguridad-base.md), [IAM: AWS, Azure y GCP](../cloud/identidad-y-seguridad/iam-comparativa.md) |
+| Cloud (el control) | Qué parte de la seguridad te toca y qué servicios nativos la implementan | [Shared Responsibility Model](../cloud/fundamentos/responsabilidad-compartida.md), [Well-Architected Framework](../cloud/fundamentos/well-architected.md), [Fundamentos de seguridad cloud](../cloud/seguridad/fundamentos-seguridad-cloud.md), [IAM: AWS, Azure y GCP](../cloud/fundamentos/iam-comparativa.md) |
 | DevOps (la automatización) | La cultura y el pipeline donde se insertan los controles | [Cultura DevOps y métricas DORA](../devops/fundamentos/cultura-metricas-dora.md), [Integración continua](../devops/ci-cd/integracion-continua.md), [Despliegue continuo](../devops/ci-cd/despliegue-continuo.md), [Observabilidad](../devops/operacion/observabilidad.md) |
 | DevSecOps (la verificación) | Cada control de la tabla de fases, en detalle | Ver [Mapa de la sección DevSecOps](#mapa-de-la-seccion-devsecops), [Fundamentos de CVE](vulnerabilidades/fundamentos-cve.md) |
 | Laboratorios (la práctica) | Practicar esto paso a paso | [Lab 12: Escaneos de seguridad en el pipeline](../laboratorios/devsecops/escaneos-en-pipeline.md), [Lab 15: DAST con OWASP ZAP sobre OWASP Juice Shop](../laboratorios/devsecops/dast-zap-juice-shop.md) |

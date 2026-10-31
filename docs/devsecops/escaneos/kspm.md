@@ -264,7 +264,7 @@ KSPM no va en el pipeline de cada PR (no hay clúster que escanear todavía), si
 
 ## Umbrales y cuándo fallar el build
 
-En KSPM "fallar" significa **alertar o abrir un ticket**, no bloquear, salvo en dos casos: el job de PR sobre manifests y una puerta antes de promover un entorno (por ejemplo, staging debe cumplir antes de desplegar en prod).
+Criterios generales en [Criterios comunes de gating](escaneo-en-pipeline.md#criterios-comunes-de-gating). En KSPM "fallar" significa **alertar o abrir un ticket**, no bloquear, salvo en dos casos: el job de PR sobre manifests y una puerta antes de promover un entorno (por ejemplo, staging debe cumplir antes de desplegar en prod).
 
 | Señal | Uso habitual |
 | --- | --- |
@@ -276,11 +276,12 @@ Separa por **namespace**: `kube-system` y los agentes de seguridad necesitan pri
 
 ## Gestión de hallazgos
 
-- **Corrige en el origen**: el arreglo va en el manifest o el chart del repositorio (GitOps), no con `kubectl edit`; si no, el siguiente despliegue lo revierte (ver [Despliegue continuo](../../devops/ci-cd/despliegue-continuo.md)).
+El ciclo general está en [Gestión de hallazgos](escaneo-en-pipeline.md#gestion-de-hallazgos). Lo propio del KSPM:
+
+- **Corrige en el origen**: el arreglo va en el manifest o el chart del repositorio (GitOps), no con `kubectl edit` ni aplicando con `kubectl` la corrección que sugiere el informe; si no, el siguiente despliegue lo revierte (ver [Despliegue continuo](../../devops/ci-cd/despliegue-continuo.md)).
 - **Convierte el hallazgo recurrente en política**: si KSPM encuentra pods privilegiados cada semana, la solución es una regla de [admission control](../infraestructura-y-contenedores/seguridad-kubernetes.md#admission-control) en `enforce`, no corregirlos a mano.
-- **Excepciones documentadas**: Kubescape admite archivos de excepciones (`--exceptions`) por control y recurso; Trivy usa `.trivyignore` con `exp:` para la caducidad. Cada excepción con motivo, responsable y fecha.
+- **Excepciones**: Kubescape admite archivos de excepciones (`--exceptions`) por control y recurso; Trivy usa `.trivyignore` con `exp:` para la caducidad.
 - **CIS en clústeres gestionados**: muchos controles del plano de control son responsabilidad del proveedor y no los puedes cambiar; usa el benchmark específico (EKS, AKS, GKE) para no perseguir hallazgos imposibles.
-- **Prioriza** por exposición (¿el workload es accesible desde internet?) y por impacto (¿tiene acceso a secretos o a la nube?). Plazos de remediación en [Detección y respuesta](../gobierno-y-respuesta/deteccion-respuesta.md#sla-de-remediacion).
 
 ## Buenas prácticas y errores comunes
 
@@ -290,13 +291,11 @@ Separa por **namespace**: `kube-system` y los agentes de seguridad necesitan pri
 - **Continuo mejor que puntual** en producción (operador), y puntual (CLI) para auditorías y para empezar.
 - Error común: tratar KSPM como **detección de amenazas**. Una postura perfecta no detecta un ataque en curso: para eso, runtime (Falco, GuardDuty, Defender).
 - Error común: lanzar kube-bench genérico en EKS, AKS o GKE y abrir tickets por controles del plano de control que gestiona el proveedor.
-- Error común: aplicar con `kubectl` la corrección que sugiere el informe y olvidar el repositorio.
-
 ## Relación con otras secciones
 
 | Enfoque | Qué se mira desde ahí | Nota |
 | --- | --- | --- |
-| Cloud (el control) | EKS, AKS y GKE: qué gestiona el proveedor y qué tú; servicios nativos de postura y detección | [Contenedores gestionados](../../cloud/computo/contenedores-gestionados.md), [Responsabilidad compartida](../../cloud/fundamentos/responsabilidad-compartida.md), [Seguridad base](../../cloud/identidad-y-seguridad/seguridad-base.md) |
+| Cloud (el control) | EKS, AKS y GKE: qué gestiona el proveedor y qué tú; servicios nativos de postura y detección | [Contenedores gestionados](../../cloud/computo/contenedores-gestionados.md), [Responsabilidad compartida](../../cloud/fundamentos/responsabilidad-compartida.md), [Seguridad de contenedores y Kubernetes](../../cloud/seguridad/seguridad-contenedores-kubernetes.md) |
 | DevOps (la automatización) | Los objetos que se evalúan y cómo llegan al clúster | [Kubernetes](../../devops/contenedores/kubernetes.md), [Despliegue continuo](../../devops/ci-cd/despliegue-continuo.md), [Observabilidad](../../devops/operacion/observabilidad.md) |
 | DevSecOps (la verificación) | Controles del clúster, manifests antes de desplegar, imágenes, cuenta cloud y cumplimiento | [Seguridad de Kubernetes](../infraestructura-y-contenedores/seguridad-kubernetes.md), [IaC scanning](iac-scanning.md), [Container scanning](container-scanning.md), [CSPM](cspm.md), [Cumplimiento y gobierno](../gobierno-y-respuesta/cumplimiento.md), [Escaneo de seguridad en el pipeline](escaneo-en-pipeline.md) |
 | Laboratorios (la práctica) | Practicar esto paso a paso | [Lab 12: Escaneos de seguridad en el pipeline](../../laboratorios/devsecops/escaneos-en-pipeline.md), [Lab 14: Endurecer un clúster: Pod Security, NetworkPolicy y Kyverno](../../laboratorios/devsecops/seguridad-kubernetes.md) |

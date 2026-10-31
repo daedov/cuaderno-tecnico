@@ -2,6 +2,7 @@ nav:
   - fundamentos-hardening.md
   - hardening-linux.md
   - hardening-windows.md
+  - hardening-servidores-web.md
   - hardening-servicios.md
   - hardening-como-codigo.md
   - ...

@@ -220,7 +220,7 @@ Patrón: **build → escaneo → push solo si pasa**. Así una imagen con críti
 
 ### Escaneo en el registry
 
-El escaneo del pipeline es una foto del día del build. El registry gestionado re-escanea lo ya publicado cuando aparecen CVEs nuevas. La tabla de equivalencias está en [Seguridad de contenedores](../infraestructura-y-contenedores/seguridad-contenedores.md#escaneo-en-el-registry); aquí lo operativo:
+El escaneo del pipeline es una foto del día del build. El registry gestionado re-escanea lo ya publicado cuando aparecen CVEs nuevas. La tabla de equivalencias está en [Software supply chain](../codigo-y-dependencias/cadena-suministro.md#registries-por-proveedor); aquí lo operativo:
 
 === "AWS"
 
@@ -269,6 +269,8 @@ Re-escanea al menos **lo que está desplegado** (por digest); para saber qué im
 
 ## Umbrales y cuándo fallar el build
 
+Los criterios generales (severidad, `ignore-unfixed`, solo lo nuevo, KEV y EPSS) están en [Criterios comunes de gating](escaneo-en-pipeline.md#criterios-comunes-de-gating). Aplicados a imágenes:
+
 | Severidad | Política habitual de ejemplo |
 | --- | --- |
 | Crítica con parche | Falla el build |
@@ -276,14 +278,11 @@ Re-escanea al menos **lo que está desplegado** (por digest); para saber qué im
 | Crítica/alta **sin** parche | No falla; se reporta y se revisa la imagen base |
 | Media y baja | Solo informe |
 
-- **Gate por severidad + `ignore-unfixed`** es el punto de partida.
-- **Solo hallazgos nuevos**: un repo con 300 CVEs heredadas no puede bloquearse por todas. Opciones: fijar una línea base (*baseline*) y fallar solo por CVEs que no estaban, o usar las políticas de code scanning y GitLab, que distinguen hallazgos nuevos en el PR.
-- **Contexto**: sube la prioridad de lo que está en **CISA KEV** o tiene **EPSS** alto aunque su CVSS sea medio (ver [Priorizar con CVSS, EPSS y KEV](../gobierno-y-respuesta/deteccion-respuesta.md#priorizar-con-cvss-epss-y-kev)).
-- La misma CVE puede **aparecer de golpe** en todas las imágenes cuando se publica: ten previsto cómo desbloquear (actualizar la base, o excepción temporal documentada).
+La misma CVE puede **aparecer de golpe** en todas las imágenes cuando se publica: ten previsto cómo desbloquear (actualizar la base, o excepción temporal documentada).
 
 ## Gestión de hallazgos
 
-El flujo de triage para cada CVE:
+El ciclo general está en [Gestión de hallazgos](escaneo-en-pipeline.md#gestion-de-hallazgos). El flujo de triage para cada CVE de una imagen:
 
 1. **¿Hay versión corregida?** Actualiza la base o la dependencia y reconstruye. Es lo más frecuente.
 2. **¿Viene de la base o de lo que añadiste?** De la base: cambia o actualiza la base. Tuya: actualiza la dependencia (ver [SCA](sca.md)).
@@ -367,15 +366,13 @@ El documento se puede generar con **vexctl** (OpenVEX) y adjuntar a la imagen co
 - **Cachea la base de datos** de vulnerabilidades en CI (trivy-action lo hace por defecto); descargarla en cada job es lento y puede chocar con límites de descarga.
 - **Reconstruye con regularidad** aunque tu código no cambie: es la forma de recibir los parches de la base. Dependabot o Renovate actualizan el `FROM`.
 - **No confundas cero CVEs con imagen segura**: un escáner no ve el código propio, la configuración de ejecución ni los zero-days.
-- Error común: **fallar por todo** desde el primer día. El equipo empieza a ignorar el job o a añadir supresiones sin criterio. Empieza por críticas con parche y sube el listón.
-- Error común: **supresiones sin fecha** que se quedan para siempre.
 - Error común: comparar resultados de dos escáneres y pensar que uno "se equivoca". Usan fuentes y criterios distintos (ver el aviso de [Cómo funciona](#como-funciona)).
 
 ## Relación con otras secciones
 
 | Enfoque | Qué se mira desde ahí | Nota |
 | --- | --- | --- |
-| Cloud (el control) | Registries gestionados y su escaneo nativo; dónde corren las imágenes | [Contenedores gestionados](../../cloud/computo/contenedores-gestionados.md), [Seguridad base](../../cloud/identidad-y-seguridad/seguridad-base.md) |
+| Cloud (el control) | Registries gestionados y su escaneo nativo; dónde corren las imágenes | [Contenedores gestionados](../../cloud/computo/contenedores-gestionados.md), [Seguridad de contenedores y Kubernetes](../../cloud/seguridad/seguridad-contenedores-kubernetes.md) |
 | DevOps (la automatización) | El build y el publish de la imagen donde se inserta el escaneo | [Docker](../../devops/contenedores/docker.md), [Integración continua](../../devops/ci-cd/integracion-continua.md) |
 | DevSecOps (la verificación) | Endurecimiento de la imagen, SBOM y firma, imágenes en ejecución, gestión de vulnerabilidades | [Seguridad de contenedores](../infraestructura-y-contenedores/seguridad-contenedores.md), [SCA](sca.md), [KSPM](kspm.md), [Software supply chain](../codigo-y-dependencias/cadena-suministro.md), [Detección y respuesta](../gobierno-y-respuesta/deteccion-respuesta.md), [Escaneo de seguridad en el pipeline](escaneo-en-pipeline.md) |
 | Laboratorios (la práctica) | Practicar esto paso a paso | [Lab 12: Escaneos de seguridad en el pipeline](../../laboratorios/devsecops/escaneos-en-pipeline.md) |

@@ -7,7 +7,7 @@ tags: [devsecops, escaneo, sast]
 > Análisis estático del código fuente para encontrar patrones vulnerables antes de ejecutarlo: herramientas, ejecución en local y en CI, SARIF, umbrales y gestión de hallazgos.
 
 !!! info "Dónde encaja"
-    El **SAST** (*Static Application Security Testing*, pruebas estáticas de seguridad de aplicaciones) corre en la fase de **código y build**: en el editor, en cada *pull request* y en la rama principal. Analiza el **código fuente** (o el bytecode) de tu aplicación **sin ejecutarla**. Los conceptos (qué es, taint analysis, quality gates, una regla de Semgrep y el workflow básico de CodeQL) están en [Seguridad del código](../codigo-y-dependencias/seguridad-codigo.md#sast); esta nota es el detalle operativo. Visión de conjunto de todos los escaneos: [Escaneo de seguridad en el pipeline](escaneo-en-pipeline.md).
+    El **SAST** (*Static Application Security Testing*, pruebas estáticas de seguridad de aplicaciones) corre en la fase de **código y build**: en el editor, en cada *pull request* y en la rama principal. Analiza el **código fuente** (o el bytecode) de tu aplicación **sin ejecutarla**. Por qué escribir reglas propias y qué es un quality gate están en [Seguridad del código](../codigo-y-dependencias/seguridad-codigo.md#sast); esta nota es el detalle operativo. Visión de conjunto de todos los escaneos: [Escaneo de seguridad en el pipeline](escaneo-en-pipeline.md).
 
 ## ¿Qué detecta?
 
@@ -226,12 +226,14 @@ La plantilla detecta los lenguajes del repositorio y lanza el analizador adecuad
 
 ## Umbrales y cuándo fallar el build
 
-| Estrategia | Cómo | Cuándo usarla |
-| --- | --- | --- |
-| **Solo informar** | Subir SARIF sin fallar el job | Primeras semanas, para medir el ruido |
-| **Fallar por severidad** | `semgrep --severity ERROR --error`, `bandit -lll` | Cuando el conjunto de reglas ya es de alta confianza |
-| **Solo hallazgos nuevos** (diff-aware) | `semgrep scan --baseline-commit origin/main`; Bandit `-b baseline.json`; quality gate de SonarQube sobre *new code* | Repos con deuda acumulada: lo existente no bloquea, lo nuevo sí |
-| **Bloqueo en la plataforma** | Regla *Require code scanning results* en los rulesets de GitHub; *merge request approval policies* en GitLab | Cuando quieres una regla central para muchos repos |
+Los criterios generales (informar primero, severidad, solo lo nuevo, check obligatorio) están en [Criterios comunes de gating](escaneo-en-pipeline.md#criterios-comunes-de-gating). En SAST se aplican así:
+
+| Criterio | Cómo |
+| --- | --- |
+| **Solo informar** | Subir SARIF sin fallar el job (sin `--error` en Semgrep) |
+| **Fallar por severidad** | `semgrep --severity ERROR --error`, `bandit -lll`; hazlo cuando el conjunto de reglas ya es de alta confianza |
+| **Solo hallazgos nuevos** (diff-aware) | `semgrep scan --baseline-commit origin/main`; Bandit `-b baseline.json`; quality gate de SonarQube sobre *new code* |
+| **Bloqueo en la plataforma** | Regla *Require code scanning results* en los rulesets de GitHub; *merge request approval policies* en GitLab |
 
 ```bash
 # Solo hallazgos introducidos respecto a main (requiere el historial: fetch-depth: 0)
@@ -242,14 +244,15 @@ bandit -r app/ -f json -o bandit-baseline.json
 bandit -r app/ -b bandit-baseline.json -ll
 ```
 
-!!! warning "Fallar por todo es la forma más rápida de que nadie mire"
-    Empieza fallando solo en severidad alta y confianza alta sobre código nuevo. Amplía las reglas a medida que el equipo resuelve lo existente.
+En SAST cuenta también la **confianza** de la regla: empieza fallando solo con severidad y confianza altas sobre código nuevo.
 
 ## Gestión de hallazgos
 
-1. **Triage**: para cada hallazgo, decide si es explotable. Mira si el dato realmente viene del usuario y si llega al sink sin validar.
+El ciclo general (dueño, supresiones con fecha, priorización, SLA) está en [Gestión de hallazgos](escaneo-en-pipeline.md#gestion-de-hallazgos). Lo propio del SAST:
+
+1. **Triage**: mira si el dato realmente viene del usuario (*source*) y si llega al *sink* sin pasar por un *sanitizer*.
 2. **Corregir** en el código (la opción por defecto), idealmente con el mismo patrón que propone el mensaje de la regla.
-3. **Suprimir solo con justificación**, lo más cerca posible del hallazgo:
+3. **Suprimir** en la línea del hallazgo, con el motivo y la fecha de revisión en el comentario:
 
     ```python
     # Valor constante, no viene del usuario. Revisado por @dani, expira 2027-03-31
@@ -260,22 +263,18 @@ bandit -r app/ -b bandit-baseline.json -ll
     resultado = eval(expr)  # nosemgrep: python.lang.security.audit.eval-detected
     ```
 
-    En GitHub code scanning y SonarQube puedes cerrar la alerta como *false positive* / *won't fix* con un comentario. Ninguna de estas supresiones caduca sola: anota la fecha de revisión en el comentario y revísalas periódicamente.
-4. **Priorizar y fijar plazos** según severidad y exposición, con el SLA de remediación de la organización: ver [SLA de remediación](../gobierno-y-respuesta/deteccion-respuesta.md#sla-de-remediacion) y [excepciones y riesgo aceptado](../gobierno-y-respuesta/deteccion-respuesta.md#excepciones-y-riesgo-aceptado).
+    En GitHub code scanning y SonarQube puedes cerrar la alerta como *false positive* / *won't fix* con un comentario. Ninguna de estas supresiones caduca sola.
 
-!!! note "Cuidado con desactivar reglas enteras"
-    Si una regla da muchos falsos positivos, ajusta la regla (excluye rutas de tests, añade el sanitizer de tu framework) antes de desactivarla para todo el repositorio.
+!!! note "Ajusta la regla antes de desactivarla"
+    Si una regla da muchos falsos positivos, excluye rutas de tests o añade el sanitizer de tu framework a la regla antes de desactivarla para todo el repositorio.
 
 ## Buenas prácticas y errores comunes
 
 - **Haz SAST en el PR**, no solo en `main`: el feedback llega cuando quien escribió el código todavía tiene el contexto.
 - **Escribe reglas propias** para los errores que ya cometió tu equipo (una función interna peligrosa, un patrón prohibido). Es lo que mejor rinde de Semgrep.
-- **Usa un único lugar para ver los hallazgos** (SARIF a code scanning, o SonarQube) en vez de leer logs de CI.
 - **Excluye código generado, vendorizado y de terceros**: solo añade ruido; las dependencias se revisan con [SCA](sca.md).
 - **Combina con revisión humana**: el SAST no ve la autorización ni la lógica de negocio.
-- Error común: subir el SARIF sin `if: always()` y perder el informe justo cuando hay hallazgos.
 - Error común: análisis de CodeQL para lenguajes compilados sin build correcto (usa `build-mode` adecuado); el resultado es un análisis incompleto sin aviso evidente.
-- Error común: ejecutar el SAST con un token con permisos de escritura amplios. Basta con `contents: read` y `security-events: write`.
 
 ## Relación con otras secciones
 

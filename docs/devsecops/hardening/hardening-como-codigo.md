@@ -264,35 +264,7 @@ Esta plantilla se validó con Packer 1.16.2 (`packer validate` → `The configur
 
 ### Builders gestionados de cada nube
 
-Si prefieres no mantener Packer, cada proveedor ofrece una opción propia:
-
-| | AWS | Azure | Google Cloud |
-| --- | --- | --- | --- |
-| Servicio | **EC2 Image Builder** | **Azure VM Image Builder** | No hay un builder gestionado equivalente: **Packer en Cloud Build** |
-| Cómo se define | Image recipe + components (YAML de AWSTOE) + infrastructure y distribution configuration | Image template (JSON/Bicep) con customizers `Shell`, `PowerShell`, `File`, `WindowsUpdate` | `cloudbuild.yaml` que ejecuta el builder de comunidad de Packer |
-| Hardening incluido | Componentes de **STIG** gestionados por Amazon; componentes **CIS** al suscribirte a una CIS Hardened Image del Marketplace | Plantilla de ejemplo con la Azure Windows security baseline; tus scripts o Ansible | Tus provisioners (Ansible, scripts) |
-| Escaneo | Integración con Amazon Inspector durante el pipeline | Microsoft Defender for Cloud sobre las VMs creadas | Escaneo de la VM o de la imagen con tus herramientas en el pipeline |
-| Publicación | AMI distribuida a regiones y cuentas (AWS RAM, Organizations) | **Azure Compute Gallery** (versiones y réplicas) | Compute Engine image, opcionalmente en una image family |
-| Costo | El servicio no cobra; pagas la instancia de build, EBS, S3 e Inspector | Pagas la VM de build, el almacenamiento y la red | Pagas Cloud Build y la VM temporal |
-
-=== "AWS"
-
-    - Los **componentes** tienen fases `build`, `validate` y `test`: si un test falla, la imagen no se distribuye.
-    - Una **CIS Hardened Image** del AWS Marketplace (con costo por hora) da acceso a un componente CIS Level 1 que se ejecuta al final de la receta, después de tus cambios.
-    - Combínalo con una restricción de organización para lanzar solo AMIs aprobadas (ver [Gobernanza](../../cloud/operacion-y-gobierno/gobernanza.md)).
-
-=== "Azure"
-
-    - VM Image Builder **usa Packer por debajo** y crea un resource group temporal `IT_<rg>_<plantilla>_<guid>` en tu suscripción.
-    - Necesita una **user-assigned managed identity** con permisos para leer artefactos y escribir en la Compute Gallery.
-    - Las **CIS Hardened Images** también están en Azure Marketplace.
-
-=== "Google Cloud"
-
-    - La guía oficial construye y publica en Artifact Registry el builder de comunidad de Packer y lo usa desde Cloud Build. La service account de Cloud Build necesita `Compute Instance Admin (v1)` y `Service Account User`.
-    - Agrupa las imágenes en una **image family** para que las VMs usen siempre la última versión aprobada.
-    - Las **CIS Hardened Images** están en Google Cloud Marketplace.
-
+Si prefieres no mantener Packer, cada proveedor ofrece una opción propia: **EC2 Image Builder**, **Azure VM Image Builder** o Packer ejecutado en **Cloud Build**, y las **CIS Hardened Images** de su Marketplace como punto de partida. Cómo se define cada uno, qué hardening incluye, dónde se publica la imagen y qué cuesta está en [Seguridad de máquinas virtuales](../../cloud/seguridad/seguridad-maquinas-virtuales.md#pipeline-de-imagenes-golden-images).
 ## Verificación continua en CI
 
 La verificación debe ser un paso que **falla el pipeline**, no un informe que alguien mira de vez en cuando:
@@ -479,9 +451,6 @@ The configuration is valid.
 - [DevSec linux-baseline (InSpec)](https://github.com/dev-sec/linux-baseline)
 - [SCAP Security Guide / ComplianceAsCode](https://github.com/ComplianceAsCode/content)
 - [Packer](https://developer.hashicorp.com/packer/docs), [plugin de Ansible para Packer](https://developer.hashicorp.com/packer/integrations/hashicorp/ansible) y [plugin de Amazon](https://developer.hashicorp.com/packer/integrations/hashicorp/amazon)
-- [EC2 Image Builder](https://docs.aws.amazon.com/imagebuilder/latest/userguide/what-is-image-builder.html), [componentes de hardening STIG](https://docs.aws.amazon.com/imagebuilder/latest/userguide/ib-stig.html) y [componentes de hardening CIS](https://docs.aws.amazon.com/imagebuilder/latest/userguide/toe-cis.html)
-- [Azure VM Image Builder](https://learn.microsoft.com/es-es/azure/virtual-machines/image-builder-overview)
-- [Construir imágenes de VM con Packer en Cloud Build](https://cloud.google.com/build/docs/building/build-vm-images-with-packer)
 - [AWS Systems Manager State Manager](https://docs.aws.amazon.com/systems-manager/latest/userguide/systems-manager-state.html) y [associations con Ansible](https://docs.aws.amazon.com/systems-manager/latest/userguide/systems-manager-state-manager-ansible.html)
 - [Azure Machine Configuration](https://learn.microsoft.com/es-es/azure/governance/machine-configuration/overview)
 - [VM Manager: OS policies](https://cloud.google.com/compute/vm-manager/docs/os-policies)

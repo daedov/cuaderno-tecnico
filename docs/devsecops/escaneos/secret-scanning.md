@@ -185,7 +185,7 @@ Sin esa variable, el job revisa los commits del *merge request* o del push. El e
 
 ## Umbrales y cuándo fallar el build
 
-Aquí no hay severidades como en SAST o SCA: **cualquier secreto real es crítico**. Lo que se gradúa es **dónde** se bloquea:
+Aquí no hay severidades como en SAST o SCA (criterios generales en [Criterios comunes de gating](escaneo-en-pipeline.md#criterios-comunes-de-gating)): **cualquier secreto real es crítico**. Lo que se gradúa es **dónde** se bloquea:
 
 | Capa | Acción ante un hallazgo |
 | --- | --- |
@@ -227,7 +227,7 @@ TOKEN_EJEMPLO = "abc123"                # pragma: allowlist secret  (detect-secr
 
 - `.gitleaksignore` admite el **fingerprint** de un hallazgo concreto (`commit:archivo:regla:línea`), útil para secretos antiguos ya rotados que siguen en el historial.
 - En GitHub, cierra la alerta como *revoked*, *false positive* o *used in tests*; *revoked* debe ser el motivo habitual.
-- Ninguna de estas supresiones caduca sola: anota la fecha de revisión. Los plazos y el registro de excepciones siguen el proceso de [vulnerability management](../gobierno-y-respuesta/deteccion-respuesta.md#excepciones-y-riesgo-aceptado).
+- Ninguna de estas supresiones caduca sola; el resto del ciclo (fecha de revisión, registro de excepciones) está en [Gestión de hallazgos](escaneo-en-pipeline.md#gestion-de-hallazgos).
 
 ## Buenas prácticas y errores comunes
 
@@ -244,7 +244,7 @@ TOKEN_EJEMPLO = "abc123"                # pragma: allowlist secret  (detect-secr
 
 | Enfoque | Qué se mira desde ahí | Nota |
 | --- | --- | --- |
-| Cloud (el control) | Gestores de secretos, KMS y logs de auditoría para investigar el uso de una credencial filtrada | [Seguridad base en la nube](../../cloud/identidad-y-seguridad/seguridad-base.md), [IAM: AWS, Azure y GCP](../../cloud/identidad-y-seguridad/iam-comparativa.md) |
+| Cloud (el control) | Gestores de secretos, KMS y logs de auditoría para investigar el uso de una credencial filtrada | [Seguridad de cifrado y secretos](../../cloud/seguridad/seguridad-cifrado-secretos.md), [Seguridad de logging y detección](../../cloud/seguridad/seguridad-logging-deteccion.md), [IAM: AWS, Azure y GCP](../../cloud/fundamentos/iam-comparativa.md) |
 | DevOps (la automatización) | Hooks, flujo de PR y pipeline donde se insertan los escaneos | [Git y control de versiones](../../devops/fundamentos/git-control-versiones.md), [Integración continua](../../devops/ci-cd/integracion-continua.md) |
 | DevSecOps (la verificación) | Prevención, respuesta a la filtración y los otros escaneos | [Seguridad del código](../codigo-y-dependencias/seguridad-codigo.md), [Secretos e identidades](../identidades-y-pipeline/secretos-identidades.md), [Detección y respuesta](../gobierno-y-respuesta/deteccion-respuesta.md), [Escaneo de seguridad en el pipeline](escaneo-en-pipeline.md), [SAST](sast.md) |
 | Laboratorios (la práctica) | Practicar esto paso a paso | [Lab 12: Escaneos de seguridad en el pipeline](../../laboratorios/devsecops/escaneos-en-pipeline.md) |

@@ -12,7 +12,7 @@ tags:
 > Los roles que más vas a ver en una empresa (Active Directory Domain Services, DNS Server, DHCP Server, Group Policy, IIS, File Server y, en una línea, Hyper-V): qué hacen, cómo se instalan con PowerShell, la configuración mínima, cómo verificar que funcionan y sus equivalentes gestionados en la nube.
 
 !!! info "Antes de leer"
-    Necesitas saber instalar roles con `Install-WindowsFeature` y administrar en remoto ([Windows Server: fundamentos](windows-server-fundamentos.md)) y manejarte con los comandos del día a día ([Administración con PowerShell](windows-powershell-administracion.md)). Para DNS y DHCP conviene repasar [Servicios de red](../../networking/intermedio/servicios-red.md). El endurecimiento de AD, de los DCs y de IIS **no** se repite aquí: está en [Hardening de Windows Server](../../devsecops/hardening/hardening-windows.md) y [Hardening de servicios](../../devsecops/hardening/hardening-servicios.md).
+    Necesitas saber instalar roles con `Install-WindowsFeature` y administrar en remoto ([Windows Server: fundamentos](windows-server-fundamentos.md)) y manejarte con los comandos del día a día ([Administración con PowerShell](windows-powershell-administracion.md)). Para DNS y DHCP conviene repasar [Servicios de red](../../networking/intermedio/servicios-red.md). El endurecimiento de AD y de los DCs **no** se repite aquí: está en [Hardening de Windows Server](../../devsecops/hardening/hardening-windows.md). Los principios de TLS y cabeceras de seguridad que también aplican a IIS están en [Hardening de servidores web](../../devsecops/hardening/hardening-servidores-web.md).
 
 !!! warning "Sobre las salidas de ejemplo"
     Estos roles **no existen en Windows 11**, así que los cmdlets de los módulos `ADDSDeployment`, `ActiveDirectory`, `DnsServer`, `DhcpServer`, `GroupPolicy`, `WebAdministration` e `IISAdministration` se verificaron contra la documentación de Microsoft Learn (parámetros y ejemplos oficiales) y **no se ejecutaron**. Sus salidas son **esperadas** (formato real del cmdlet, valores de ejemplo con el dominio ficticio `corp.contoso.com`). Las pocas salidas **reales** son de un Windows 11 Home en modo lectura.
@@ -304,7 +304,7 @@ Intranet         2    Started    C:\inetpub\intranet            http *:80:intran
 - `WebAdministration` usa el *drive* `IIS:\` y funciona en PowerShell 5.1; en PowerShell 7 cárgalo vía compatibilidad o usa `IISAdministration`.
 - Los logs están en `C:\inetpub\logs\LogFiles\W3SVC<ID>` (formato W3C): vigílalos, llenan discos.
 - Un error **503** suele ser el application pool detenido (por fallos repetidos: *Rapid-Fail Protection*). Mira `Get-IISAppPool` y el log System (eventos de WAS).
-- TLS, cabeceras y endurecimiento de IIS: [Hardening de servicios](../../devsecops/hardening/hardening-servicios.md).
+- TLS y cabeceras de seguridad (los ejemplos son de NGINX y Apache, pero los principios valen para IIS): [Hardening de servidores web](../../devsecops/hardening/hardening-servidores-web.md).
 
 ## File Server
 
@@ -337,7 +337,7 @@ Get-SmbOpenFile | Where-Object Path -like 'D:\Shares\Finanzas*'                 
 | Archivos SMB | Amazon FSx for Windows File Server | Azure Files | Filestore (NFS); SMB con NetApp Volumes |
 | Web | IIS en EC2, o Elastic Beanstalk / App Runner | IIS en VM, o Azure App Service | IIS en Compute Engine, o Cloud Run |
 
-Microsoft Entra ID (antes Azure AD) **no** es un AD en la nube: es un proveedor de identidad para aplicaciones web (OIDC, SAML) y no tiene OUs, GPO ni Kerberos clásico. Ver [IAM: AWS, Azure y GCP](../../cloud/identidad-y-seguridad/iam-comparativa.md).
+Microsoft Entra ID (antes Azure AD) **no** es un AD en la nube: es un proveedor de identidad para aplicaciones web (OIDC, SAML) y no tiene OUs, GPO ni Kerberos clásico. Ver [IAM: AWS, Azure y GCP](../../cloud/fundamentos/iam-comparativa.md).
 
 ## Casos de uso
 
@@ -396,7 +396,7 @@ El canal seguro del equipo con el dominio se rompió (por ejemplo, tras restaura
 | --- | --- | --- |
 | Servidores (la práctica) | Instalar roles, comandos de administración y automatizarlo | [Windows Server: fundamentos](windows-server-fundamentos.md), [Administración con PowerShell](windows-powershell-administracion.md), [Ansible y Windows](../ansible/ansible-windows.md), [Ansible: casos de uso](../ansible/ansible-casos-uso.md) |
 | Networking (la base) | DHCP, DNS, resolución híbrida y segmentación | [Servicios de red](../../networking/intermedio/servicios-red.md), [Redes de datacenter e híbridas](../../networking/avanzado/redes-datacenter-hibridas.md), [Puertos](../../recursos/puertos.md) |
-| Cloud (el control) | AD, DNS y archivos gestionados; identidad en la nube | [IAM: AWS, Azure y GCP](../../cloud/identidad-y-seguridad/iam-comparativa.md), [Redes en la nube](../../cloud/redes-y-datos/redes.md), [Almacenamiento y datos](../../cloud/redes-y-datos/almacenamiento-datos.md) |
+| Cloud (el control) | AD, DNS y archivos gestionados; identidad en la nube | [IAM: AWS, Azure y GCP](../../cloud/fundamentos/iam-comparativa.md), [Redes en la nube](../../cloud/redes-y-datos/redes.md), [Almacenamiento y datos](../../cloud/redes-y-datos/almacenamiento-datos.md) |
 | DevOps (la automatización) | Roles y configuración como código | [Configuration management con Ansible](../../devops/iac/ansible.md) |
 | DevSecOps (la verificación) | Endurecer AD, DCs e IIS; vulnerabilidades típicas del dominio | [Hardening de Windows Server](../../devsecops/hardening/hardening-windows.md), [Hardening de servicios](../../devsecops/hardening/hardening-servicios.md), [CVE en Windows y Active Directory](../../devsecops/vulnerabilidades/cve-windows-active-directory.md) |
 

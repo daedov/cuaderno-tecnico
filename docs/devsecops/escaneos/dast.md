@@ -247,18 +247,22 @@ dast:
 
 ## Umbrales y cuándo fallar el build
 
+Los criterios generales están en [Criterios comunes de gating](escaneo-en-pipeline.md#criterios-comunes-de-gating). En DAST:
+
 - **Baseline en cada despliegue**: falla solo con las reglas marcadas `FAIL` en `rules.tsv` (por ejemplo, cabeceras críticas o cookies sin `Secure`). Empieza con todo en `WARN` y endurece regla a regla.
-- **Full scan programado**: no bloquea un despliegue concreto; abre tickets con los hallazgos High y bloquea la **promoción** a producción si hay alguno sin triage.
+- **Full scan programado**: abre tickets con los hallazgos High y bloquea la **promoción** a producción si hay alguno sin triage.
 - **Solo nuevos hallazgos**: el baseline de ZAP distingue `WARN-NEW` de `WARN-INPROG` con un *progress file* (`-p`), para que lo ya conocido y en curso no rompa cada ejecución.
-- **Confianza**: ZAP asigna confianza (*Low*, *Medium*, *High*, *Confirmed*). Una alerta High con confianza Low merece revisión manual antes de bloquear.
+- **Confianza**: ZAP asigna confianza (*Low*, *Medium*, *High*, *Confirmed*); una alerta High con confianza Low se revisa a mano antes de bloquear.
 
 ## Gestión de hallazgos
 
+El ciclo general está en [Gestión de hallazgos](escaneo-en-pipeline.md#gestion-de-hallazgos). Lo propio del DAST:
+
 - **Triage**: reproduce la alerta (la evidencia incluye la petición y la respuesta). Muchos falsos positivos del DAST son respuestas genéricas que el escáner interpreta como éxito.
-- **Supresiones documentadas**: en `rules.tsv` (`IGNORE`) o en la configuración de la herramienta, con un comentario en el PR que explique el motivo, quién lo aprobó y una fecha de revisión. Si la herramienta no admite fecha de expiración, revisa el archivo de reglas en cada ciclo de triage.
+- **Supresiones**: en `rules.tsv` (`IGNORE`) o en la configuración de la herramienta, con el motivo en el PR. Si la herramienta no admite fecha de expiración, revisa el archivo de reglas en cada ciclo de triage.
 - **Corrección**: muchas alertas se resuelven en la configuración (cabeceras en el reverse proxy o el CDN, flags de cookies) y no en el código: localiza la capa correcta.
-- **Prioridad y SLA**: las inyecciones confirmadas en endpoints públicos van primero. Aplica los plazos de [Detección y respuesta](../gobierno-y-respuesta/deteccion-respuesta.md#sla-de-remediacion).
-- **Cierre**: vuelve a escanear para confirmar la corrección; convierte el caso en una prueba (una regla `FAIL` o una plantilla propia de Nuclei) para que no reaparezca.
+- **Prioridad**: las inyecciones confirmadas en endpoints públicos van primero.
+- **Cierre**: tras volver a escanear, convierte el caso en una prueba (una regla `FAIL` o una plantilla propia de Nuclei) para que no reaparezca.
 
 ## Buenas prácticas y errores comunes
 
@@ -269,14 +273,13 @@ dast:
 | Baseline rápido en cada despliegue y full programado | Meter un full scan de dos horas en cada PR |
 | Entornos efímeros con datos sintéticos | Escanear un staging compartido que otro equipo está probando |
 | Limitar la velocidad y avisar a quien opera el entorno | Saturar staging y "descubrir" un DoS propio |
-| Fijar las actions por SHA y la imagen de ZAP a una versión concreta en pipelines críticos | Usar `:latest` o `@v0` sin control de cambios |
 | Complementar con pentest manual para lógica de negocio | Creer que un DAST limpio significa "sin vulnerabilidades" |
 
 ## Relación con otras secciones
 
 | Enfoque | Qué se mira desde ahí | Nota |
 | --- | --- | --- |
-| Cloud (el control) | WAF, cabeceras en el CDN y Web Security Scanner de Google Cloud | [Seguridad base en la nube](../../cloud/identidad-y-seguridad/seguridad-base.md), [Integración y APIs](../../cloud/arquitectura/integracion-apis.md) |
+| Cloud (el control) | WAF, cabeceras en el CDN y Web Security Scanner de Google Cloud | [Seguridad de APIs y aplicaciones](../../cloud/seguridad/seguridad-apis-aplicaciones.md), [Integración y APIs](../../cloud/arquitectura/integracion-apis.md) |
 | DevOps (la automatización) | Despliegue a staging y entornos efímeros donde corre el escaneo | [Despliegue continuo](../../devops/ci-cd/despliegue-continuo.md), [Pruebas de infraestructura](../../devops/iac/pruebas-infraestructura.md) |
 | DevSecOps (la verificación) | Teoría de pruebas dinámicas, otros escaneos y gestión de vulnerabilidades | [Pruebas dinámicas](../codigo-y-dependencias/pruebas-dinamicas.md), [Escaneo de seguridad en el pipeline](escaneo-en-pipeline.md), [SAST](sast.md), [Seguridad del pipeline](../identidades-y-pipeline/seguridad-pipeline.md), [Detección y respuesta](../gobierno-y-respuesta/deteccion-respuesta.md) |
 | Networking (la base) | HTTP, TLS y cabeceras que el escáner analiza | [Protocolos de aplicación](../../networking/intermedio/protocolos-aplicacion.md) |

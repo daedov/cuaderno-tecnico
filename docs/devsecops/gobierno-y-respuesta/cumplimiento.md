@@ -95,7 +95,7 @@ La auditoría tradicional es una foto una vez al año. **Continuous compliance**
 | En la nube | Guardrails que impiden configuraciones no permitidas | SCP, Azure Policy, Organization Policy ([Gobernanza](../../cloud/operacion-y-gobierno/gobernanza.md)) |
 | Recursos ya desplegados | Evaluación periódica contra benchmarks | CSPM, AWS Config rules, Prowler |
 | Servidores | Hardening y comprobación del sistema operativo | Ansible con roles CIS ([Ansible](../../devops/iac/ansible.md)), OpenSCAP, Chef InSpec |
-| Evidencia | Registro de quién cambió qué y cuándo | CloudTrail, Activity Log, Cloud Audit Logs ([Seguridad base](../../cloud/identidad-y-seguridad/seguridad-base.md)) |
+| Evidencia | Registro de quién cambió qué y cuándo | CloudTrail, Activity Log, Cloud Audit Logs ([Seguridad de logging y detección](../../cloud/seguridad/seguridad-logging-deteccion.md)) |
 
 ## CSPM
 
@@ -152,7 +152,7 @@ Un **CNAPP** (*Cloud-Native Application Protection Platform*) une en una platafo
 
 | Enfoque | Qué se mira desde ahí | Nota |
 | --- | --- | --- |
-| Cloud (el control) | Logs de auditoría, AWS Config, guardrails y estructura de cuentas que el cumplimiento revisa | [Seguridad base en la nube](../../cloud/identidad-y-seguridad/seguridad-base.md), [Gobernanza](../../cloud/operacion-y-gobierno/gobernanza.md), [Shared Responsibility Model](../../cloud/fundamentos/responsabilidad-compartida.md) |
+| Cloud (el control) | Logs de auditoría, AWS Config, guardrails y estructura de cuentas que el cumplimiento revisa | [Seguridad de logging y detección](../../cloud/seguridad/seguridad-logging-deteccion.md), [Gobernanza](../../cloud/operacion-y-gobierno/gobernanza.md), [Shared Responsibility Model](../../cloud/fundamentos/responsabilidad-compartida.md) |
 | DevOps (la automatización) | Hardening de servidores y configuración reproducible | [Ansible](../../devops/iac/ansible.md), [Infrastructure as Code](../../devops/iac/infraestructura-como-codigo.md) |
 | DevSecOps (la verificación) | Controles preventivos en el pipeline y respuesta cuando algo falla | [Seguridad de IaC](../infraestructura-y-contenedores/seguridad-iac.md), [CSPM](../escaneos/cspm.md), [Detección y respuesta](deteccion-respuesta.md), [Fundamentos DevSecOps](../fundamentos-devsecops.md) |
 | Negocio TI (el porqué) | Gobierno de TI, registro de riesgos, apetito de riesgo y gestión de proveedores | [Gobierno y riesgo de TI](../../negocio/gobierno-riesgo-ti.md) |

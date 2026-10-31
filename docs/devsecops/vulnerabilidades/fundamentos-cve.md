@@ -215,7 +215,7 @@ La mayoría de los incidentes reales usan **n-days**: el parche existía, pero n
 
 | Enfoque | Qué se mira desde ahí | Nota |
 | --- | --- | --- |
-| Cloud (el control) | Qué parte de los parches te toca a ti y cuál al proveedor; escáneres nativos | [Shared Responsibility Model](../../cloud/fundamentos/responsabilidad-compartida.md), [Seguridad base en la nube](../../cloud/identidad-y-seguridad/seguridad-base.md) |
+| Cloud (el control) | Qué parte de los parches te toca a ti y cuál al proveedor; escáneres nativos | [Shared Responsibility Model](../../cloud/fundamentos/responsabilidad-compartida.md), [Fundamentos de seguridad cloud](../../cloud/seguridad/fundamentos-seguridad-cloud.md) |
 | DevOps (la automatización) | Reconstruir y desplegar rápido cuando sale un CVE | [Integración continua](../../devops/ci-cd/integracion-continua.md), [Despliegue continuo](../../devops/ci-cd/despliegue-continuo.md) |
 | DevSecOps (la verificación) | Riesgo, escaneos que consumen estas fuentes y gestión de vulnerabilidades | [Fundamentos DevSecOps](../fundamentos-devsecops.md#gestion-de-riesgo), [SCA](../escaneos/sca.md), [Container scanning](../escaneos/container-scanning.md), [Detección y respuesta](../gobierno-y-respuesta/deteccion-respuesta.md), [Cómo investigar un CVE](investigar-un-cve.md) |
 | Negocio TI (el porqué) | Riesgo, apetito de riesgo y obligaciones regulatorias | [Gobierno y riesgo de TI](../../negocio/gobierno-riesgo-ti.md) |

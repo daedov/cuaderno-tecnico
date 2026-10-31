@@ -9,7 +9,7 @@ tags:
 
 # Seguridad de Kubernetes
 
-> Cómo verificar y limitar qué puede hacer cada pieza de un clúster: RBAC, Pod Security Standards, NetworkPolicies, admission control (Kyverno, Gatekeeper), runtime security (Falco), secretos e identidad de los pods hacia la nube.
+> Cómo verificar y limitar qué puede hacer cada pieza de un clúster: RBAC, Pod Security Standards, NetworkPolicies, admission control (Kyverno, Gatekeeper), runtime security (Falco), secretos e identidad de los pods hacia la nube. El escaneo de la postura del clúster (CIS, kube-bench, Kubescape) está en [KSPM](../escaneos/kspm.md).
 
 ## ¿Qué es?
 
@@ -25,7 +25,7 @@ Kubernetes trae muchos controles de seguridad, pero casi ninguno viene activado 
 | Datos | ¿Están protegidos los Secrets? | Encryption at rest, gestores externos |
 | Nube | ¿Con qué identidad accede el pod a servicios cloud? | IRSA / EKS Pod Identity, Entra Workload ID, Workload Identity Federation for GKE |
 
-Conceptos de base (pods, deployments, services, Helm) en [Kubernetes](../../devops/contenedores/kubernetes.md); el endurecimiento de la imagen en [Seguridad de contenedores](seguridad-contenedores.md).
+Conceptos de base (pods, deployments, services, Helm) en [Kubernetes](../../devops/contenedores/kubernetes.md); el endurecimiento de la imagen en [Seguridad de contenedores](seguridad-contenedores.md). Para comprobar estos controles con escáneres: los manifests antes de desplegar en [IaC scanning](../escaneos/iac-scanning.md) y el clúster en ejecución en [KSPM](../escaneos/kspm.md).
 
 ## RBAC
 
@@ -135,7 +135,7 @@ spec:
 Por defecto **todos los pods pueden hablar con todos**. Una **NetworkPolicy** limita el tráfico de entrada (*ingress*) y salida (*egress*) de los pods que selecciona. El patrón recomendado es **default deny** (denegar por defecto) y abrir solo lo necesario.
 
 !!! warning "Requiere un CNI que las aplique"
-    Kubernetes guarda las NetworkPolicies, pero quien las aplica es el **CNI** (*Container Network Interface*, el plugin de red): Calico, Cilium y otros sí; algunos CNI básicos no, y entonces la política existe pero no hace nada. En EKS, AKS y GKE hay que activar o elegir la opción correspondiente; revísalo en [Contenedores gestionados](../../cloud/computo/contenedores-gestionados.md).
+    Kubernetes guarda las NetworkPolicies, pero quien las aplica es el **CNI** (*Container Network Interface*, el plugin de red): Calico, Cilium y otros sí; algunos CNI básicos no, y entonces la política existe pero no hace nada. En EKS, AKS y GKE hay que activar o elegir la opción correspondiente; revísalo en [Seguridad de contenedores y Kubernetes gestionado](../../cloud/seguridad/seguridad-contenedores-kubernetes.md#controles-por-proveedor).
 
 ```yaml title="default-deny.yaml"
 apiVersion: networking.k8s.io/v1
@@ -237,7 +237,7 @@ Las alertas de Falco se envían (con **Falcosidekick**) a Slack, a un SIEM o a u
 
 Medidas:
 
-- **Encryption at rest** (cifrado en reposo) de etcd con `EncryptionConfiguration`, idealmente con un proveedor **KMS** (*envelope encryption*). En clústeres gestionados (EKS, AKS, GKE) se activa con una opción del servicio y una key de KMS; revisa si tu proveedor ya lo hace por defecto.
+- **Encryption at rest** (cifrado en reposo) de etcd con `EncryptionConfiguration`, idealmente con un proveedor **KMS** (*envelope encryption*). En clústeres gestionados (EKS, AKS, GKE) se activa con una opción del servicio y una key de KMS; revisa si tu proveedor ya lo hace por defecto (ver [Seguridad de contenedores y Kubernetes gestionado](../../cloud/seguridad/seguridad-contenedores-kubernetes.md#controles-por-proveedor)).
 - **RBAC estricto** sobre `secrets`.
 - Guardar el secreto en un gestor externo (Vault, AWS Secrets Manager, Azure Key Vault, Secret Manager) y traerlo al clúster con:
     - **External Secrets Operator**: sincroniza el secreto externo como Secret de Kubernetes.
@@ -247,71 +247,40 @@ Más en [Secretos e identidades](../identidades-y-pipeline/secretos-identidades.
 
 ## CIS Kubernetes Benchmark
 
-El **CIS Kubernetes Benchmark** es una guía de configuración segura del plano de control, etcd, kubelet y políticas. **kube-bench** (Aqua Security) la comprueba automáticamente:
-
-```bash
-kubectl apply -f https://raw.githubusercontent.com/aquasecurity/kube-bench/main/job.yaml
-kubectl logs job/kube-bench
-```
-
-En servicios gestionados el proveedor controla el plano de control, así que se usan los benchmarks específicos (**CIS Amazon EKS**, **CIS AKS**, **CIS GKE**), que solo revisan lo que tú gestionas. Ver [Cumplimiento y gobierno](../gobierno-y-respuesta/cumplimiento.md).
+El **CIS Kubernetes Benchmark** es una guía de configuración segura del plano de control, etcd, kubelet y políticas. En servicios gestionados el proveedor controla el plano de control, así que se usan los benchmarks específicos (**CIS Amazon EKS**, **CIS AKS**, **CIS GKE**), que solo revisan lo que tú gestionas. Ver [Cumplimiento y gobierno](../gobierno-y-respuesta/cumplimiento.md).
 
 !!! tip "Escaneo en detalle"
-    Escanear la postura del clúster en ejecución con kube-bench, Kubescape (NSA/CISA, MITRE), Trivy k8s y Trivy Operator o Polaris, las ofertas nativas de cada nube y en qué se diferencia del escaneo de manifests y de la detección en runtime: [KSPM](../escaneos/kspm.md).
+    Comprobar el benchmark y la postura del clúster en ejecución con kube-bench, Kubescape (NSA/CISA, MITRE), Trivy k8s y Trivy Operator o Polaris, las ofertas nativas de cada nube y en qué se diferencia del escaneo de manifests y de la detección en runtime: [KSPM](../escaneos/kspm.md).
 
 ## Identidad de pods hacia la nube
 
-Un pod que necesita leer un bucket o una cola **no debe** llevar access keys en un Secret. Cada nube federa la identidad del ServiceAccount de Kubernetes con su IAM para entregar credenciales temporales:
+Un pod que necesita leer un bucket o una cola **no debe** llevar access keys en un Secret: cada nube federa la identidad del ServiceAccount de Kubernetes con su IAM para entregar credenciales temporales (IRSA / EKS Pod Identity, Microsoft Entra Workload ID, Workload Identity Federation for GKE). Cómo se configura cada opción, con ejemplos, está en [Seguridad de contenedores y Kubernetes gestionado](../../cloud/seguridad/seguridad-contenedores-kubernetes.md#identidad-de-pods-hacia-la-nube). Es el mismo principio que [OIDC en el pipeline](../identidades-y-pipeline/secretos-identidades.md#oidc-entre-el-pipeline-y-la-nube): credenciales temporales en lugar de llaves estáticas.
 
-=== "AWS (EKS)"
+## Cómo verificarlo
 
-    - **IRSA** (*IAM Roles for Service Accounts*): el clúster tiene un OIDC provider en IAM; el ServiceAccount lleva la anotación `eks.amazonaws.com/role-arn` y el pod asume ese IAM role.
-    - **EKS Pod Identity** (más reciente y sencillo): se instala el add-on *Pod Identity Agent* y se crea una *pod identity association* entre ServiceAccount e IAM role, sin anotaciones ni OIDC provider por clúster.
+Comprobaciones rápidas de solo lectura con `kubectl` (los escáneres que lo hacen a escala están en [KSPM](../escaneos/kspm.md); los controles del lado del proveedor, en [Seguridad de contenedores y Kubernetes gestionado](../../cloud/seguridad/seguridad-contenedores-kubernetes.md#como-verificarlo)):
 
-    ```bash
-    aws eks create-pod-identity-association \
-      --cluster-name prod --namespace app \
-      --service-account lector-s3 \
-      --role-arn arn:aws:iam::111122223333:role/app-lector-s3
-    ```
+```bash
+# Qué puede hacer el ServiceAccount default de un namespace
+kubectl auth can-i --list --as=system:serviceaccount:app:default
 
-=== "Azure (AKS)"
+# Quién tiene cluster-admin
+kubectl get clusterrolebindings -o wide | grep cluster-admin
 
-    **Microsoft Entra Workload ID**: se activa el OIDC issuer y Workload Identity en el clúster, se crea una *federated identity credential* en una managed identity (o app registration) que confía en el ServiceAccount, y:
+# Nivel de Pod Security aplicado en cada namespace
+kubectl get ns -L pod-security.kubernetes.io/enforce
 
-    ```yaml
-    apiVersion: v1
-    kind: ServiceAccount
-    metadata:
-      name: lector-blob
-      namespace: app
-      annotations:
-        azure.workload.identity/client-id: "<client-id-de-la-managed-identity>"
-    ```
-
-    Los pods que la usan llevan la label `azure.workload.identity/use: "true"`.
-
-=== "Google Cloud (GKE)"
-
-    **Workload Identity Federation for GKE**: se activa en el clúster y se da el role de IAM directamente al ServiceAccount de Kubernetes como *principal*:
-
-    ```bash
-    gcloud projects add-iam-policy-binding mi-proyecto \
-      --role=roles/storage.objectViewer \
-      --member="principal://iam.googleapis.com/projects/123456789/locations/global/workloadIdentityPools/mi-proyecto.svc.id.goog/subject/ns/app/sa/lector-gcs"
-    ```
-
-    También puede vincularse a una service account de IAM con la anotación `iam.gke.io/gcp-service-account`.
-
-Es el mismo principio que OIDC en el pipeline: credenciales temporales en lugar de llaves estáticas (ver [IAM: AWS, Azure y GCP](../../cloud/identidad-y-seguridad/iam-comparativa.md)).
+# NetworkPolicies existentes
+kubectl get networkpolicy -A
+```
 
 ## Relación con otras secciones
 
 | Enfoque | Qué se mira desde ahí | Nota |
 | --- | --- | --- |
-| Cloud (el control) | EKS, AKS y GKE: opciones de red, cifrado y federación de identidad; segmentación de red | [Contenedores gestionados](../../cloud/computo/contenedores-gestionados.md), [Redes en la nube](../../cloud/redes-y-datos/redes.md), [IAM: AWS, Azure y GCP](../../cloud/identidad-y-seguridad/iam-comparativa.md) |
+| Cloud (el control) | EKS, AKS y GKE: acceso al API server, opciones de red, cifrado y federación de identidad; segmentación de red | [Seguridad de contenedores y Kubernetes gestionado](../../cloud/seguridad/seguridad-contenedores-kubernetes.md), [Contenedores gestionados](../../cloud/computo/contenedores-gestionados.md), [Redes en la nube](../../cloud/redes-y-datos/redes.md), [IAM: AWS, Azure y GCP](../../cloud/fundamentos/iam-comparativa.md) |
 | DevOps (la automatización) | Manifiestos, Helm y Kustomize que estas políticas validan | [Kubernetes](../../devops/contenedores/kubernetes.md), [Despliegue continuo](../../devops/ci-cd/despliegue-continuo.md) |
-| DevSecOps (la verificación) | Imagen endurecida, secretos, alertas de runtime y benchmarks | [Seguridad de contenedores](seguridad-contenedores.md), [Secretos e identidades](../identidades-y-pipeline/secretos-identidades.md), [Detección y respuesta](../gobierno-y-respuesta/deteccion-respuesta.md), [KSPM](../escaneos/kspm.md), [CVE en contenedores y Kubernetes](../vulnerabilidades/cve-contenedores-kubernetes.md) |
+| DevSecOps (la verificación) | Imagen endurecida, secretos, alertas de runtime y escaneo de la postura del clúster (benchmarks) | [Seguridad de contenedores](seguridad-contenedores.md), [Secretos e identidades](../identidades-y-pipeline/secretos-identidades.md), [Detección y respuesta](../gobierno-y-respuesta/deteccion-respuesta.md), [KSPM](../escaneos/kspm.md), [CVE en contenedores y Kubernetes](../vulnerabilidades/cve-contenedores-kubernetes.md) |
 | Laboratorios (la práctica) | Practicar esto paso a paso | [Lab 06: Desplegar una app en Kubernetes local con kind](../../laboratorios/devops/kubernetes-local-kind.md), [Lab 14: Endurecer un clúster: Pod Security, NetworkPolicy y Kyverno](../../laboratorios/devsecops/seguridad-kubernetes.md) |
 
 ## Referencias
@@ -326,9 +295,5 @@ Es el mismo principio que OIDC en el pipeline: credenciales temporales en lugar 
 - [Kyverno](https://kyverno.io/docs/)
 - [OPA Gatekeeper](https://open-policy-agent.github.io/gatekeeper/website/docs/)
 - [Falco](https://falco.org/docs/)
-- [kube-bench](https://github.com/aquasecurity/kube-bench)
 - [External Secrets Operator](https://external-secrets.io/)
-- [EKS Pod Identity](https://docs.aws.amazon.com/eks/latest/userguide/pod-identities.html)
-- [Microsoft Entra Workload ID en AKS](https://learn.microsoft.com/es-es/azure/aks/workload-identity-overview)
-- [Workload Identity Federation for GKE](https://cloud.google.com/kubernetes-engine/docs/concepts/workload-identity)
 - [Comandos de kubectl](../../recursos/comandos/kubectl.md)

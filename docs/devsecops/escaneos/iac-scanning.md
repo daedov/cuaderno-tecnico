@@ -56,7 +56,7 @@ El escáner no ejecuta Terraform: si un valor llega de una variable sin default,
 | Línea del hallazgo | Archivo y línea exactos | Hace falta enriquecer con el código (`--repo-root-for-plan-enrichment` en Checkov) |
 | Riesgo | Ninguno | El plan puede contener **valores sensibles**: no lo publiques como artifact |
 
-En la práctica se usan **los dos**: el de código para feedback rápido, el del plan como control antes del `apply`. Los comandos básicos de ambos ya están en [Seguridad de IaC](../infraestructura-y-contenedores/seguridad-iac.md#comandos-basicos).
+En la práctica se usan **los dos**: el de código para feedback rápido, el del plan como control antes del `apply`. Los comandos de ambos están en [Ejecutarlo en local](#ejecutarlo-en-local).
 
 ### Formatos que no son Terraform
 
@@ -215,6 +215,8 @@ Dos jobs con propósitos distintos: escaneo del **código en cada PR** (rápido,
 
 ## Umbrales y cuándo fallar el build
 
+Los criterios generales están en [Criterios comunes de gating](escaneo-en-pipeline.md#criterios-comunes-de-gating). Cómo se aplican en cada herramienta:
+
 | Herramienta | Por defecto | Gating |
 | --- | --- | --- |
 | Checkov | Falla si hay algún check fallido | `--hard-fail-on`, `--soft-fail-on`, `--soft-fail`, `--check`, `--skip-check` |
@@ -228,9 +230,11 @@ checkov -d . --create-baseline          # crea .checkov.baseline (súbelo al rep
 checkov -d . --baseline .checkov.baseline
 ```
 
-Política de ejemplo: en PR fallan los hallazgos **nuevos** altos y críticos; los heredados van a un backlog con plazo. Para el plan, falla con altos y críticos siempre: es la última barrera antes del `apply`.
+Particularidad de IaC: en el PR fallan solo los hallazgos **nuevos**, pero sobre el **plan** falla con altos y críticos siempre: es la última barrera antes del `apply`.
 
 ## Gestión de hallazgos
+
+El ciclo general está en [Gestión de hallazgos](escaneo-en-pipeline.md#gestion-de-hallazgos). Las tres preguntas del triage en IaC:
 
 1. **¿Es un error real?** Corrige en el código (no en la consola: el siguiente `apply` lo revertiría).
 2. **¿Es intencional?** (bucket de un sitio estático, puerto 443 abierto en el load balancer). Suprime **solo en ese recurso**, con motivo; la sintaxis de los comentarios `#checkov:skip` y `#trivy:ignore` está en [Seguridad de IaC](../infraestructura-y-contenedores/seguridad-iac.md#fallar-el-build).
@@ -245,23 +249,22 @@ resource "aws_s3_bucket" "temporal" {
 }
 ```
 
-Checkov no tiene caducidad en `#checkov:skip`: añade la fecha y el ticket en el texto del motivo y revísalas periódicamente (`grep -rn "checkov:skip"`). Cada excepción debe tener responsable y plazo, como cualquier riesgo aceptado (ver [Detección y respuesta](../gobierno-y-respuesta/deteccion-respuesta.md#excepciones-y-riesgo-aceptado)).
+Checkov no tiene caducidad en `#checkov:skip`: añade la fecha y el ticket en el texto del motivo y revísalas periódicamente (`grep -rn "checkov:skip"`).
 
 ## Buenas prácticas y errores comunes
 
 - **Escanea lo que se despliega**: el render de Helm con los values de cada entorno y el plan de Terraform, no solo la plantilla.
 - **Mismo escáner y versión en local y en CI** (pre-commit con la misma versión fijada), para que nadie descubra los fallos al abrir el PR.
-- **Elige un escáner principal**: dos escáneres con reglas solapadas duplican hallazgos y supresiones. Un segundo solo si cubre formatos que el primero no.
+- **Elige un escáner principal** y añade un segundo solo si cubre formatos que el primero no.
 - **Descarga módulos externos** (`--download-external-modules true` en Checkov) o escanea el plan; si no, los módulos remotos quedan sin revisar.
-- Error común: corregir el hallazgo **en la consola** y no en el código. Lo arregla hasta el próximo `apply` y crea drift.
 - Error común: subir `plan.json` o `tfplan` como artifact público del pipeline.
-- Error común: suprimir una regla **globalmente** (`--skip-check` en todo el repo) para un caso puntual.
+- Error común: suprimir una regla **globalmente** (`--skip-check` en todo el repo) para un caso puntual, en vez de `#checkov:skip` en el recurso.
 
 ## Relación con otras secciones
 
 | Enfoque | Qué se mira desde ahí | Nota |
 | --- | --- | --- |
-| Cloud (el control) | Los recursos que se validan: redes, IAM, cifrado | [Redes en la nube](../../cloud/redes-y-datos/redes.md), [IAM: AWS, Azure y GCP](../../cloud/identidad-y-seguridad/iam-comparativa.md), [Seguridad base](../../cloud/identidad-y-seguridad/seguridad-base.md) |
+| Cloud (el control) | Los recursos que se validan: redes, IAM, cifrado | [Redes en la nube](../../cloud/redes-y-datos/redes.md), [IAM: AWS, Azure y GCP](../../cloud/fundamentos/iam-comparativa.md), [Seguridad de cifrado y secretos](../../cloud/seguridad/seguridad-cifrado-secretos.md) |
 | DevOps (la automatización) | El código que se escanea: Terraform, Dockerfiles, manifests y charts | [Infrastructure as Code](../../devops/iac/infraestructura-como-codigo.md), [Infrastructure as Code con Terraform](../../devops/iac/terraform-basico.md), [Docker](../../devops/contenedores/docker.md), [Kubernetes](../../devops/contenedores/kubernetes.md) |
 | DevSecOps (la verificación) | Policy as code y drift, configuración del clúster vivo y de las cuentas cloud | [Seguridad de IaC](../infraestructura-y-contenedores/seguridad-iac.md), [Seguridad de Kubernetes](../infraestructura-y-contenedores/seguridad-kubernetes.md), [KSPM](kspm.md), [CSPM](cspm.md), [Escaneo de seguridad en el pipeline](escaneo-en-pipeline.md) |
 | Laboratorios (la práctica) | Practicar esto paso a paso | [Lab 12: Escaneos de seguridad en el pipeline](../../laboratorios/devsecops/escaneos-en-pipeline.md) |

@@ -243,38 +243,42 @@ Detalles que importan:
 
 ## Criterios comunes de gating
 
-El **gating** (bloqueo) es la decisión de qué hallazgos impiden el merge o el despliegue. Criterios que comparten casi todos los escaneos:
+El **gating** (bloqueo) es la decisión de qué hallazgos impiden el merge o el despliegue. Estos criterios valen para todos los escaneos; cada nota solo añade los flags y las particularidades de su herramienta.
 
 | Criterio | Qué significa | Ejemplo |
 | --- | --- | --- |
 | **Por severidad** | Bloquear Critical y High; Medium y Low solo informan | `severity: HIGH,CRITICAL` + `exit-code: 1` |
-| **Solo con corrección disponible** | No bloquear por una CVE sin versión corregida | `ignore-unfixed: true` en Trivy |
-| **Solo hallazgos nuevos** | Comparar con la rama base o con un *baseline* para no heredar la deuda antigua en cada PR | Escaneo *diff-aware*, archivo baseline, alertas de code scanning en el PR |
+| **Por confianza** | Una alerta de severidad alta pero confianza baja se revisa a mano antes de bloquear | Confianza de las reglas de Bandit o de las alertas de ZAP |
+| **Solo con corrección disponible** | No bloquear por una CVE sin versión corregida (sí registrarla y vigilarla) | `ignore-unfixed: true` en Trivy |
+| **Solo hallazgos nuevos** | Comparar con la rama base, con un *baseline* o, en los escaneos programados, con la ejecución anterior, para no heredar la deuda antigua en cada PR | Escaneo *diff-aware*, archivo baseline, alertas de code scanning en el PR |
+| **Según la rama o el entorno** | Avisar en el PR y bloquear en `main`, en la release o antes de promover a producción | Umbral más estricto en el job de release |
 | **Siempre bloquea** | Hallazgos sin "zona gris" | Un secreto verificado; una política IAM con `*:*` |
-| **Programado no bloquea, abre tickets** | Lo que aparece sin cambio de código (CVE nuevas, CSPM, DAST full) | Issue automático con SLA |
-| **Check obligatorio** | El job de seguridad es un *required status check* en branch protection o rulesets | [Seguridad del pipeline](../identidades-y-pipeline/seguridad-pipeline.md#branch-protection-y-rulesets) |
+| **Programado no bloquea el cambio, abre tickets** | Lo que aparece sin cambio de código (CVE nuevas, CSPM, KSPM, DAST full). Como mucho, bloquea la **promoción** al siguiente entorno | Issue automático con SLA |
+| **Check obligatorio** | El job de seguridad es un *required status check* en branch protection o rulesets (en GitLab, *merge request approval policies*) | [Seguridad del pipeline](../identidades-y-pipeline/seguridad-pipeline.md#branch-protection-y-rulesets) |
 
 !!! tip "Empieza informando, luego bloquea"
-    En un repositorio con historia, activar el bloqueo el primer día genera cientos de fallos y el equipo acaba desactivando el escaneo. Empieza en modo informativo (`exit-code: 0`, solo SARIF), limpia lo crítico, fija un baseline y después activa el bloqueo **solo para lo nuevo**.
+    En un repositorio con historia, activar el bloqueo el primer día genera cientos de fallos y el equipo acaba desactivando el escaneo. Empieza en modo informativo (`exit-code: 0`, solo SARIF), limpia lo crítico, fija un baseline y después activa el bloqueo **solo para lo nuevo**. Amplía las reglas y baja el umbral a medida que el equipo resuelve lo existente.
 
 Los umbrales concretos de cada escaneo están en su nota: [SAST](sast.md#umbrales-y-cuando-fallar-el-build), [SCA](sca.md#umbrales-y-cuando-fallar-el-build), [Secret scanning](secret-scanning.md#umbrales-y-cuando-fallar-el-build), [Container scanning](container-scanning.md#umbrales-y-cuando-fallar-el-build), [IaC scanning](iac-scanning.md#umbrales-y-cuando-fallar-el-build), [DAST](dast.md#umbrales-y-cuando-fallar-el-build), [KSPM](kspm.md#umbrales-y-cuando-fallar-el-build) y [CSPM](cspm.md#umbrales-y-cuando-fallar-el-build).
 
 ## Gestión de hallazgos
 
-Con ocho escaneos, el problema deja de ser encontrar fallos y pasa a ser **gestionarlos**:
+Con ocho escaneos, el problema deja de ser encontrar fallos y pasa a ser **gestionarlos**. El ciclo es el mismo para todos; cada nota solo añade la sintaxis de supresión y el triage propios de su herramienta.
 
-- **Un solo lugar**: centraliza los resultados (code scanning de GitHub, el panel de seguridad de GitLab, OWASP DefectDojo o un ASPM comercial) en vez de leer ocho informes.
-- **Deduplicar**: la misma CVE aparece en SCA y en container scanning; el mismo bucket público, en IaC scanning y en CSPM. Cuenta el problema una vez y corrígelo en el origen (el código).
-- **Triage con dueño**: cada hallazgo tiene un responsable (CODEOWNERS, tags `owner` en la nube).
-- **Supresiones documentadas**: en el archivo de la herramienta, con motivo, quién lo aprobó y **fecha de expiración** o de revisión. Nunca desactivar una regla entera "porque molesta".
-- **Priorizar por riesgo real**: severidad + exposición (¿es accesible desde internet?) + explotabilidad (EPSS, catálogo KEV).
+- **Un solo lugar**: centraliza los resultados (code scanning de GitHub, el panel de seguridad de GitLab, OWASP DefectDojo o un ASPM comercial) en vez de leer ocho informes o los logs de CI.
+- **Deduplicar**: la misma CVE aparece en SCA y en container scanning; el mismo bucket público, en IaC scanning y en CSPM. Cuenta el problema una vez y corrígelo en el origen. Por lo mismo, evita dos herramientas con reglas solapadas para el mismo escaneo: duplican hallazgos y supresiones.
+- **Triage con dueño**: cada hallazgo tiene un responsable (CODEOWNERS, tags `owner` en la nube) que decide si es real y explotable en tu contexto o un falso positivo.
+- **Corregir en el origen**: en el código, el IaC o el manifest, y desplegar por el pipeline. Lo que se arregla en la consola o con `kubectl edit` vuelve con el siguiente despliegue y crea *drift*.
+- **Supresiones documentadas**: lo más cerca posible del hallazgo (la línea, el recurso o la CVE concreta, nunca para todo el repositorio), en el archivo de la herramienta, con motivo, quién lo aprobó y **fecha de expiración** o de revisión. Si la herramienta no admite caducidad, anota la fecha en el comentario y revísalas periódicamente: una supresión sin fecha se vuelve permanente. Si una regla da muchos falsos positivos, ajústala antes de desactivarla; nunca la desactives entera "porque molesta". Cada excepción es un riesgo aceptado: ver [Excepciones y riesgo aceptado](../gobierno-y-respuesta/deteccion-respuesta.md#excepciones-y-riesgo-aceptado).
+- **Priorizar por riesgo real**: severidad + exposición (¿es accesible desde internet?) + explotabilidad (EPSS, catálogo KEV) + impacto (datos sensibles, acceso a secretos o a la nube). Ver [Priorizar con CVSS, EPSS y KEV](../gobierno-y-respuesta/deteccion-respuesta.md#priorizar-con-cvss-epss-y-kev).
 - **SLA de remediación** según la severidad: ver [Detección y respuesta](../gobierno-y-respuesta/deteccion-respuesta.md#sla-de-remediacion).
+- **Cerrar el ciclo**: vuelve a escanear para confirmar la corrección y convierte el hallazgo recurrente en un control preventivo (una regla que falle el build, una política de admission control, un guardrail en la nube) para que no reaparezca.
 
 ## Relación con otras secciones
 
 | Enfoque | Qué se mira desde ahí | Nota |
 | --- | --- | --- |
-| Cloud (el control) | Escaneo nativo de imágenes en los registries y servicios CSPM nativos | [Contenedores gestionados](../../cloud/computo/contenedores-gestionados.md), [Seguridad base en la nube](../../cloud/identidad-y-seguridad/seguridad-base.md) |
+| Cloud (el control) | Escaneo nativo de imágenes en los registries y servicios CSPM nativos | [Contenedores gestionados](../../cloud/computo/contenedores-gestionados.md), [Fundamentos de seguridad cloud](../../cloud/seguridad/fundamentos-seguridad-cloud.md) |
 | DevOps (la automatización) | El pipeline de CI donde se insertan los escaneos y los entornos donde corre el DAST | [Integración continua](../../devops/ci-cd/integracion-continua.md), [Pipeline CI/CD con GitHub Actions](../../devops/ci-cd/ci-cd-github-actions.md), [Despliegue continuo](../../devops/ci-cd/despliegue-continuo.md) |
 | DevSecOps (la verificación) | Cada escaneo en detalle y las notas temáticas que los enmarcan | [SAST](sast.md), [SCA](sca.md), [Secret scanning](secret-scanning.md), [Container scanning](container-scanning.md), [IaC scanning](iac-scanning.md), [DAST](dast.md), [KSPM](kspm.md), [CSPM](cspm.md), [Fundamentos de DevSecOps](../fundamentos-devsecops.md), [Seguridad del código](../codigo-y-dependencias/seguridad-codigo.md), [Software supply chain](../codigo-y-dependencias/cadena-suministro.md), [Pruebas dinámicas](../codigo-y-dependencias/pruebas-dinamicas.md), [Seguridad de IaC](../infraestructura-y-contenedores/seguridad-iac.md), [Seguridad de contenedores](../infraestructura-y-contenedores/seguridad-contenedores.md), [Seguridad de Kubernetes](../infraestructura-y-contenedores/seguridad-kubernetes.md), [Cumplimiento y gobierno](../gobierno-y-respuesta/cumplimiento.md), [Seguridad del pipeline](../identidades-y-pipeline/seguridad-pipeline.md) |
 | Laboratorios (la práctica) | Practicar esto paso a paso | [Lab 07: Pipeline de CI con GitHub Actions](../../laboratorios/devops/github-actions-ci.md), [Lab 12: Escaneos de seguridad en el pipeline](../../laboratorios/devsecops/escaneos-en-pipeline.md), [Lab 15: DAST con OWASP ZAP sobre OWASP Juice Shop](../../laboratorios/devsecops/dast-zap-juice-shop.md) |

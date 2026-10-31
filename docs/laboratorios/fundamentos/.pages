@@ -1,5 +1,6 @@
 nav:
   - preparar-entorno.md
+  - preparar-cuentas-cloud.md
   - linux-red-diagnostico.md
   - subnetting-plan-ips.md
   - python-analizar-logs.md

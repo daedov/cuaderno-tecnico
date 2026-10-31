@@ -1,5 +1,6 @@
 nav:
   - escaneos-en-pipeline.md
+  - escaneos-en-pipeline-workflow.md
   - oidc-github-aws.md
   - seguridad-kubernetes.md
   - dast-zap-juice-shop.md

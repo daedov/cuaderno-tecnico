@@ -7,4 +7,5 @@ nav:
   - terraform-aws-backend-remoto.md
   - ansible-configuracion.md
   - observabilidad-prometheus-grafana.md
+  - observabilidad-logs-grafana.md
   - ...

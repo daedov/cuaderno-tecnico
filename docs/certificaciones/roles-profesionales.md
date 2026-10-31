@@ -194,7 +194,7 @@ Un repositorio público con README claro (problema, diagrama, cómo ejecutarlo, 
 | DevSecOps / AppSec | Pipeline con escaneos y gating ([12](../laboratorios/devsecops/escaneos-en-pipeline.md)), OIDC sin llaves ([13](../laboratorios/devsecops/oidc-github-aws.md)), DAST con ZAP ([15](../laboratorios/devsecops/dast-zap-juice-shop.md)) |
 | Cloud Security | Prowler y remediación como código ([16](../laboratorios/devsecops/cspm-prowler.md)), OIDC ([13](../laboratorios/devsecops/oidc-github-aws.md)), hardening de Kubernetes ([14](../laboratorios/devsecops/seguridad-kubernetes.md)) |
 | Network / Cloud Network | Plan de direccionamiento ([02](../laboratorios/fundamentos/subnetting-plan-ips.md)), diagnóstico documentado ([01](../laboratorios/fundamentos/linux-red-diagnostico.md)), VPC y VNet como IaC ([17](../laboratorios/cloud/aws-vpc-ec2.md), [19](../laboratorios/cloud/azure-vnet-vm.md)) |
-| FinOps | Presupuestos y alertas ([00](../laboratorios/fundamentos/preparar-entorno.md)) y un análisis de costos de los labs con etiquetas |
+| FinOps | Presupuestos y alertas ([00, parte 2](../laboratorios/fundamentos/preparar-cuentas-cloud.md)) y un análisis de costos de los labs con etiquetas |
 | MLOps | Modelo pequeño servido en serverless ([18](../laboratorios/cloud/aws-serverless-api.md)) o Cloud Run ([20](../laboratorios/cloud/gcp-cloud-run.md)), con CI y monitoreo |
 
 ## Contexto de mercado

@@ -24,7 +24,7 @@ tags:
     - Verificar la corrección con un segundo escaneo y comparar con el servicio nativo, **Security Hub CSPM**.
 
 !!! warning "Costos y seguridad"
-    - Usa **una cuenta AWS de pruebas**, nunca la de producción, con la alerta de presupuesto del [Lab 00](../fundamentos/preparar-entorno.md#paso-9-configura-las-alertas-de-presupuesto) activa.
+    - Usa **una cuenta AWS de pruebas**, nunca la de producción, con la alerta de presupuesto del [Lab 00, parte 2](../fundamentos/preparar-cuentas-cloud.md#paso-2-configura-las-alertas-de-presupuesto) activa.
     - Prowler es gratis y solo hace llamadas de lectura (`Describe*`, `Get*`, `List*`), que no se cobran.
     - La remediación crea un **trail de CloudTrail** y un bucket S3: la primera copia de los eventos de gestión es gratuita y los logs ocupan muy poco, pero si **ya tienes** un trail multi-región no crees otro (un segundo trail con eventos de gestión sí se cobra).
     - El paso 9 (Security Hub CSPM) es **opcional**: tiene prueba gratuita de 30 días, pero sus controles necesitan **AWS Config**, que cobra por cada elemento de configuración registrado. Si lo haces, desactívalo en la Limpieza.
@@ -36,12 +36,12 @@ tags:
 | --- | --- | --- |
 | Prowler CLI | 5.46.0 | `pipx install prowler`, `uv tool install prowler` o la imagen `prowlercloud/prowler:5.46.0` |
 | Python (si no usas Docker) | 3.12 (Prowler admite 3.10 a 3.13) | Ver [Lab 00](../fundamentos/preparar-entorno.md#paso-3-python-312-y-uv) |
-| AWS CLI v2 | 2.x | Perfiles `lab` y `lab-admin` del [Lab 00](../fundamentos/preparar-entorno.md#paso-11-perfil-lab-admin-para-gestionar-iam-en-aws) |
+| AWS CLI v2 | 2.x | Perfiles `lab` y `lab-admin` del [Lab 00, parte 2](../fundamentos/preparar-cuentas-cloud.md#paso-4-perfil-lab-admin-para-gestionar-iam-en-aws) |
 | Terraform | 1.10+ con provider `hashicorp/aws` `~> 6.0` | Ver [Lab 09](../devops/terraform-aws-backend-remoto.md) |
 
 Este lab usa **dos perfiles**, cada uno para lo suyo:
 
-- `lab-admin` (AdministratorAccess) **solo** para crear y, en la Limpieza, borrar el rol de auditoría `lab16-prowler` (paso 2). Crear roles y adjuntarles políticas es gestión de IAM, que el perfil `lab` (PowerUserAccess) no permite. Antes de empezar, vuelve a asignar `AdministratorAccess` a tu usuario en IAM Identity Center ([Lab 00, Paso 11](../fundamentos/preparar-entorno.md#paso-11-perfil-lab-admin-para-gestionar-iam-en-aws)).
+- `lab-admin` (AdministratorAccess) **solo** para crear y, en la Limpieza, borrar el rol de auditoría `lab16-prowler` (paso 2). Crear roles y adjuntarles políticas es gestión de IAM, que el perfil `lab` (PowerUserAccess) no permite. Antes de empezar, vuelve a asignar `AdministratorAccess` a tu usuario en IAM Identity Center ([Lab 00, parte 2, Paso 4](../fundamentos/preparar-cuentas-cloud.md#paso-4-perfil-lab-admin-para-gestionar-iam-en-aws)).
 - `lab` (PowerUserAccess) para todo lo demás: asumir el rol de auditoría para escanear (`sts:AssumeRole` no es una acción de IAM, así que PowerUserAccess la permite) y aplicar la remediación con Terraform, que no crea recursos de IAM.
 
 Comprueba las dos sesiones con `aws sts get-caller-identity --profile lab` y `aws sts get-caller-identity --profile lab-admin`. Teoría recomendada: [CSPM](../../devsecops/escaneos/cspm.md) (qué detecta y cómo se integra), [Cumplimiento y gobierno](../../devsecops/gobierno-y-respuesta/cumplimiento.md) (qué es un CIS Benchmark) y [Fundamentos de seguridad en la nube](../../cloud/seguridad/fundamentos-seguridad-cloud.md).
@@ -548,7 +548,7 @@ aws iam get-role --role-name lab16-prowler --profile lab-admin 2>&1 | grep -c No
 aws securityhub describe-hub --region us-east-1      # si lo desactivaste: error InvalidAccessException
 ```
 
-Por último, en IAM Identity Center quita la asignación de `AdministratorAccess` a tu usuario y comprueba que `aws sts get-caller-identity --profile lab-admin` falla con `No access` ([Lab 00, Paso 11](../fundamentos/preparar-entorno.md#paso-11-perfil-lab-admin-para-gestionar-iam-en-aws)).
+Por último, en IAM Identity Center quita la asignación de `AdministratorAccess` a tu usuario y comprueba que `aws sts get-caller-identity --profile lab-admin` falla con `No access` ([Lab 00, parte 2, Paso 4](../fundamentos/preparar-cuentas-cloud.md#paso-4-perfil-lab-admin-para-gestionar-iam-en-aws)).
 
 Los informes de `escaneo-1/` y `escaneo-2/` contienen ARNs e IDs de tu cuenta: no los subas a un repositorio público.
 
@@ -557,7 +557,7 @@ Los informes de `escaneo-1/` y `escaneo-2/` contienen ARNs e IDs de tu cuenta: n
 | Síntoma | Causa | Solución |
 | --- | --- | --- |
 | `UnicodeEncodeError: 'charmap' codec can't encode character` en Windows | La consola usa cp1252 y el banner de Prowler tiene caracteres Unicode | `$env:PYTHONUTF8 = "1"` (o `--no-banner`) |
-| `AccessDenied ... is not authorized to perform: iam:CreateRole` (o `iam:AttachRolePolicy`, `iam:DeleteRole`) | Ejecutaste los comandos del rol de auditoría con el perfil `lab` (PowerUserAccess), que no gestiona IAM | Repite esos comandos con `--profile lab-admin` (paso 2 y Limpieza); si da `No access`, asigna antes `AdministratorAccess` ([Lab 00](../fundamentos/preparar-entorno.md#paso-11-perfil-lab-admin-para-gestionar-iam-en-aws)) |
+| `AccessDenied ... is not authorized to perform: iam:CreateRole` (o `iam:AttachRolePolicy`, `iam:DeleteRole`) | Ejecutaste los comandos del rol de auditoría con el perfil `lab` (PowerUserAccess), que no gestiona IAM | Repite esos comandos con `--profile lab-admin` (paso 2 y Limpieza); si da `No access`, asigna antes `AdministratorAccess` ([Lab 00, parte 2](../fundamentos/preparar-cuentas-cloud.md#paso-4-perfil-lab-admin-para-gestionar-iam-en-aws)) |
 | `AccessDenied` al asumir el rol | Tu perfil no tiene `sts:AssumeRole` o el ARN es incorrecto | Revisa `ROLE_ARN` y los permisos del perfil `lab` |
 | Muchos checks con `AccessDenied` en el informe | Falta `prowler-additions-policy.json` o una SCP lo bloquea | Adjunta la política adicional; revisa las SCP de la organización |
 | `pipx install prowler` falla por versión de Python | Prowler admite Python 3.10 a 3.13 | `pipx install --python 3.12 prowler==5.46.0` o usa Docker |
@@ -640,7 +640,7 @@ Para el método general de diagnóstico, ver [Troubleshooting](../../devops/oper
 
 **Labs**
 
-- [Lab 00: Preparar el entorno de laboratorio](../fundamentos/preparar-entorno.md)
+- [Lab 00 (parte 2): Cuentas cloud, presupuestos e identidades](../fundamentos/preparar-cuentas-cloud.md)
 - [Lab 09: Terraform en AWS con remote state en S3](../devops/terraform-aws-backend-remoto.md)
 - [Lab 13: Desplegar en AWS desde GitHub Actions con OIDC](oidc-github-aws.md)
 - Lab anterior: [Lab 15: DAST con OWASP ZAP sobre OWASP Juice Shop](dast-zap-juice-shop.md)

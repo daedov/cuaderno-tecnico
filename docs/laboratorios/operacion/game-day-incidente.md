@@ -12,7 +12,7 @@ tags:
 
 | Nivel | Duración | Costo | Requisitos |
 | --- | --- | --- | --- |
-| Intermedio | ~2–3 h (mejor en grupo de 2–4 personas) | Gratis (todo en local) | [Lab 11](../devops/observabilidad-prometheus-grafana.md) (su stack, creado y funcionando), Docker con Compose v2, ~3 GB de RAM libres, [Lab 03](../fundamentos/python-analizar-logs.md) opcional |
+| Intermedio | ~2–3 h (mejor en grupo de 2–4 personas) | Gratis (todo en local) | Lab 11 ([parte 1](../devops/observabilidad-prometheus-grafana.md) y [parte 2](../devops/observabilidad-logs-grafana.md): su stack, creado y funcionando), Docker con Compose v2, ~3 GB de RAM libres, [Lab 03](../fundamentos/python-analizar-logs.md) opcional |
 
 !!! info "Qué vas a aprender"
     - Planificar un **game day** (día de simulacro): objetivo, hipótesis, alcance, condición de parada y roles.
@@ -28,7 +28,7 @@ tags:
 
 ## Antes de empezar
 
-- El **stack del [Lab 11](../devops/observabilidad-prometheus-grafana.md)**: la carpeta `lab11/` con todos sus archivos (pasos 1 a 5). No hace falta que esté levantado: lo arrancarás en el paso 3. Este lab no construye otro stack; solo le añade un volumen de prueba.
+- El **stack del Lab 11** ([parte 1](../devops/observabilidad-prometheus-grafana.md) y [parte 2](../devops/observabilidad-logs-grafana.md)): la carpeta `lab11/` con todos sus archivos y el `compose.yaml` completo de la parte 2. No hace falta que esté levantado: lo arrancarás en el paso 3. Este lab no construye otro stack; solo le añade un volumen de prueba.
 - Docker Desktop o Docker Engine con **Compose v2** (`docker compose version`), del [Lab 00](../fundamentos/preparar-entorno.md). Los puertos son los del Lab 11 (8000, 9090, 9093, 3100, 12345 y 3000, solo en `127.0.0.1`).
 - **Teoría recomendada** (el lab la practica, no la repite):
     - [Operación y fiabilidad (SRE)](../../devops/operacion/operacion-sre.md#incident-management-gestion-de-incidentes): severidades, roles y ciclo de vida del incidente.
@@ -90,7 +90,7 @@ Reparte los roles. El modelo sigue el de [Comunicación durante incidentes](../.
 
 ### Paso 2: Prepara el stack del Lab 11 para el game day
 
-Partimos del stack del Lab 11 tal cual: la app del [paso 1](../devops/observabilidad-prometheus-grafana.md#paso-1-la-app-instrumentada), las reglas y Alertmanager del [paso 2](../devops/observabilidad-prometheus-grafana.md#paso-2-prometheus-reglas-del-slo-y-alertmanager), Loki y Alloy del [paso 3](../devops/observabilidad-prometheus-grafana.md#paso-3-logs-con-grafana-alloy-y-loki), Grafana del [paso 4](../devops/observabilidad-prometheus-grafana.md#paso-4-grafana-provisionado-por-archivo) y el `compose.yaml` del [paso 5](../devops/observabilidad-prometheus-grafana.md#paso-5-docker-compose-y-arranque). Los fallos usan sus [interruptores de fallo](../devops/observabilidad-prometheus-grafana.md#interruptores-de-fallo-los-reutiliza-el-lab-21): `TASA_ERRORES`, `LATENCIA_MS` y `DIR_DATOS`.
+Partimos del stack del Lab 11 tal cual: la app del [paso 1 de la parte 1](../devops/observabilidad-prometheus-grafana.md#paso-1-la-app-instrumentada), las reglas y Alertmanager del [paso 2 de la parte 1](../devops/observabilidad-prometheus-grafana.md#paso-2-prometheus-reglas-del-slo-y-alertmanager), Loki y Alloy del [paso 1 de la parte 2](../devops/observabilidad-logs-grafana.md#paso-1-logs-con-grafana-alloy-y-loki), Grafana del [paso 2 de la parte 2](../devops/observabilidad-logs-grafana.md#paso-2-grafana-provisionado-por-archivo) y el `compose.yaml` completo del [paso 3 de la parte 2](../devops/observabilidad-logs-grafana.md#paso-3-ampliar-el-compose-y-arrancar). Los fallos usan sus [interruptores de fallo](../devops/observabilidad-prometheus-grafana.md#interruptores-de-fallo-los-reutiliza-el-lab-21): `TASA_ERRORES`, `LATENCIA_MS` y `DIR_DATOS`.
 
 Lo único que el Lab 11 no trae es un **disco que se pueda llenar**. Con `DIR_DATOS` definido, la app escribe una línea de auditoría por cada pedido en `DIR_DATOS/pedidos.log`; si no puede escribir, el pedido responde `500`. Comprueba que tu `app/app.py` tiene la función `auditar()` y la variable `DIR_DATOS` (si hiciste el Lab 11 antes de que existieran, copia de nuevo el `app.py` del Lab 11).
 
@@ -458,7 +458,7 @@ Desde la carpeta `lab11/`, borra contenedores, red y volúmenes (incluido el vol
     docker volume ls --filter name=lab11
     ```
 
-La última orden no debe listar ningún volumen (ni `lab11_datos` ni los de Prometheus y Grafana). Si no vas a repetir los labs, sigue la [limpieza del Lab 11](../devops/observabilidad-prometheus-grafana.md#limpieza) para borrar la imagen `lab11-app:1.0` y las imágenes descargadas. Si exportaste variables en PowerShell, cierra la ventana o usa `Remove-Item Env:LATENCIA_MS, Env:TASA_ERRORES`.
+La última orden no debe listar ningún volumen (ni `lab11_datos` ni los de Prometheus y Grafana). Si no vas a repetir los labs, sigue la [limpieza del Lab 11](../devops/observabilidad-logs-grafana.md#limpieza) para borrar la imagen `lab11-app:1.0` y las imágenes descargadas. Si exportaste variables en PowerShell, cierra la ventana o usa `Remove-Item Env:LATENCIA_MS, Env:TASA_ERRORES`.
 
 ## Problemas comunes
 
@@ -469,7 +469,7 @@ La última orden no debe listar ningún volumen (ni `lab11_datos` ni los de Prom
 | AppCaida nunca pasa a *Firing* | Miraste antes del minuto del `for`, o la app sigue corriendo | Espera; comprueba `docker compose ps -a app` |
 | TasaErrores5xxAlta no salta con el volumen lleno | No hay tráfico (el servicio `carga` está parado) o aún no pasaron los 2 minutos del `for` | `docker compose ps carga` y `docker compose start carga` |
 | Las variables del fallo 3 no se aplican | Se ejecutó `docker compose restart` (no relee la configuración) | Usa `docker compose up -d app`, que recrea el contenedor con el entorno nuevo |
-| Puertos ocupados, target DOWN o paneles sin datos | Problemas del stack base | Ver los [problemas comunes del Lab 11](../devops/observabilidad-prometheus-grafana.md#problemas-comunes) |
+| Puertos ocupados, target DOWN o paneles sin datos | Problemas del stack base | Ver los problemas comunes del Lab 11 ([parte 1](../devops/observabilidad-prometheus-grafana.md#problemas-comunes) y [parte 2](../devops/observabilidad-logs-grafana.md#problemas-comunes)) |
 | `python3: command not found` en los comandos de verificación (Windows) | En Windows el comando es `py` o `python` | Sustituye `python3` por `py`, o abre la URL en el navegador |
 
 Más casos en [Troubleshooting: contenedores](../../devops/operacion/troubleshooting.md#contenedores).
@@ -552,4 +552,4 @@ Más casos en [Troubleshooting: contenedores](../../devops/operacion/troubleshoo
 - **Recursos**
     - [Anatomía de otros archivos: Prometheus, reglas de alerta y Alertmanager](../../recursos/anatomia/otros-archivos.md)
 
-Lab anterior: [Lab 11: Observabilidad con Prometheus y Grafana](../devops/observabilidad-prometheus-grafana.md) (este lab reutiliza su stack) · También recomendado: [Lab 03: Script en Python para analizar logs](../fundamentos/python-analizar-logs.md) · En orden numérico, viene después del [Lab 20: Google Cloud: desplegar un contenedor en Cloud Run](../cloud/gcp-cloud-run.md)
+Lab anterior: [Lab 11 (parte 2): Logs con Loki y dashboards en Grafana](../devops/observabilidad-logs-grafana.md) (este lab reutiliza el stack de las dos partes del Lab 11) · También recomendado: [Lab 03: Script en Python para analizar logs](../fundamentos/python-analizar-logs.md) · En orden numérico, viene después del [Lab 20: Google Cloud: desplegar un contenedor en Cloud Run](../cloud/gcp-cloud-run.md)

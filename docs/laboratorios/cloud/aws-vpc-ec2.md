@@ -24,7 +24,7 @@ tags:
     - Expresar exactamente lo mismo como **Infrastructure as Code** (infraestructura como código) con Terraform y el provider AWS v6.
 
 !!! warning "Costos y seguridad"
-    Haz este lab en una **cuenta de pruebas** con **alerta de presupuesto** activa ([Lab 00](../fundamentos/preparar-entorno.md)), nunca en producción. Precios de referencia en `us-east-1` (revísalos en las páginas de precios oficiales antes de empezar):
+    Haz este lab en una **cuenta de pruebas** con **alerta de presupuesto** activa ([Lab 00, parte 2](../fundamentos/preparar-cuentas-cloud.md)), nunca en producción. Precios de referencia en `us-east-1` (revísalos en las páginas de precios oficiales antes de empezar):
 
     | Recurso | Qué cobra | Capa gratuita | Cómo evitar el cargo |
     | --- | --- | --- | --- |
@@ -38,7 +38,7 @@ tags:
 
 ## Antes de empezar
 
-- **AWS CLI v2** con los dos perfiles del [Lab 00](../fundamentos/preparar-entorno.md#paso-11-perfil-lab-admin-para-gestionar-iam-en-aws), aplicando **least privilege** (mínimo privilegio) paso a paso:
+- **AWS CLI v2** con los dos perfiles del [Lab 00, parte 2](../fundamentos/preparar-cuentas-cloud.md#paso-4-perfil-lab-admin-para-gestionar-iam-en-aws), aplicando **least privilege** (mínimo privilegio) paso a paso:
 
     | Perfil | Pasos | Por qué |
     | --- | --- | --- |
@@ -48,7 +48,7 @@ tags:
     Antes del paso 7, vuelve a asignar `AdministratorAccess` a tu usuario en IAM Identity Center; quítalo al terminar la Limpieza. Nunca uses las credenciales de root.
 - **Session Manager plugin** para la AWS CLI si quieres conectarte desde tu terminal ([instalación](https://docs.aws.amazon.com/systems-manager/latest/userguide/session-manager-working-with-install-plugin.html)). Si no lo instalas, usa el botón **Connect** de la consola.
 - **Terraform 1.10 o superior** (`terraform version`).
-- Labs previos: [Lab 00](../fundamentos/preparar-entorno.md) (cuenta y presupuesto) y [Lab 02](../fundamentos/subnetting-plan-ips.md) (plan de IPs).
+- Labs previos: [Lab 00, parte 2](../fundamentos/preparar-cuentas-cloud.md) (cuenta y presupuesto) y [Lab 02](../fundamentos/subnetting-plan-ips.md) (plan de IPs).
 - Teoría recomendada: [Redes en la nube](../../cloud/redes-y-datos/redes.md), [Máquinas virtuales](../../cloud/computo/maquinas-virtuales.md), [Direccionamiento IP](../../networking/basico/direccionamiento-ip.md) y [Routing y NAT](../../networking/intermedio/routing-nat.md).
 
 !!! tip "Windows: usa Git Bash o AWS CloudShell"
@@ -603,7 +603,7 @@ aws ec2 describe-volumes --filters Name=status,Values=available --query 'Volumes
 aws resourcegroupstaggingapi get-resources --tag-filters Key=lab,Values=lab17 --query 'ResourceTagMappingList[].ResourceARN'
 ```
 
-Comprueba también que no queda el rol (`aws iam get-role --profile lab-admin --role-name lab17-ec2-ssm` debe dar `NoSuchEntity`) y, al terminar, quita la asignación de `AdministratorAccess` en IAM Identity Center y vuelve al perfil del día a día (`export AWS_PROFILE=lab`); `aws sts get-caller-identity --profile lab-admin` debe fallar con `No access` ([Lab 00, Paso 11](../fundamentos/preparar-entorno.md#paso-11-perfil-lab-admin-para-gestionar-iam-en-aws)).
+Comprueba también que no queda el rol (`aws iam get-role --profile lab-admin --role-name lab17-ec2-ssm` debe dar `NoSuchEntity`) y, al terminar, quita la asignación de `AdministratorAccess` en IAM Identity Center y vuelve al perfil del día a día (`export AWS_PROFILE=lab`); `aws sts get-caller-identity --profile lab-admin` debe fallar con `No access` ([Lab 00, parte 2, Paso 4](../fundamentos/preparar-cuentas-cloud.md#paso-4-perfil-lab-admin-para-gestionar-iam-en-aws)).
 
 `get-resources` puede seguir mostrando recursos ya borrados durante un rato. Al día siguiente revisa **Billing and Cost Management → Bills** (o Cost Explorer filtrando por el tag `lab`) y confirma que no hay cargos de EC2, VPC ni NAT Gateway en curso.
 
@@ -612,7 +612,7 @@ Comprueba también que no queda el rol (`aws iam get-role --profile lab-admin --
 | Síntoma | Causa probable | Solución |
 | --- | --- | --- |
 | La instancia no aparece en `describe-instance-information` | Falta el instance profile, los endpoints aún no están `available`, o el SG del endpoint no acepta 443 desde la instancia | Revisa el rol, el estado de los endpoints y la regla de entrada de `lab17-sg-endpoints`; reinicia la instancia |
-| `AccessDenied ... is not authorized to perform: iam:CreateRole` (paso 7) o `... iam:PassRole` al lanzar la instancia (paso 8 o `terraform apply`) | Sigues con el perfil `lab` (PowerUserAccess) en los pasos 7–8 o en Terraform; `lab` no gestiona IAM ni puede entregar un rol a la EC2 | `export AWS_PROFILE=lab-admin` al empezar el paso 7 (y en Terraform, la variable `aws_profile`); si da `No access`, asigna antes `AdministratorAccess` ([Lab 00](../fundamentos/preparar-entorno.md#paso-11-perfil-lab-admin-para-gestionar-iam-en-aws)) |
+| `AccessDenied ... is not authorized to perform: iam:CreateRole` (paso 7) o `... iam:PassRole` al lanzar la instancia (paso 8 o `terraform apply`) | Sigues con el perfil `lab` (PowerUserAccess) en los pasos 7–8 o en Terraform; `lab` no gestiona IAM ni puede entregar un rol a la EC2 | `export AWS_PROFILE=lab-admin` al empezar el paso 7 (y en Terraform, la variable `aws_profile`); si da `No access`, asigna antes `AdministratorAccess` ([Lab 00, parte 2](../fundamentos/preparar-cuentas-cloud.md#paso-4-perfil-lab-admin-para-gestionar-iam-en-aws)) |
 | `ForbiddenException ... No access` en el paso 9 o 11 | Sigues con `AWS_PROFILE=lab-admin` y ya quitaste la asignación de `AdministratorAccess` (o caducó la sesión de 1 h) | `export AWS_PROFILE=lab`: desde el paso 9 no necesitas `lab-admin` |
 | `TargetNotConnected` al iniciar sesión | El agente no llega a `ssmmessages` | Comprueba que el endpoint `ssmmessages` existe con private DNS y que la VPC tiene DNS hostnames activado |
 | `SessionManagerPlugin is not found` | Falta el plugin local | Instálalo o usa **Connect** desde la consola |

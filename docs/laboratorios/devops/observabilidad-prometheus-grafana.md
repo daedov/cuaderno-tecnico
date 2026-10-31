@@ -5,30 +5,28 @@ tags:
   - contenedores
 ---
 
-# Lab 11: Observabilidad con Prometheus y Grafana
+# Lab 11 (parte 1): Métricas, SLO y alertas con Prometheus
 
-> Levanta con Docker Compose una app instrumentada, Prometheus, Alertmanager, node-exporter, Loki, Grafana Alloy y Grafana con todo provisionado por archivo; mide un SLO, inyecta errores y latencia y mira cómo salta la alerta.
+> Levanta con Docker Compose una app instrumentada, Prometheus, Alertmanager y node-exporter; mide un SLO con recording rules, pruébalo con `promtool`, inyecta errores y latencia y mira cómo salta la alerta. En la [parte 2](observabilidad-logs-grafana.md) le añades logs (Loki y Grafana Alloy) y dashboards en Grafana.
 
 | Nivel | Duración | Costo | Requisitos |
 | --- | --- | --- | --- |
-| Intermedio | ~90 min | Gratis | Lab 00, Lab 05, Docker con Compose v2, ~3 GB de RAM libres, Python 3.12+ (opcional) |
+| Intermedio | ~50 min | Gratis | Lab 00, Lab 05, Docker con Compose v2, ~2 GB de RAM libres, Python 3.12+ (opcional) |
 
 !!! info "Qué vas a aprender"
     - Instrumentar una app en Python con `prometheus-client` (un **counter** y un **histogram**) y exponer `/metrics`.
     - Configurar el **scrape** de Prometheus y consultar tasa de errores y latencia p95 con **PromQL**.
     - Definir un SLO simple con **recording rules** y **alerting rules**, probarlas con `promtool` y enviarlas a **Alertmanager**.
-    - Provisionar en Grafana **datasources** y un **dashboard** desde archivos (nada de clics).
-    - Centralizar los logs de los contenedores en **Loki** con **Grafana Alloy** y cruzarlos con las métricas.
     - Inyectar fallos controlados con variables de entorno (la base del [Lab 21](../operacion/game-day-incidente.md)).
 
 ## Antes de empezar
 
-- **Docker** con **Compose v2** (`docker compose version`) del [Lab 00](../fundamentos/preparar-entorno.md). Puertos libres en `127.0.0.1`: 8000, 9090, 9093, 3100, 12345 y 3000.
+- **Docker** con **Compose v2** (`docker compose version`) del [Lab 00](../fundamentos/preparar-entorno.md). Puertos libres en `127.0.0.1`: 8000, 9090 y 9093 (la parte 2 usará además 3100, 12345 y 3000).
 - Opcional: **Python 3.12+** para probar la app sin Docker en el paso 1.
 - Haber hecho el [Lab 05](docker-multistage-compose.md) (Dockerfile y Compose).
-- Teoría: [Observabilidad](../../devops/operacion/observabilidad.md), [Cómo leer logs](../../devops/operacion/leer-logs.md) y [Niveles de servicio](../../negocio/niveles-de-servicio.md).
+- Teoría: [Observabilidad](../../devops/operacion/observabilidad.md) (sobre todo [Prometheus](../../devops/operacion/observabilidad.md#prometheus) y [SLI, SLO, SLA y error budget](../../devops/operacion/observabilidad.md#sli-slo-sla-y-error-budget)) y [Niveles de servicio](../../negocio/niveles-de-servicio.md).
 
-Imágenes usadas (versiones vigentes al escribir el lab; revisa si hay más nuevas):
+Imágenes usadas en esta parte (versiones vigentes al escribir el lab; revisa si hay más nuevas). Las de Loki, Alloy y Grafana están en la [parte 2](observabilidad-logs-grafana.md#antes-de-empezar).
 
 | Componente | Imagen |
 | --- | --- |
@@ -36,12 +34,6 @@ Imágenes usadas (versiones vigentes al escribir el lab; revisa si hay más nuev
 | Prometheus | `prom/prometheus:v3.15.1` |
 | Alertmanager | `prom/alertmanager:v0.34.1` |
 | node-exporter | `prom/node-exporter:v1.12.1` |
-| Loki | `grafana/loki:3.7.9` |
-| Grafana Alloy | `grafana/alloy:v1.21.2` |
-| Grafana | `grafana/grafana:13.2.4` |
-
-!!! warning "Promtail ya no se usa"
-    Muchos tutoriales usan **Promtail** para enviar logs a Loki. Promtail llegó a su **fin de vida (EOL) el 2 de marzo de 2026**: no recibe más actualizaciones. Su sustituto es **Grafana Alloy**, que además recoge métricas y trazas (OpenTelemetry). Alloy incluye un comando para convertir configuraciones de Promtail.
 
 ## Arquitectura
 
@@ -51,13 +43,9 @@ flowchart LR
     P[Prometheus :9090<br/>reglas y alertas] -->|scrape| A
     P -->|scrape| N[node-exporter :9100]
     P -->|alertas| AM[Alertmanager :9093]
-    AL[Grafana Alloy :12345] -->|lee logs vía docker.sock| A
-    AL -->|push| L[Loki :3100]
-    G[Grafana :3000] -->|PromQL| P
-    G -->|LogQL| L
 ```
 
-Las **métricas** llegan por *pull* (Prometheus las pide); los **logs** por *push* (Alloy los lee de Docker y los envía a Loki). Grafana consulta ambos para que veas en un mismo dashboard el síntoma (más errores) y la causa (los mensajes de error).
+Las **métricas** llegan por *pull*: Prometheus las pide cada 15 segundos a `/metrics`. Prometheus evalúa las reglas del SLO y, cuando una alerta se dispara, se la envía a Alertmanager. Los logs JSON de la app se quedan por ahora en la salida del contenedor (`docker compose logs app`); en la [parte 2](observabilidad-logs-grafana.md#arquitectura) Alloy los envía a Loki y Grafana muestra métricas y logs juntos.
 
 ## Paso a paso
 
@@ -68,7 +56,7 @@ Crea la carpeta `lab11/app/`. La app es un servidor HTTP mínimo con la librerí
 - `http_requests_total{method, path, status}` (**counter**, contador que solo sube): sirve para tasas y porcentajes de error.
 - `http_request_duration_seconds{path}` (**histogram**, histograma por *buckets*): sirve para percentiles de latencia.
 
-Las labels tienen pocos valores posibles (`path` es la ruta, no la URL completa) para no disparar la **cardinalidad**.
+Las labels tienen pocos valores posibles (`path` es la ruta, no la URL completa) para no disparar la **cardinalidad** (ver [Prometheus](../../devops/operacion/observabilidad.md#prometheus)).
 
 ```python title="app/app.py"
 """App de ejemplo para el Lab 11 (y el Lab 21): expone métricas Prometheus
@@ -411,145 +399,9 @@ receivers:
   - name: lab
 ```
 
-### Paso 3: Logs con Grafana Alloy y Loki
+### Paso 3: Docker Compose y arranque
 
-Alloy se configura con su propio lenguaje (componentes conectados entre sí). Este archivo descubre **solo** los contenedores del proyecto `lab11`, convierte sus metadatos en labels y envía los logs a Loki:
-
-```alloy title="alloy/config.alloy"
-// Descubre solo los contenedores de este proyecto de Compose
-discovery.docker "contenedores" {
-  host = "unix:///var/run/docker.sock"
-
-  filter {
-    name   = "label"
-    values = ["com.docker.compose.project=lab11"]
-  }
-}
-
-// Convierte metadatos de Docker en labels de Loki
-discovery.relabel "contenedores" {
-  targets = []
-
-  rule {
-    source_labels = ["__meta_docker_container_label_com_docker_compose_service"]
-    target_label  = "service"
-  }
-
-  rule {
-    source_labels = ["__meta_docker_container_name"]
-    regex         = "/(.*)"
-    target_label  = "container"
-  }
-}
-
-// Lee los logs de esos contenedores
-loki.source.docker "contenedores" {
-  host          = "unix:///var/run/docker.sock"
-  targets       = discovery.docker.contenedores.targets
-  labels        = {"lab" = "11"}
-  relabel_rules = discovery.relabel.contenedores.rules
-  forward_to    = [loki.write.local.receiver]
-}
-
-// Los envía a Loki
-loki.write "local" {
-  endpoint {
-    url = "http://loki:3100/loki/api/v1/push"
-  }
-}
-```
-
-Loki indexa solo las labels (`service`, `container`, `lab`); el texto del log se guarda comprimido y se filtra al consultar. Por eso las labels deben ser pocas y estables, igual que en Prometheus.
-
-!!! warning "El socket de Docker es un acceso muy privilegiado"
-    Montar `/var/run/docker.sock` en un contenedor le da control casi total sobre Docker del host. Aquí se monta en solo lectura y en local; en producción se usan agentes con permisos acotados o la integración nativa del orquestador (por ejemplo, Alloy como DaemonSet en Kubernetes leyendo `/var/log/pods`).
-
-### Paso 4: Grafana provisionado por archivo
-
-Todo lo que configures con clics se pierde al recrear el contenedor y no se puede revisar en un pull request. Grafana lee al arrancar los archivos de `/etc/grafana/provisioning/`.
-
-```yaml title="grafana/provisioning/datasources/datasources.yml"
-apiVersion: 1
-
-datasources:
-  - name: Prometheus
-    type: prometheus
-    uid: prometheus
-    access: proxy
-    url: http://prometheus:9090
-    isDefault: true
-
-  - name: Loki
-    type: loki
-    uid: loki
-    access: proxy
-    url: http://loki:3100
-```
-
-```yaml title="grafana/provisioning/dashboards/dashboards.yml"
-apiVersion: 1
-
-providers:
-  - name: lab11
-    folder: Lab 11
-    type: file
-    allowUiUpdates: true
-    options:
-      path: /etc/grafana/dashboards
-```
-
-El dashboard es un JSON con cinco paneles: peticiones por status, tasa de errores (con umbrales del SLO), latencia p95, CPU del host y los logs de error de Loki. Los `uid` de los datasources coinciden con los del archivo anterior.
-
-```json title="grafana/dashboards/app.json"
-{
-  "uid": "lab11-app",
-  "title": "Lab 11 - App de pedidos",
-  "schemaVersion": 41,
-  "time": { "from": "now-30m", "to": "now" },
-  "refresh": "10s",
-  "panels": [
-    {
-      "id": 1, "type": "timeseries", "title": "Peticiones por segundo por status",
-      "gridPos": { "x": 0, "y": 0, "w": 12, "h": 8 },
-      "datasource": { "type": "prometheus", "uid": "prometheus" },
-      "targets": [{ "refId": "A", "expr": "sum by (status) (rate(http_requests_total{job=\"app\"}[1m]))", "legendFormat": "{{status}}" }]
-    },
-    {
-      "id": 2, "type": "stat", "title": "Tasa de errores /api/pedidos (SLO: < 1 %)",
-      "gridPos": { "x": 12, "y": 0, "w": 6, "h": 8 },
-      "datasource": { "type": "prometheus", "uid": "prometheus" },
-      "fieldConfig": { "defaults": { "unit": "percentunit", "thresholds": { "mode": "absolute", "steps": [
-        { "color": "green", "value": null }, { "color": "orange", "value": 0.01 }, { "color": "red", "value": 0.05 } ] } } },
-      "targets": [{ "refId": "A", "expr": "app:tasa_errores:ratio_rate5m" }]
-    },
-    {
-      "id": 3, "type": "stat", "title": "Latencia p95 /api/pedidos",
-      "gridPos": { "x": 18, "y": 0, "w": 6, "h": 8 },
-      "datasource": { "type": "prometheus", "uid": "prometheus" },
-      "fieldConfig": { "defaults": { "unit": "s", "thresholds": { "mode": "absolute", "steps": [
-        { "color": "green", "value": null }, { "color": "red", "value": 0.3 } ] } } },
-      "targets": [{ "refId": "A", "expr": "app:latencia_p95:5m" }]
-    },
-    {
-      "id": 4, "type": "timeseries", "title": "CPU del host (node-exporter)",
-      "gridPos": { "x": 0, "y": 8, "w": 12, "h": 8 },
-      "datasource": { "type": "prometheus", "uid": "prometheus" },
-      "fieldConfig": { "defaults": { "unit": "percentunit" } },
-      "targets": [{ "refId": "A", "expr": "1 - avg(rate(node_cpu_seconds_total{mode=\"idle\"}[1m]))", "legendFormat": "CPU en uso" }]
-    },
-    {
-      "id": 5, "type": "logs", "title": "Errores de la app (Loki)",
-      "gridPos": { "x": 12, "y": 8, "w": 12, "h": 8 },
-      "datasource": { "type": "loki", "uid": "loki" },
-      "targets": [{ "refId": "A", "expr": "{service=\"app\"} | json | nivel=\"ERROR\"" }]
-    }
-  ]
-}
-```
-
-### Paso 5: Docker Compose y arranque
-
-Todos los puertos se publican solo en `127.0.0.1`: nada queda expuesto a tu red. `name: lab11` fija el nombre del proyecto, que es el que filtra Alloy.
+Todos los puertos se publican solo en `127.0.0.1`: nada queda expuesto a tu red. `name: lab11` fija el nombre del proyecto, que es el que filtrará Alloy en la parte 2.
 
 ```yaml title="compose.yaml"
 name: lab11
@@ -596,57 +448,20 @@ services:
   node-exporter:
     image: prom/node-exporter:v1.12.1
 
-  loki:
-    image: grafana/loki:3.7.9
-    ports:
-      - "127.0.0.1:3100:3100"
-
-  alloy:
-    image: grafana/alloy:v1.21.2
-    command:
-      - run
-      - --server.http.listen-addr=0.0.0.0:12345
-      - --storage.path=/var/lib/alloy/data
-      - /etc/alloy/config.alloy
-    volumes:
-      - ./alloy/config.alloy:/etc/alloy/config.alloy:ro
-      - /var/run/docker.sock:/var/run/docker.sock:ro
-    ports:
-      - "127.0.0.1:12345:12345"
-
-  grafana:
-    image: grafana/grafana:13.2.4
-    environment:
-      GF_SECURITY_ADMIN_USER: admin
-      GF_SECURITY_ADMIN_PASSWORD: ${GRAFANA_ADMIN_PASSWORD:-cambia-esto-lab11}
-    volumes:
-      - ./grafana/provisioning:/etc/grafana/provisioning:ro
-      - ./grafana/dashboards:/etc/grafana/dashboards:ro
-      - grafana-data:/var/lib/grafana
-    ports:
-      - "127.0.0.1:3000:3000"
-
 volumes:
   prometheus-data:
-  grafana-data:
 ```
 
-- `node-exporter` sin montajes del host mide la máquina donde corre Docker: en Docker Desktop es su VM de Linux, no tu Windows o macOS. En un servidor Linux real se ejecuta en el host (o con `--path.rootfs` y el `/` del host montado).
-- Loki usa la configuración por defecto de la imagen (un solo proceso, almacenamiento en disco local): suficiente para aprender, no para producción.
+`node-exporter` sin montajes del host mide la máquina donde corre Docker: en Docker Desktop es su VM de Linux, no tu Windows o macOS. En un servidor Linux real se ejecuta en el host (o con `--path.rootfs` y el `/` del host montado).
 
-La estructura final:
+La estructura al terminar esta parte:
 
 ```text
 lab11/
 ├── compose.yaml
 ├── app/            app.py, carga.py, requirements.txt, Dockerfile
 ├── prometheus/     prometheus.yml, alertas.yml, alertas_test.yml
-├── alertmanager/   alertmanager.yml
-├── alloy/          config.alloy
-└── grafana/
-    ├── provisioning/datasources/datasources.yml
-    ├── provisioning/dashboards/dashboards.yml
-    └── dashboards/app.json
+└── alertmanager/   alertmanager.yml
 ```
 
 ```bash
@@ -658,16 +473,13 @@ docker compose ps
 ```text
 NAME                    SERVICE         STATUS         PORTS
 lab11-alertmanager-1    alertmanager    Up 20 seconds  127.0.0.1:9093->9093/tcp
-lab11-alloy-1           alloy           Up 20 seconds  127.0.0.1:12345->12345/tcp
 lab11-app-1             app             Up 20 seconds  127.0.0.1:8000->8000/tcp
 lab11-carga-1           carga           Up 20 seconds
-lab11-grafana-1         grafana         Up 20 seconds  127.0.0.1:3000->3000/tcp
-lab11-loki-1            loki            Up 20 seconds  127.0.0.1:3100->3100/tcp
 lab11-node-exporter-1   node-exporter   Up 20 seconds  9100/tcp
 lab11-prometheus-1      prometheus      Up 20 seconds  127.0.0.1:9090->9090/tcp
 ```
 
-### Paso 6: Explorar métricas y logs
+### Paso 4: Explorar las métricas en Prometheus
 
 1. **Prometheus** ([http://localhost:9090](http://localhost:9090)) → *Status → Target health*: los tres jobs (`prometheus`, `app`, `node`) deben estar **UP**. Si uno está DOWN, el mensaje de error dice por qué.
 2. En la pestaña *Query*, prueba:
@@ -681,17 +493,16 @@ lab11-prometheus-1      prometheus      Up 20 seconds  127.0.0.1:9090->9090/tcp
     app:latencia_p95:5m
     ```
 
-3. **Grafana** ([http://localhost:3000](http://localhost:3000), usuario `admin`, contraseña `cambia-esto-lab11` o la de `GRAFANA_ADMIN_PASSWORD`) → *Dashboards → Lab 11 → Lab 11 - App de pedidos*. Con `TASA_ERRORES=0` la tasa de errores debe estar en 0 % (verde).
-4. En *Explore*, elige **Loki** y consulta en **LogQL**:
+    Con `TASA_ERRORES=0` la tasa de errores debe ser `0`. Las recording rules usan ventanas de 5 minutos: si recién arrancaste, espera unos minutos para que tengan datos.
 
-    ```logql
-    {service="app"} | json | status >= 500
-    {service="carga"}
+3. En *Alerts*, las tres reglas (`TasaErrores5xxAlta`, `LatenciaP95Alta` y `AppCaida`) deben aparecer como **Inactive**.
+4. Los logs JSON de la app todavía no están centralizados, pero ya puedes leerlos:
+
+    ```bash
+    docker compose logs --tail 5 app
     ```
 
-5. **Alloy** ([http://localhost:12345](http://localhost:12345)) muestra el grafo de componentes; todos deben aparecer como *healthy*.
-
-### Paso 7: Inyectar errores y ver la alerta
+### Paso 5: Inyectar errores y ver la alerta
 
 Activa un 30 % de errores **en caliente**:
 
@@ -713,7 +524,7 @@ Activa un 30 % de errores **en caliente**:
 
 Observa la secuencia (unos 3 minutos):
 
-1. En el dashboard, la tasa de errores sube por encima del 5 % y se pone en rojo; el panel de logs se llena de `fallo simulado al consultar la base de datos`.
+1. En Prometheus, la consulta `app:tasa_errores:ratio_rate5m` (pestaña *Graph*) sube por encima de `0.05`; `docker compose logs app` muestra líneas con `fallo simulado al consultar la base de datos`.
 2. En Prometheus → *Alerts*, `TasaErrores5xxAlta` pasa a **Pending** y, tras 2 minutos, a **Firing**.
 3. En Alertmanager ([http://localhost:9093](http://localhost:9093)) aparece la alerta con `severity="page"` y su descripción.
 
@@ -733,7 +544,7 @@ Ahora prueba la **latencia** reiniciando la app con una variable de entorno (la 
     $env:LATENCIA_MS = "400"; docker compose up -d app
     ```
 
-Compose recrea solo el contenedor `app`. El p95 sube por encima de 0,3 s y `LatenciaP95Alta` se dispara tras 5 minutos. Mientras la app se reinicia, quizá veas `AppCaida` en *Pending*: un reinicio corto no llega al minuto del `for`.
+Compose recrea solo el contenedor `app`. El p95 (`app:latencia_p95:5m`) sube por encima de 0,3 s y `LatenciaP95Alta` se dispara tras 5 minutos. Mientras la app se reinicia, quizá veas `AppCaida` en *Pending*: un reinicio corto no llega al minuto del `for`.
 
 Vuelve a la normalidad:
 
@@ -758,7 +569,6 @@ docker compose exec prometheus promtool check config /etc/prometheus/prometheus.
 docker compose exec prometheus promtool test rules /etc/prometheus/alertas_test.yml
 docker compose exec alertmanager amtool check-config /etc/alertmanager/alertmanager.yml
 curl -s 'http://localhost:9090/api/v1/query?query=up'
-curl -s -G http://localhost:3100/loki/api/v1/labels
 ```
 
 | Comprobación | Resultado esperado |
@@ -767,56 +577,52 @@ curl -s -G http://localhost:3100/loki/api/v1/labels
 | `promtool test rules` | `SUCCESS`: la alerta salta con 30 % de errores |
 | `amtool check-config` | `SUCCESS` y `receivers: 1` |
 | `up` en la API de Prometheus | Tres series con valor `"1"` (`prometheus`, `app`, `node`) |
-| Labels en Loki | Incluye `service`, `container` y `lab` |
-| Dashboard *Lab 11 - App de pedidos* | Cinco paneles con datos, sin errores de datasource |
 | Tras inyectar `tasa_errores=0.3` | `TasaErrores5xxAlta` en *Firing* en Prometheus y visible en Alertmanager |
+| Tras `LATENCIA_MS=400` | `LatenciaP95Alta` en *Firing* tras 5 minutos |
 
 ## Retos extra
 
 1. **Alerta por burn rate con dos ventanas**: reescribe `TasaErrores5xxAlta` como en la [nota de observabilidad](../../devops/operacion/observabilidad.md#alertas-accionables) (14,4 × error budget en 1 h y en 5 min). Pista: crea recording rules para `[1h]` y `[5m]`.
 2. **Un receptor real**: envía las alertas a un webhook (por ejemplo, un canal de Slack o Microsoft Teams de pruebas) con `webhook_configs` o `slack_configs` en Alertmanager. No pongas la URL del webhook en Git: es un secreto.
-3. **Trazas con OpenTelemetry**: añade `opentelemetry-distro` y `opentelemetry-exporter-otlp` a la app, ejecútala con `opentelemetry-instrument python app.py` y envía las trazas por OTLP a Grafana Tempo o a Jaeger (añade el servicio y su datasource). Pista: `OTEL_SERVICE_NAME` y `OTEL_EXPORTER_OTLP_ENDPOINT`; ver [Trazas distribuidas con OpenTelemetry](../../devops/operacion/observabilidad.md#trazas-distribuidas-con-opentelemetry).
-4. **Alertas en Grafana**: crea la misma regla del SLO como alerta de Grafana y provisiónala por archivo en `provisioning/alerting/`. Compara las dos opciones.
 
 ## Limpieza
+
+Si vas a seguir con la [parte 2](observabilidad-logs-grafana.md), **no borres nada**: la parte 2 amplía este mismo `compose.yaml`. Puedes dejar el stack levantado o pararlo con `docker compose stop` y retomarlo con `docker compose start`.
+
+Si terminas aquí:
 
 ```bash
 docker compose down -v
 docker image rm lab11-app:1.0
 ```
 
-`-v` borra también los volúmenes `prometheus-data` y `grafana-data`. Comprueba que no queda nada del proyecto:
+`-v` borra también el volumen `prometheus-data`. Comprueba que no queda nada del proyecto:
 
 ```bash
 docker compose ls --all
 docker volume ls --filter name=lab11
 ```
 
-Ninguna de las dos órdenes debe listar `lab11`. Si no vas a repetir el lab, borra también las imágenes descargadas (`docker image ls` y `docker image rm <imagen>:<tag>`), que ocupan varios cientos de MB.
+Ninguna de las dos órdenes debe listar `lab11`. Si no vas a repetir el lab, borra también las imágenes descargadas (`docker image ls` y `docker image rm <imagen>:<tag>`).
 
 ## Problemas comunes
 
 | Síntoma | Causa | Solución |
 | --- | --- | --- |
 | Target `app` en **DOWN** con `connection refused` | La app no arrancó o falló | `docker compose logs app` |
-| `bind: address already in use` al arrancar | Otro proceso usa 3000, 9090 u otro puerto | Libera el puerto o cambia el de la izquierda en `ports` |
-| Panel con `No data` | Aún no hay 5 minutos de datos, o la consulta no coincide con las labels | Espera unos minutos y prueba la consulta en Prometheus |
-| `Datasource prometheus was not found` en el dashboard | El `uid` del dashboard no coincide con el del datasource | Usa el mismo `uid` en ambos archivos |
-| Loki sin logs de la app | Alloy no ve el socket de Docker o el nombre del proyecto no es `lab11` | Revisa la UI de Alloy (:12345) y `name: lab11` en `compose.yaml` |
-| `permission denied` sobre `/var/run/docker.sock` en Alloy | En Linux, el usuario del contenedor no puede leer el socket | Añade `user: root` al servicio `alloy` solo en este laboratorio |
+| `bind: address already in use` al arrancar | Otro proceso usa 8000, 9090 u otro puerto | Libera el puerto o cambia el de la izquierda en `ports` |
+| `Empty query result` en las recording rules | Aún no hay 5 minutos de datos, o la consulta no coincide con las labels | Espera unos minutos y prueba primero `http_requests_total{job="app"}` |
 | La alerta no pasa a *Firing* | No se cumplió el `for`, o la tasa de errores no supera el 5 % | Mira el estado *Pending* y el valor de `app:tasa_errores:ratio_rate5m` |
 | Cambios en `alertas.yml` sin efecto | Prometheus no recargó la configuración | `curl -X POST http://localhost:9090/-/reload` (activado con `--web.enable-lifecycle`) |
 
-Para un método general, ver [Troubleshooting](../../devops/operacion/troubleshooting.md#contenedores).
+Para un método general, ver [Troubleshooting](../../devops/operacion/troubleshooting.md#contenedores). Los problemas de Loki, Alloy y Grafana están en la [parte 2](observabilidad-logs-grafana.md#problemas-comunes).
 
 ## Información complementaria
 
-- **Tres pilares**: métricas para saber **que** algo pasa, logs para saber **qué** pasó, trazas para saber **dónde**. Ver [Observabilidad](../../devops/operacion/observabilidad.md#los-tres-pilares).
 - **SLI, SLO y error budget**: el SLI es la medida, el SLO el objetivo, el error budget lo que te puedes permitir fallar. Ver [SLI, SLO, SLA y error budget](../../devops/operacion/observabilidad.md#sli-slo-sla-y-error-budget) y, desde negocio, [Niveles de servicio](../../negocio/niveles-de-servicio.md#sli-slo-y-sla-quien-los-usa).
 - **Alertar sobre síntomas**: la alerta del lab mide lo que sufre el usuario (errores, latencia), no la CPU. Ver [Alertas accionables](../../devops/operacion/observabilidad.md#alertas-accionables).
-- **Logs estructurados**: una línea JSON por petición, con `request_id`, permite filtrar en Loki por campos. Ver [Logs JSON estructurados](../../recursos/formatos-de-logs.md#logs-json-estructurados).
-- **En la nube**: los equivalentes gestionados son Amazon Managed Service for Prometheus y Amazon Managed Grafana, Azure Monitor y Azure Managed Grafana, Google Cloud Managed Service for Prometheus. Ver [Observabilidad nativa](../../cloud/operacion-y-gobierno/observabilidad-nativa.md).
-- **En el trabajo real**: el stack suele ir en Kubernetes con el chart `kube-prometheus-stack`, los dashboards y reglas viven en Git y se revisan como código, y cada alerta enlaza a su runbook. Ver [Runbooks y playbooks](../../devops/operacion/runbooks-playbooks.md).
+- **Qué medir**: el counter y el histogram de la app cubren la tasa, los errores y la duración del método RED. Ver [Métodos RED, USE y golden signals](../../devops/operacion/observabilidad.md#metodos-red-use-y-golden-signals).
+- **En la nube**: los equivalentes gestionados son Amazon Managed Service for Prometheus, Azure Monitor (con su servicio gestionado para Prometheus) y Google Cloud Managed Service for Prometheus. Ver [Observabilidad nativa](../../cloud/operacion-y-gobierno/observabilidad-nativa.md).
 
 ## Documentación oficial
 
@@ -825,10 +631,6 @@ Para un método general, ver [Troubleshooting](../../devops/operacion/troublesho
 - [Alertmanager: configuración](https://prometheus.io/docs/alerting/latest/configuration/)
 - [Cliente oficial de Prometheus para Python](https://prometheus.github.io/client_python/)
 - [node_exporter](https://github.com/prometheus/node_exporter)
-- [Grafana: provisioning](https://grafana.com/docs/grafana/latest/administration/provisioning/)
-- [Grafana Loki](https://grafana.com/docs/loki/latest/) y [LogQL](https://grafana.com/docs/loki/latest/query/)
-- [Grafana Alloy](https://grafana.com/docs/alloy/latest/), [`loki.source.docker`](https://grafana.com/docs/alloy/latest/reference/components/loki/loki.source.docker/) y [migrar desde Promtail](https://grafana.com/docs/alloy/latest/set-up/migrate/from-promtail/)
-- [OpenTelemetry para Python](https://opentelemetry.io/docs/languages/python/)
 
 ## Preguntas para verificar el aprendizaje
 
@@ -844,16 +646,10 @@ Para un método general, ver [Troubleshooting](../../devops/operacion/troublesho
 ??? question "4. Con un SLO del 99 %, ¿qué significa una tasa de errores del 5 %?"
     Que se está consumiendo el error budget (1 %) 5 veces más rápido de lo sostenible (burn rate 5). Si siguiera así, el presupuesto del mes se agotaría en unos 6 días.
 
-??? question "5. ¿Por qué provisionar datasources y dashboards por archivo en vez de crearlos con clics?"
-    Porque así son reproducibles (sobreviven a recrear el contenedor), se versionan en Git, se revisan en pull requests y se despliegan igual en todos los entornos.
-
-??? question "6. ¿Qué agente usarías hoy para enviar logs a Loki y por qué no Promtail?"
-    Grafana Alloy. Promtail llegó a su fin de vida el 2 de marzo de 2026 y ya no recibe actualizaciones; Alloy lo sustituye y además recoge métricas y trazas.
-
-??? question "7. Prometheus marca el target `app` como DOWN pero `curl localhost:8000/health` funciona desde tu máquina. ¿Qué revisas?"
+??? question "5. Prometheus marca el target `app` como DOWN pero `curl localhost:8000/health` funciona desde tu máquina. ¿Qué revisas?"
     Que Prometheus la alcance desde **su** red: el target es `app:8000` dentro de la red de Compose, no `localhost`. Revisa el nombre del servicio, que ambos estén en el mismo proyecto y el mensaje de error en *Target health*.
 
-??? question "8. ¿Por qué la alerta no desaparece en el mismo momento en que quitas la inyección de errores?"
+??? question "6. ¿Por qué la alerta no desaparece en el mismo momento en que quitas la inyección de errores?"
     Porque la regla usa una ventana de 5 minutos (`rate(...[5m])`): hasta que los errores salen de la ventana, la tasa sigue por encima del umbral. Es un compromiso entre reaccionar rápido y no generar ruido.
 
 ## Notas relacionadas
@@ -865,16 +661,11 @@ Para un método general, ver [Troubleshooting](../../devops/operacion/troublesho
 **DevOps**
 
 - [Observabilidad: Prometheus, Grafana, OpenTelemetry y SLOs](../../devops/operacion/observabilidad.md)
-- [Cómo leer logs](../../devops/operacion/leer-logs.md)
 - [Operación y fiabilidad (SRE)](../../devops/operacion/operacion-sre.md)
 - [Runbooks y playbooks](../../devops/operacion/runbooks-playbooks.md)
 - [Troubleshooting](../../devops/operacion/troubleshooting.md)
 - [Docker: imágenes, multi-stage builds y Compose](../../devops/contenedores/docker.md)
 - [Guía de comandos de Docker](../../recursos/comandos/docker.md)
-
-**DevSecOps**
-
-- [Detección y respuesta](../../devsecops/gobierno-y-respuesta/deteccion-respuesta.md)
 
 **Python**
 
@@ -888,5 +679,5 @@ Para un método general, ver [Troubleshooting](../../devops/operacion/troublesho
 **Labs**
 
 - Lab anterior: [Lab 10: Configurar servidores con Ansible](ansible-configuracion.md)
-- Lab siguiente: [Lab 12: Escaneos de seguridad en el pipeline](../devsecops/escaneos-en-pipeline.md)
-- Para practicar un incidente con este stack: [Lab 21: Game day](../operacion/game-day-incidente.md)
+- Siguiente: [Lab 11 (parte 2): Logs con Loki y dashboards en Grafana](observabilidad-logs-grafana.md)
+- Para practicar un incidente con este stack (necesita las dos partes): [Lab 21: Game day](../operacion/game-day-incidente.md)

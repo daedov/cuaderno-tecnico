@@ -189,7 +189,7 @@ En Git, cada versión publicada se marca con un **tag anotado** (`git tag -a v1.
 | Cloud (el control) | Quién puede cambiar la infraestructura: los cambios llegan por PR y no desde la consola | [Gobernanza](../../cloud/operacion-y-gobierno/gobernanza.md) |
 | DevOps (la automatización) | El PR y el tag como disparadores del pipeline; Git como fuente de verdad en GitOps | [Integración continua](../ci-cd/integracion-continua.md), [Despliegue continuo](../ci-cd/despliegue-continuo.md), [Infrastructure as Code](../iac/infraestructura-como-codigo.md) |
 | DevSecOps (la verificación) | Branch protection, commits firmados, aprobaciones obligatorias; pre-commit hooks y detección de secretos antes del commit | [Seguridad del pipeline](../../devsecops/identidades-y-pipeline/seguridad-pipeline.md), [Seguridad del código](../../devsecops/codigo-y-dependencias/seguridad-codigo.md) |
-| Laboratorios (la práctica) | Practicar esto paso a paso | [Lab 00: Preparar el entorno de laboratorio](../../laboratorios/fundamentos/preparar-entorno.md), [Lab 04: Flujo Git con ramas, pull requests y code review](../../laboratorios/devops/git-flujo-pull-request.md), [Lab 07: Pipeline de CI con GitHub Actions](../../laboratorios/devops/github-actions-ci.md) |
+| Laboratorios (la práctica) | Practicar esto paso a paso | [Lab 00 (parte 1): Herramientas locales](../../laboratorios/fundamentos/preparar-entorno.md), [Lab 04: Flujo Git con ramas, pull requests y code review](../../laboratorios/devops/git-flujo-pull-request.md), [Lab 07: Pipeline de CI con GitHub Actions](../../laboratorios/devops/github-actions-ci.md) |
 
 ## Referencias
 

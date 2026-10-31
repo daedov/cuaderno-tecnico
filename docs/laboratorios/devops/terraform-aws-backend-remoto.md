@@ -23,14 +23,14 @@ tags:
     - Borrar todo, incluidas las versiones antiguas y los **delete markers** (marcadores de borrado) de un bucket versionado.
 
 !!! warning "Costos y seguridad"
-    - Usa **una cuenta de pruebas**, nunca una cuenta con cargas de producción. Configura antes la alerta de presupuesto del [Lab 00](../fundamentos/preparar-entorno.md).
+    - Usa **una cuenta de pruebas**, nunca una cuenta con cargas de producción. Configura antes la alerta de presupuesto del [Lab 00, parte 2](../fundamentos/preparar-cuentas-cloud.md#paso-2-configura-las-alertas-de-presupuesto).
     - Lo que crea el lab (dos buckets S3 casi vacíos y un parámetro estándar de SSM Parameter Store) cuesta centavos o nada, pero **los buckets versionados guardan cada versión**: si no haces la limpieza completa, seguirán ahí.
     - Inicia sesión con credenciales temporales (IAM Identity Center / `aws sso login` o un rol). No uses access keys de larga duración ni las pongas en el código.
 
 ## Antes de empezar
 
 - **Terraform >= 1.10** (`use_lockfile` no existe en versiones anteriores). La configuración de este lab se validó con Terraform 1.17.0 y el provider `hashicorp/aws` 6.70.0.
-- **AWS CLI v2** con un perfil que apunte a tu cuenta de pruebas. En este lab se usa el perfil `lab` (PowerUserAccess) del [Lab 00](../fundamentos/preparar-entorno.md#paso-10-crea-la-identidad-de-laboratorio-y-conecta-las-clis); cambia el nombre si el tuyo es otro. No necesitas `lab-admin`: el lab solo crea buckets S3 y un parámetro de SSM, sin roles ni políticas de IAM.
+- **AWS CLI v2** con un perfil que apunte a tu cuenta de pruebas. En este lab se usa el perfil `lab` (PowerUserAccess) del [Lab 00, parte 2](../fundamentos/preparar-cuentas-cloud.md#paso-3-crea-la-identidad-de-laboratorio-y-conecta-las-clis); cambia el nombre si el tuyo es otro. No necesitas `lab-admin`: el lab solo crea buckets S3 y un parámetro de SSM, sin roles ni políticas de IAM.
 - Haber hecho el [Lab 08](terraform-local-workspaces.md): aquí se da por sabido el ciclo `init`/`plan`/`apply` y qué es el state.
 - Teoría: [Remote state](../../devops/iac/terraform-basico.md#remote-state-estado-remoto), [Qué subir a Git](../../devops/iac/terraform-basico.md#que-subir-a-git) y [Drift detection](../../devsecops/infraestructura-y-contenedores/seguridad-iac.md#drift-detection).
 
@@ -552,7 +552,7 @@ La API de etiquetas puede tardar unos minutos en dejar de listar recursos borrad
 
 | Síntoma | Causa | Solución |
 | --- | --- | --- |
-| `AccessDenied ... is not authorized to perform: iam:...` | Añadiste al código recursos de IAM (por ejemplo, un rol en un reto), que el perfil `lab` (PowerUserAccess) no puede gestionar | Para esos recursos usa el perfil `lab-admin` ([Lab 00, Paso 11](../fundamentos/preparar-entorno.md#paso-11-perfil-lab-admin-para-gestionar-iam-en-aws)) y retira la asignación al terminar |
+| `AccessDenied ... is not authorized to perform: iam:...` | Añadiste al código recursos de IAM (por ejemplo, un rol en un reto), que el perfil `lab` (PowerUserAccess) no puede gestionar | Para esos recursos usa el perfil `lab-admin` ([Lab 00, parte 2, Paso 4](../fundamentos/preparar-cuentas-cloud.md#paso-4-perfil-lab-admin-para-gestionar-iam-en-aws)) y retira la asignación al terminar |
 | `No valid credential sources found` | No hay perfil activo o la sesión SSO expiró | `aws sso login --profile lab` y exporta `AWS_PROFILE` |
 | `BucketAlreadyExists` en el bootstrap | Los nombres de bucket son globales | Cambia el prefijo o confirma que el nombre incluye tu ID de cuenta |
 | `Backend configuration changed` | Cambiaste `backend.tf` o `backend.hcl` sin reinicializar | `terraform init -reconfigure` (sin migrar) o `-migrate-state` (copiando) |

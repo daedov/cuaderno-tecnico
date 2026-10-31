@@ -13,7 +13,7 @@ tags:
 
 | Nivel | Duración | Costo | Requisitos |
 | --- | --- | --- | --- |
-| Intermedio | ~60 min | Capa gratuita (~0 USD si limpias) | [Lab 00](../fundamentos/preparar-entorno.md), [Lab 04](../devops/git-flujo-pull-request.md) y [Lab 07](../devops/github-actions-ci.md); AWS CLI v2, cuenta AWS de pruebas, repo `lab-devops-app`. Opcional: [Lab 09](../devops/terraform-aws-backend-remoto.md) para la variante con Terraform |
+| Intermedio | ~60 min | Capa gratuita (~0 USD si limpias) | Lab 00 ([parte 1](../fundamentos/preparar-entorno.md) y [parte 2](../fundamentos/preparar-cuentas-cloud.md)), [Lab 04](../devops/git-flujo-pull-request.md) y [Lab 07](../devops/github-actions-ci.md); AWS CLI v2, cuenta AWS de pruebas, repo `lab-devops-app`. Opcional: [Lab 09](../devops/terraform-aws-backend-remoto.md) para la variante con Terraform |
 
 !!! info "Qué vas a aprender"
     - Crear el **IAM OIDC identity provider** de GitHub en AWS y entender qué valida.
@@ -23,15 +23,15 @@ tags:
     - Comprobar que una rama no autorizada recibe `Not authorized to perform sts:AssumeRoleWithWebIdentity` y rastrear el acceso en CloudTrail.
 
 !!! warning "Costos y seguridad"
-    - Usa **la cuenta AWS de pruebas** del [Lab 00](../fundamentos/preparar-entorno.md), nunca la de producción, con la alerta de presupuesto activa.
+    - Usa **la cuenta AWS de pruebas** del [Lab 00, parte 2](../fundamentos/preparar-cuentas-cloud.md), nunca la de producción, con la alerta de presupuesto activa.
     - IAM, STS y el proveedor OIDC no cuestan; S3 cobra por almacenamiento y peticiones, pero un archivo de texto queda dentro de la capa gratuita o en centavos. Aun así, haz la **Limpieza** al terminar.
     - La configuración inicial (proveedor, rol y bucket) la haces desde tu equipo con una identidad que puede gestionar IAM. El pipeline, en cambio, no tendrá **ninguna llave guardada**.
 
 ## Antes de empezar
 
-- **AWS CLI v2** y el perfil **`lab-admin`** del [Lab 00 (Paso 11)](../fundamentos/preparar-entorno.md#paso-11-perfil-lab-admin-para-gestionar-iam-en-aws). Casi todo este lab es IAM (proveedor OIDC, rol y su política), y el perfil `lab` (PowerUserAccess) excluye a propósito la gestión de IAM: con él, `create-role` falla con `AccessDenied`. Por eso este lab se hace entero con `lab-admin`:
+- **AWS CLI v2** y el perfil **`lab-admin`** del [Lab 00, parte 2 (Paso 4)](../fundamentos/preparar-cuentas-cloud.md#paso-4-perfil-lab-admin-para-gestionar-iam-en-aws). Casi todo este lab es IAM (proveedor OIDC, rol y su política), y el perfil `lab` (PowerUserAccess) excluye a propósito la gestión de IAM: con él, `create-role` falla con `AccessDenied`. Por eso este lab se hace entero con `lab-admin`:
     1. En IAM Identity Center, vuelve a asignar `AdministratorAccess` (sesión de 1 hora) a `lab-tu-nombre` en tu cuenta de pruebas.
-    2. Comprueba con `aws sts get-caller-identity --profile lab-admin` que el ARN contiene `AWSReservedSSO_AdministratorAccess`. Si aún no creaste el permission set o el perfil, sigue el Paso 11 del Lab 00.
+    2. Comprueba con `aws sts get-caller-identity --profile lab-admin` que el ARN contiene `AWSReservedSSO_AdministratorAccess`. Si aún no creaste el permission set o el perfil, sigue el Paso 4 de la parte 2 del Lab 00.
     3. Al terminar, quita esa asignación (ver **Limpieza**). Es el mismo principio que aplicas al pipeline: permisos amplios solo cuando hacen falta y durante poco tiempo.
 - El repositorio **`lab-devops-app`** del [Lab 04](../devops/git-flujo-pull-request.md), con el ruleset `proteger-main` (nada llega a `main` sin PR) y el pipeline `ci.yml` del [Lab 07](../devops/github-actions-ci.md). Conserva también el environment `produccion` del Lab 07: lo usarás en el reto 1.
 - [GitHub CLI](https://cli.github.com/) (`gh`) es opcional, solo para leer o personalizar el claim `sub`.
@@ -581,7 +581,7 @@ En GitHub, borra las variables `AWS_ROLE_ARN`, `AWS_REGION`, `AWS_ACCOUNT_ID` y 
 
 | Síntoma | Causa | Solución |
 | --- | --- | --- |
-| `AccessDenied ... is not authorized to perform: iam:CreateOpenIDConnectProvider` (o `iam:CreateRole`) | Usas el perfil `lab` con PowerUserAccess, que no gestiona IAM | Usa el perfil `lab-admin` (ver **Antes de empezar** y el [Paso 11 del Lab 00](../fundamentos/preparar-entorno.md#paso-11-perfil-lab-admin-para-gestionar-iam-en-aws)) |
+| `AccessDenied ... is not authorized to perform: iam:CreateOpenIDConnectProvider` (o `iam:CreateRole`) | Usas el perfil `lab` con PowerUserAccess, que no gestiona IAM | Usa el perfil `lab-admin` (ver **Antes de empezar** y el [Paso 4 del Lab 00, parte 2](../fundamentos/preparar-cuentas-cloud.md#paso-4-perfil-lab-admin-para-gestionar-iam-en-aws)) |
 | `ForbiddenException ... GetRoleCredentials operation: No access` con `--profile lab-admin` | La asignación de `AdministratorAccess` no está activa | Asígnala de nuevo en IAM Identity Center (**Antes de empezar**, punto 1) |
 | `GH013: Repository rule violations` al hacer push | Intentaste subir el workflow directo a `main` | Es el ruleset del Lab 04: rama + PR |
 | No aparece el botón **Run workflow** | El workflow con `workflow_dispatch` aún no está en `main` | Intégralo primero con un PR |
@@ -668,6 +668,6 @@ Para el método general de diagnóstico, ver [Troubleshooting](../../devops/oper
 
 **Labs**
 
-- Lab anterior: [Lab 12: Escaneos de seguridad en el pipeline](escaneos-en-pipeline.md)
+- Lab anterior: [Lab 12 (parte 2): Workflow de seguridad, gating y riesgo aceptado](escaneos-en-pipeline-workflow.md)
 - Lab siguiente: [Lab 14: Endurecer un clúster: Pod Security, NetworkPolicy y Kyverno](seguridad-kubernetes.md)
 - Base de este lab: [Lab 07: Pipeline de CI con GitHub Actions](../devops/github-actions-ci.md) y [Lab 09: Terraform en AWS con remote state en S3](../devops/terraform-aws-backend-remoto.md)

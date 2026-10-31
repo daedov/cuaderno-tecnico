@@ -23,7 +23,7 @@ tags:
     - Leer los logs de la función en **CloudWatch Logs** y relacionarlos con cada petición.
 
 !!! warning "Costos y seguridad"
-    Usa una **cuenta de pruebas** con **alerta de presupuesto** ([Lab 00](../fundamentos/preparar-entorno.md)). Todo es de pago por uso: si no hay peticiones, el costo es prácticamente cero. Precios de referencia en `us-east-1`; revísalos antes de empezar:
+    Usa una **cuenta de pruebas** con **alerta de presupuesto** ([Lab 00, parte 2](../fundamentos/preparar-cuentas-cloud.md)). Todo es de pago por uso: si no hay peticiones, el costo es prácticamente cero. Precios de referencia en `us-east-1`; revísalos antes de empezar:
 
     | Servicio | Qué cobra | Capa gratuita aplicable | Cómo evitar el cargo |
     | --- | --- | --- | --- |
@@ -37,9 +37,9 @@ tags:
 ## Antes de empezar
 
 - **Python 3.12** para probar la función en local (`py -3.12 --version` en Windows, `python3.12 --version` en Linux/macOS). No hace falta instalar `boto3`.
-- **Terraform 1.10 o superior** y **AWS CLI v2** con el perfil **`lab-admin`** del [Lab 00 (Paso 11)](../fundamentos/preparar-entorno.md#paso-11-perfil-lab-admin-para-gestionar-iam-en-aws) para la parte en AWS (pasos 5 a 8, Verificación y Limpieza). Terraform crea el rol de ejecución de la función y su política, y al crear la Lambda le entrega ese rol (`iam:PassRole`): el perfil `lab` (PowerUserAccess) no puede hacer ninguna de las dos cosas. Asigna `AdministratorAccess` a tu usuario en IAM Identity Center antes del paso 5 y quítalo al terminar la Limpieza. Los pasos 1 a 4 son locales y no usan AWS.
+- **Terraform 1.10 o superior** y **AWS CLI v2** con el perfil **`lab-admin`** del [Lab 00, parte 2 (Paso 4)](../fundamentos/preparar-cuentas-cloud.md#paso-4-perfil-lab-admin-para-gestionar-iam-en-aws) para la parte en AWS (pasos 5 a 8, Verificación y Limpieza). Terraform crea el rol de ejecución de la función y su política, y al crear la Lambda le entrega ese rol (`iam:PassRole`): el perfil `lab` (PowerUserAccess) no puede hacer ninguna de las dos cosas. Asigna `AdministratorAccess` a tu usuario en IAM Identity Center antes del paso 5 y quítalo al terminar la Limpieza. Los pasos 1 a 4 son locales y no usan AWS.
 - `curl` (en Windows usa `curl.exe`; `curl` a secas en PowerShell 5.1 es un alias de `Invoke-WebRequest`).
-- Labs previos: [Lab 00](../fundamentos/preparar-entorno.md), [Lab 03](../fundamentos/python-analizar-logs.md) (Python) y, recomendado, [Lab 08](../devops/terraform-local-workspaces.md) (Terraform sin nube).
+- Labs previos: Lab 00 ([parte 1](../fundamentos/preparar-entorno.md) y [parte 2](../fundamentos/preparar-cuentas-cloud.md)), [Lab 03](../fundamentos/python-analizar-logs.md) (Python) y, recomendado, [Lab 08](../devops/terraform-local-workspaces.md) (Terraform sin nube).
 - Teoría: [Serverless](../../cloud/computo/serverless.md), [Almacenamiento y datos](../../cloud/redes-y-datos/almacenamiento-datos.md) y la arquitectura [API serverless](../../cloud/arquitectura/arquitecturas-referencia.md#2-api-serverless).
 
 !!! tip "Git Bash"
@@ -569,7 +569,7 @@ aws iam get-role --role-name lab18-notas-exec
 aws resourcegroupstaggingapi get-resources --tag-filters Key=lab,Values=lab18 --query 'ResourceTagMappingList[].ResourceARN'
 ```
 
-Comprueba que `aws iam get-role` devuelve `NoSuchEntity` y, al terminar, quita la asignación de `AdministratorAccess` en IAM Identity Center y vuelve a `export AWS_PROFILE=lab`; `aws sts get-caller-identity --profile lab-admin` debe fallar con `No access` ([Lab 00, Paso 11](../fundamentos/preparar-entorno.md#paso-11-perfil-lab-admin-para-gestionar-iam-en-aws)).
+Comprueba que `aws iam get-role` devuelve `NoSuchEntity` y, al terminar, quita la asignación de `AdministratorAccess` en IAM Identity Center y vuelve a `export AWS_PROFILE=lab`; `aws sts get-caller-identity --profile lab-admin` debe fallar con `No access` ([Lab 00, parte 2, Paso 4](../fundamentos/preparar-cuentas-cloud.md#paso-4-perfil-lab-admin-para-gestionar-iam-en-aws)).
 
 El rol de la función no tiene `logs:CreateLogGroup`, así que Lambda no puede recrear el log group después del destroy; si aun así aparece, bórralo con `aws logs delete-log-group --log-group-name /aws/lambda/lab18-notas`. Al día siguiente revisa **Billing and Cost Management → Bills** y confirma que Lambda, API Gateway y DynamoDB están en 0 o dentro de la capa gratuita.
 
@@ -578,7 +578,7 @@ El rol de la función no tiene `logs:CreateLogGroup`, así que Lambda no puede r
 | Síntoma | Causa probable | Solución |
 | --- | --- | --- |
 | `{"message":"Internal Server Error"}` (mensaje de API Gateway, no de tu función) | Falta el `aws_lambda_permission` o su `source_arn` no coincide | Revisa `aws lambda get-policy`; el ARN debe ser `<execution_arn>/*/*` |
-| `terraform apply` falla con `AccessDenied ... is not authorized to perform: iam:CreateRole` (o `iam:PassRole` al crear la función) | El provider usa el perfil `lab` (PowerUserAccess), que no gestiona IAM | Usa `lab-admin` (valor por defecto de `aws_profile`; no lo sobrescribas con `-var aws_profile=lab`); si da `No access`, asigna antes `AdministratorAccess` ([Lab 00](../fundamentos/preparar-entorno.md#paso-11-perfil-lab-admin-para-gestionar-iam-en-aws)) |
+| `terraform apply` falla con `AccessDenied ... is not authorized to perform: iam:CreateRole` (o `iam:PassRole` al crear la función) | El provider usa el perfil `lab` (PowerUserAccess), que no gestiona IAM | Usa `lab-admin` (valor por defecto de `aws_profile`; no lo sobrescribas con `-var aws_profile=lab`); si da `No access`, asigna antes `AdministratorAccess` ([Lab 00, parte 2](../fundamentos/preparar-cuentas-cloud.md#paso-4-perfil-lab-admin-para-gestionar-iam-en-aws)) |
 | `{"message":"Not Found"}` | La ruta no existe en la API (por ejemplo `/nota` en vez de `/notas`) | Compara con `route_key` en Terraform |
 | `500 {"error": "Error interno"}` | Excepción en la función (permisos, nombre de tabla) | `aws logs tail` y busca el *traceback*; un `AccessDeniedException` indica que falta una acción en la política |
 | `KeyError: 'TABLE_NAME'` en el log | Variable de entorno no definida | Revisa el bloque `environment` de la función |

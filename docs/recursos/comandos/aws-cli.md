@@ -20,7 +20,8 @@ tags:
 | `aws sts get-caller-identity` | Ver identidad/cuenta actual autenticada |
 
 !!! example "Practica en el laboratorio"
-    - [Lab 00: Preparar el entorno de laboratorio](../../laboratorios/fundamentos/preparar-entorno.md)
+    - [Lab 00 (parte 1): Herramientas locales](../../laboratorios/fundamentos/preparar-entorno.md)
+    - [Lab 00 (parte 2): Cuentas cloud, presupuestos e identidades](../../laboratorios/fundamentos/preparar-cuentas-cloud.md)
     - [Lab 09: Terraform en AWS con remote state en S3](../../laboratorios/devops/terraform-aws-backend-remoto.md)
     - [Lab 13: Desplegar en AWS desde GitHub Actions con OIDC (sin llaves)](../../laboratorios/devsecops/oidc-github-aws.md)
 

@@ -27,7 +27,7 @@ tags:
     - **Nunca ejecutes este playbook contra tu propio equipo ni contra tu distribución de WSL**: cambia SSH, PAM, `login.defs` y permisos del sistema. Todo el lab ocurre dentro del contenedor `hard-lab22` o de una VM desechable.
     - El contenedor arranca systemd con acceso de escritura a `/sys/fs/cgroup` (sin `--privileged`). Es una práctica habitual para probar roles, pero no la uses para cargas reales.
     - No le des `--privileged` para "arreglar" los sysctl: el kernel del contenedor es el de Docker Desktop/WSL2 y lo cambiarías para todos.
-    - La variante con la EC2 del [Lab 17](../cloud/aws-vpc-ec2.md) usa una cuenta de pruebas con la alerta de presupuesto del [Lab 00](../fundamentos/preparar-entorno.md#paso-9-configura-las-alertas-de-presupuesto); bórrala al terminar.
+    - La variante con la EC2 del [Lab 17](../cloud/aws-vpc-ec2.md) usa una cuenta de pruebas con la alerta de presupuesto del [Lab 00, parte 2](../fundamentos/preparar-cuentas-cloud.md#paso-2-configura-las-alertas-de-presupuesto); bórrala al terminar.
 
 ## Antes de empezar
 

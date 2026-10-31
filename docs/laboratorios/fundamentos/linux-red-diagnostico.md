@@ -502,4 +502,4 @@ Metodología completa en [Troubleshooting de red](../../networking/avanzado/trou
 - **Recursos**
     - [Comandos de Linux](../../recursos/comandos/linux.md) · [Puertos](../../recursos/puertos.md)
 
-Lab anterior: [Lab 00: Preparar el entorno de laboratorio](preparar-entorno.md) · Lab siguiente: [Lab 02: Plan de direccionamiento IP para una VPC](subnetting-plan-ips.md)
+Lab anterior: [Lab 00 (parte 2): Cuentas cloud, presupuestos e identidades](preparar-cuentas-cloud.md) · Lab siguiente: [Lab 02: Plan de direccionamiento IP para una VPC](subnetting-plan-ips.md)

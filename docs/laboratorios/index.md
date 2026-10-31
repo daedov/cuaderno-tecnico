@@ -3,7 +3,7 @@
 Prácticas guiadas para aprender haciendo. Cada laboratorio tiene el paso a paso explicado, cómo verificar que funcionó, retos extra, limpieza, problemas comunes, información complementaria, documentación oficial y **preguntas para verificar el aprendizaje**. Cada uno enlaza a las notas del cuaderno donde está la teoría, y esas notas enlazan de vuelta al laboratorio.
 
 !!! warning "Antes de usar la nube"
-    Haz primero el [Lab 00](fundamentos/preparar-entorno.md): MFA en la cuenta principal, **alertas de presupuesto** y una cuenta de pruebas. Nunca hagas los laboratorios en una cuenta de producción, y ejecuta siempre la sección de **Limpieza** al terminar.
+    Haz primero el Lab 00 ([parte 1](fundamentos/preparar-entorno.md) y [parte 2](fundamentos/preparar-cuentas-cloud.md)): MFA en la cuenta principal, **alertas de presupuesto** y una cuenta de pruebas. Nunca hagas los laboratorios en una cuenta de producción, y ejecuta siempre la sección de **Limpieza** al terminar.
 
 ## Ruta sugerida
 
@@ -20,7 +20,8 @@ flowchart LR
 
 | Lab | Tema | Nivel | Costo |
 | --- | --- | --- | --- |
-| [00. Preparar el entorno](fundamentos/preparar-entorno.md) | Herramientas, cuentas de pruebas, MFA y presupuestos | Básico | Gratis |
+| [00. Herramientas locales (parte 1)](fundamentos/preparar-entorno.md) | WSL2, Git, Python y uv, Docker, kind, kubectl, Helm, Terraform, Ansible y las CLIs de nube | Básico | Gratis |
+| [00. Cuentas cloud, presupuestos e identidades (parte 2)](fundamentos/preparar-cuentas-cloud.md) | Cuentas de pruebas, MFA, presupuestos y perfiles `lab` / `lab-admin` | Básico | Gratis |
 | [01. Diagnóstico de red desde Linux](fundamentos/linux-red-diagnostico.md) | IP, rutas, DNS, puertos, HTTP/TLS, tcpdump | Básico | Gratis |
 | [02. Plan de direccionamiento IP](fundamentos/subnetting-plan-ips.md) | Subnetting de una VPC multi-AZ con Python | Básico | Gratis |
 | [03. Analizar logs con Python](fundamentos/python-analizar-logs.md) | Script CLI con tests sobre un access log | Básico | Gratis |
@@ -36,13 +37,15 @@ flowchart LR
 | [08. Terraform sin nube](devops/terraform-local-workspaces.md) | Providers locales, módulos, state, workspaces, tests | Básico | Gratis |
 | [09. Terraform en AWS con remote state](devops/terraform-aws-backend-remoto.md) | Backend S3 con locking, drift | Intermedio | ~0 USD |
 | [10. Ansible](devops/ansible-configuracion.md) | Inventario, playbooks, roles, idempotencia, Vault | Intermedio | Gratis |
-| [11. Prometheus y Grafana](devops/observabilidad-prometheus-grafana.md) | Métricas, dashboards, alertas sobre un SLO, logs | Intermedio | Gratis |
+| [11. Métricas, SLO y alertas (parte 1)](devops/observabilidad-prometheus-grafana.md) | App instrumentada, Prometheus, reglas del SLO y Alertmanager | Intermedio | Gratis |
+| [11. Logs y dashboards (parte 2)](devops/observabilidad-logs-grafana.md) | Loki, Grafana Alloy y Grafana provisionado | Intermedio | Gratis |
 
 ## DevSecOps
 
 | Lab | Tema | Nivel | Costo |
 | --- | --- | --- | --- |
-| [12. Escaneos en el pipeline](devsecops/escaneos-en-pipeline.md) | Secretos, SAST, SCA, imagen e IaC con gating | Intermedio | Gratis |
+| [12. Escaneos en local (parte 1)](devsecops/escaneos-en-pipeline.md) | Pre-commit de secretos, SAST, SCA, imagen e IaC | Intermedio | Gratis |
+| [12. Workflow de seguridad (parte 2)](devsecops/escaneos-en-pipeline-workflow.md) | Escaneos en GitHub Actions, code scanning, gating y riesgo aceptado | Intermedio | Gratis |
 | [13. OIDC de GitHub a AWS](devsecops/oidc-github-aws.md) | Desplegar sin llaves estáticas | Intermedio | ~0 USD |
 | [14. Endurecer Kubernetes](devsecops/seguridad-kubernetes.md) | RBAC, Pod Security, NetworkPolicy, Kyverno | Avanzado | Gratis |
 | [15. DAST con ZAP](devsecops/dast-zap-juice-shop.md) | Escaneo de OWASP Juice Shop en local | Intermedio | Gratis |

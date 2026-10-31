@@ -25,7 +25,7 @@ tags:
     - Leer los logs estructurados del servicio en **Cloud Logging**.
 
 !!! warning "Costos y seguridad"
-    Crea un **proyecto nuevo solo para este lab** en una cuenta con **budget** y alertas ([Lab 00](../fundamentos/preparar-entorno.md)); al final lo borras entero. Capa gratuita mensual (Free Tier, sin fecha de fin) verificada en la documentación de Google Cloud:
+    Crea un **proyecto nuevo solo para este lab** en una cuenta con **budget** y alertas ([Lab 00, parte 2](../fundamentos/preparar-cuentas-cloud.md)); al final lo borras entero. Capa gratuita mensual (Free Tier, sin fecha de fin) verificada en la documentación de Google Cloud:
 
     | Servicio | Qué cobra | Free Tier mensual | Cómo evitar el cargo |
     | --- | --- | --- | --- |
@@ -42,7 +42,7 @@ tags:
 - **gcloud CLI** actualizada (`gcloud version`; `gcloud components update` si la instalaste con el instalador). La opción más simple es **Cloud Shell** en la consola: trae gcloud, Docker y tu sesión iniciada.
 - Una **billing account** activa (`gcloud billing accounts list`).
 - **Docker** solo si construyes en local (con Docker Desktop en marcha). Si no, usa Cloud Build.
-- Labs previos: [Lab 00](../fundamentos/preparar-entorno.md) y [Lab 05](../devops/docker-multistage-compose.md) (imágenes pequeñas, sin root, con tag concreto).
+- Labs previos: Lab 00 ([parte 1](../fundamentos/preparar-entorno.md) y [parte 2](../fundamentos/preparar-cuentas-cloud.md)) y [Lab 05](../devops/docker-multistage-compose.md) (imágenes pequeñas, sin root, con tag concreto).
 - Teoría: [Contenedores gestionados](../../cloud/computo/contenedores-gestionados.md), [Serverless](../../cloud/computo/serverless.md) y [Despliegue continuo](../../devops/ci-cd/despliegue-continuo.md) (estrategia canary).
 
 ## Arquitectura

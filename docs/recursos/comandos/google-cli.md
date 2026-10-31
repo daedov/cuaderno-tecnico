@@ -176,5 +176,6 @@ Los comandos de `kubectl` están en [Kubernetes](kubectl.md).
 | `gcloud recommender recommendations list --project=<proyecto> --location=<zona> --recommender=google.compute.instance.MachineTypeRecommender` | Recomendaciones de rightsizing de VMs |
 
 !!! example "Practica en el laboratorio"
-    - [Lab 00: Preparar el entorno de laboratorio](../../laboratorios/fundamentos/preparar-entorno.md)
+    - [Lab 00 (parte 1): Herramientas locales](../../laboratorios/fundamentos/preparar-entorno.md)
+    - [Lab 00 (parte 2): Cuentas cloud, presupuestos e identidades](../../laboratorios/fundamentos/preparar-cuentas-cloud.md)
 

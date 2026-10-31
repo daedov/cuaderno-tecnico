@@ -395,7 +395,7 @@ Haz commit en una rama, abre un PR y espera el resultado: el job queda en **rojo
 1. Cambia la regla `10038` a `WARN` en `.zap/rules.tsv` y comprueba que el PR pasa a verde. Luego pon `10098` en `FAIL`. ¿Qué regla bloquearías en un proyecto real y por qué?
 2. Usa un **progress file** (`-p progreso.json`) para marcar `10098` como "en curso": aparecerá como `WARN-INPROG` en lugar de `WARN-NEW`. Pista: la estructura está en la documentación del baseline.
 3. Fija también el service container por **digest** (`bkimminich/juice-shop@sha256:...`). Pista: `docker buildx imagetools inspect bkimminich/juice-shop:v20.3.0`.
-4. Genera un informe **SARIF** con el Automation Framework y súbelo a code scanning con `github/codeql-action/upload-sarif`, como hiciste en el [Lab 12](escaneos-en-pipeline.md).
+4. Genera un informe **SARIF** con el Automation Framework y súbelo a code scanning con `github/codeql-action/upload-sarif`, como hiciste en el [Lab 12 (parte 2)](escaneos-en-pipeline-workflow.md).
 
 ## Limpieza
 

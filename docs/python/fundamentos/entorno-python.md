@@ -263,7 +263,7 @@ Escribe `info_entorno.py`, que muestre la versión de Python, la ruta del intér
 | DevOps (la automatización) | Instalar dependencias en el runner de CI y crear imágenes con Python | [Integración continua](../../devops/ci-cd/integracion-continua.md), [Docker](../../devops/contenedores/docker.md), [Linux, redes y scripting](../../devops/fundamentos/linux-redes-scripting.md) |
 | DevSecOps (la verificación) | Fijar versiones, lockfiles y auditar dependencias de PyPI | [Software supply chain](../../devsecops/codigo-y-dependencias/cadena-suministro.md) |
 | Python (la herramienta) | El lenguaje que vas a usar en este entorno | [Sintaxis y tipos](sintaxis-tipos.md) |
-| Laboratorios (la práctica) | Practicar esto paso a paso | [Lab 00: Preparar el entorno de laboratorio](../../laboratorios/fundamentos/preparar-entorno.md), [Lab 03: Script en Python para analizar logs](../../laboratorios/fundamentos/python-analizar-logs.md), [Lab 10: Configurar servidores con Ansible](../../laboratorios/devops/ansible-configuracion.md) |
+| Laboratorios (la práctica) | Practicar esto paso a paso | [Lab 00 (parte 1): Herramientas locales](../../laboratorios/fundamentos/preparar-entorno.md), [Lab 03: Script en Python para analizar logs](../../laboratorios/fundamentos/python-analizar-logs.md), [Lab 10: Configurar servidores con Ansible](../../laboratorios/devops/ansible-configuracion.md) |
 
 ## Referencias
 

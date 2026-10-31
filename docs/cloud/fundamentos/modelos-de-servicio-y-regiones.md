@@ -166,7 +166,7 @@ Parametrizar la región como variable permite reutilizar el mismo código en otr
 | Cloud (el control) | Quién es responsable de qué según el modelo; diseño multi-zona; regiones permitidas | [Shared Responsibility Model](responsabilidad-compartida.md), [Resiliencia](../operacion-y-gobierno/resiliencia.md), [Gobernanza](../operacion-y-gobierno/gobernanza.md), [Migración a la nube](../arquitectura/migracion-cloud.md) |
 | DevOps (la automatización) | Región y zonas como variables del código de infraestructura | [Infrastructure as Code](../../devops/iac/infraestructura-como-codigo.md), [Terraform](../../devops/iac/terraform-basico.md) |
 | DevSecOps (la verificación) | Verificar que los datos se quedan en las regiones permitidas (residencia de datos) | [Cumplimiento y gobierno](../../devsecops/gobierno-y-respuesta/cumplimiento.md), [Seguridad de IaC](../../devsecops/infraestructura-y-contenedores/seguridad-iac.md) |
-| Laboratorios (la práctica) | Practicar esto paso a paso | [Lab 00: Preparar el entorno de laboratorio](../../laboratorios/fundamentos/preparar-entorno.md), [Lab 02: Plan de direccionamiento IP para una VPC](../../laboratorios/fundamentos/subnetting-plan-ips.md), [Lab 17: AWS: VPC con subnets públicas y privadas y una EC2](../../laboratorios/cloud/aws-vpc-ec2.md) |
+| Laboratorios (la práctica) | Practicar esto paso a paso | [Lab 00 (parte 2): Cuentas cloud, presupuestos e identidades](../../laboratorios/fundamentos/preparar-cuentas-cloud.md), [Lab 02: Plan de direccionamiento IP para una VPC](../../laboratorios/fundamentos/subnetting-plan-ips.md), [Lab 17: AWS: VPC con subnets públicas y privadas y una EC2](../../laboratorios/cloud/aws-vpc-ec2.md) |
 
 ## Referencias
 

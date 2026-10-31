@@ -23,7 +23,7 @@ tags:
     - Desplegar lo mismo de forma declarativa con **Bicep**.
 
 !!! warning "Costos y seguridad"
-    Usa una **suscripción de pruebas** con un **budget** y alertas ([Lab 00](../fundamentos/preparar-entorno.md)), nunca producción. Precios de referencia (pay-as-you-go, `eastus2`, Linux); revísalos en la calculadora de Azure:
+    Usa una **suscripción de pruebas** con un **budget** y alertas ([Lab 00, parte 2](../fundamentos/preparar-cuentas-cloud.md)), nunca producción. Precios de referencia (pay-as-you-go, `eastus2`, Linux); revísalos en la calculadora de Azure:
 
     | Recurso | Qué cobra | Capa gratuita aplicable | Cómo evitar el cargo |
     | --- | --- | --- | --- |
@@ -41,7 +41,7 @@ tags:
 - **Azure CLI 2.62 o superior** (`az version`). La forma más simple es **Azure Cloud Shell** (Bash) en el portal: ya trae la CLI, Bicep y tu sesión iniciada. En local: `az login` y `az account set --subscription "<suscripción de pruebas>"`.
 - Una cuenta con rol **Owner** (o Contributor + User Access Administrator) en la suscripción de pruebas: el lab crea **role assignments**.
 - Un par de llaves SSH (el lab las genera si no existen).
-- Labs previos: [Lab 00](../fundamentos/preparar-entorno.md) y [Lab 02](../fundamentos/subnetting-plan-ips.md) (plan de IPs). Si hiciste el [Lab 17](aws-vpc-ec2.md), compara cada paso con su equivalente en AWS.
+- Labs previos: Lab 00 ([parte 1](../fundamentos/preparar-entorno.md) y [parte 2](../fundamentos/preparar-cuentas-cloud.md)) y [Lab 02](../fundamentos/subnetting-plan-ips.md) (plan de IPs). Si hiciste el [Lab 17](aws-vpc-ec2.md), compara cada paso con su equivalente en AWS.
 - Teoría: [Redes en la nube](../../cloud/redes-y-datos/redes.md), [Máquinas virtuales](../../cloud/computo/maquinas-virtuales.md) e [IAM: AWS, Azure y GCP](../../cloud/fundamentos/iam-comparativa.md).
 
 !!! tip "Git Bash en Windows"

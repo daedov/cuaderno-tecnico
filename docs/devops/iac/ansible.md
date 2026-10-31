@@ -227,7 +227,7 @@ Comandos frecuentes en la [guía de comandos de Ansible](../../recursos/comandos
 | Cloud (el control) | Las VMs que Ansible configura y el acceso a ellas | [Máquinas virtuales](../../cloud/computo/maquinas-virtuales.md) |
 | DevOps (la automatización) | Crear la infraestructura antes de configurarla y probar los roles | [Infrastructure as Code](infraestructura-como-codigo.md), [Terraform](terraform-basico.md), [Pruebas de infraestructura](pruebas-infraestructura.md) |
 | DevSecOps (la verificación) | Secretos fuera del código y hardening CIS automatizado | [Secretos e identidades](../../devsecops/identidades-y-pipeline/secretos-identidades.md), [Cumplimiento y gobierno](../../devsecops/gobierno-y-respuesta/cumplimiento.md) |
-| Laboratorios (la práctica) | Practicar esto paso a paso | [Lab 00: Preparar el entorno de laboratorio](../../laboratorios/fundamentos/preparar-entorno.md), [Lab 10: Configurar servidores con Ansible](../../laboratorios/devops/ansible-configuracion.md), [Lab 22: Endurecer un servidor Linux con Ansible y medirlo con Lynis y OpenSCAP](../../laboratorios/devsecops/hardening-linux-ansible.md) |
+| Laboratorios (la práctica) | Practicar esto paso a paso | [Lab 00 (parte 1): Herramientas locales](../../laboratorios/fundamentos/preparar-entorno.md), [Lab 10: Configurar servidores con Ansible](../../laboratorios/devops/ansible-configuracion.md), [Lab 22: Endurecer un servidor Linux con Ansible y medirlo con Lynis y OpenSCAP](../../laboratorios/devsecops/hardening-linux-ansible.md) |
 
 ## Referencias
 

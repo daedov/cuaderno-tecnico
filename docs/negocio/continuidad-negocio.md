@@ -57,13 +57,14 @@ Pasos:
 
 ## RTO, RPO y MTPD
 
-- **RTO** (*Recovery Time Objective*, objetivo de tiempo de recuperación): tiempo máximo para **recuperar** el sistema o proceso.
-- **RPO** (*Recovery Point Objective*, objetivo de punto de recuperación): cantidad máxima de **datos** que se pueden perder, medida en tiempo.
+- **RTO** (*Recovery Time Objective*, objetivo de tiempo de recuperación): tiempo máximo para **recuperar** el sistema o proceso. "Debemos volver a estar en línea en menos de 1 hora".
+- **RPO** (*Recovery Point Objective*, objetivo de punto de recuperación): cantidad máxima de **datos** que se pueden perder, medida en tiempo. "Podemos perder como máximo los últimos 15 minutos de datos".
 - **MTPD** (*Maximum Tolerable Period of Disruption*, periodo máximo tolerable de interrupción), también llamado **MTD** (*Maximum Tolerable Downtime*): tiempo a partir del cual el impacto ya es **inaceptable** para la organización (pérdidas que no se recuperan, sanciones, clientes que se van para siempre).
 
 ```mermaid
 flowchart LR
-    I[Interrupción] -->|RTO: recuperar el sistema| S[Sistema recuperado]
+    B[Último backup o réplica] -->|RPO: datos perdidos| I[Interrupción]
+    I -->|RTO: recuperar el sistema| S[Sistema recuperado]
     S -->|WRT: verificar datos, ponerse al día| N[Operación normal]
     I -.->|MTPD: límite tolerable| L[Impacto inaceptable]
 ```
@@ -124,12 +125,7 @@ La nube facilita la continuidad (regiones, zonas, servicios de backup y de DR), 
 - **Infrastructure as Code** es lo que hace realista un RTO corto: recrear el entorno en otra región es aplicar el mismo código ([Infrastructure as Code](../devops/iac/infraestructura-como-codigo.md)).
 - Incluye en el BIA a los **proveedores SaaS** críticos (identidad, pagos, comunicación) y revisa sus SLAs y planes de continuidad ([Gobierno y riesgo de TI](gobierno-riesgo-ti.md)).
 
-| Del BIA… | …a la arquitectura cloud |
-| --- | --- |
-| RTO de minutos | Multi-AZ obligatorio; warm standby o active/active entre regiones |
-| RPO casi cero | Replicación síncrona o casi síncrona (bases de datos globales, réplicas entre regiones) |
-| RTO de horas, RPO de una hora | Pilot light con réplicas asíncronas e IaC |
-| RTO de días | Backups en otra región y recreación con IaC |
+Cómo se traduce cada combinación de RTO y RPO en una arquitectura (multi-AZ, réplicas entre regiones, pilot light, warm standby, active/active) y qué servicios ofrece cada proveedor está en [Resiliencia](../cloud/operacion-y-gobierno/resiliencia.md#estrategias-de-disaster-recovery).
 
 ## Relación con otras secciones
 

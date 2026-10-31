@@ -96,18 +96,7 @@ ssh -L 5433:db.interna:5432 bastion       # túnel: localhost:5433 -> base de da
 
 ## DNS
 
-**DNS** (*Domain Name System*) traduce nombres (`api.ejemplo.com`) a direcciones IP. Los registros que más vas a tocar:
-
-| Registro | Para qué sirve | Ejemplo |
-| --- | --- | --- |
-| **A** | Nombre → dirección IPv4 | `api.ejemplo.com → 203.0.113.10` |
-| **AAAA** | Nombre → dirección IPv6 | `api.ejemplo.com → 2001:db8::10` |
-| **CNAME** | Alias de otro nombre (no se puede usar en el dominio raíz) | `www.ejemplo.com → ejemplo.github.io` |
-| **MX** | Servidores de correo del dominio, con prioridad | `10 mail.ejemplo.com` |
-| **TXT** | Texto libre: verificación de dominio, SPF, DKIM, DMARC | `"v=spf1 include:_spf.google.com ~all"` |
-| **NS** | Servidores autoritativos de la zona | `ns1.proveedor-dns.com` |
-
-El **TTL** (*time to live*) indica cuántos segundos se puede guardar en caché una respuesta: bájalo con tiempo antes de una migración.
+**DNS** (*Domain Name System*) traduce nombres (`api.ejemplo.com`) a direcciones IP. Los registros que más vas a tocar (A, AAAA, CNAME, MX, TXT, NS y otros), el **TTL** (*time to live*, cuánto se cachea una respuesta: bájalo con tiempo antes de una migración) y cómo leer `dig` están en [Servicios de red: DNS en profundidad](../../networking/intermedio/servicios-red.md#dns-en-profundidad).
 
 ```bash
 dig api.ejemplo.com AAAA +short  # solo la respuesta
@@ -115,29 +104,9 @@ dig @8.8.8.8 api.ejemplo.com     # preguntar a un resolver concreto
 dig +trace api.ejemplo.com       # seguir la resolución desde la raíz
 ```
 
-Jerarquía, resolución paso a paso, otros registros (SOA, PTR, SRV, CAA), TTL y cómo leer `dig`: [Servicios de red: DNS en profundidad](../../networking/intermedio/servicios-red.md#dns-en-profundidad).
-
 ## HTTP
 
-**HTTP** es el protocolo de casi todas las APIs y aplicaciones web (con **HTTPS** cuando va cifrado con TLS).
-
-| Método | Uso |
-| --- | --- |
-| `GET` | Leer un recurso |
-| `POST` | Crear un recurso o ejecutar una acción |
-| `PUT` / `PATCH` | Reemplazar / modificar parcialmente un recurso |
-| `DELETE` | Borrar un recurso |
-
-| Código | Significado | Pista típica |
-| --- | --- | --- |
-| `2xx` (200, 201, 204) | Éxito | — |
-| `3xx` (301, 302, 304) | Redirección | Revisa el header `Location` |
-| `400` | Petición mal formada | Revisa el cuerpo o los parámetros |
-| `401` / `403` | No autenticado / sin permiso | Token, credenciales, IAM |
-| `404` | No existe | Ruta, *host* o *ingress* mal configurado |
-| `429` | Demasiadas peticiones | *Rate limiting* |
-| `500` | Error interno de la aplicación | Logs de la app |
-| `502` / `503` / `504` | Error en el *proxy* o *load balancer*: backend caído, sin capacidad o lento | *Health checks*, *timeouts* |
+**HTTP** es el protocolo de casi todas las APIs y aplicaciones web (con **HTTPS** cuando va cifrado con TLS). Los métodos, los códigos de estado con su pista de diagnóstico típica, los headers y TLS están en [Protocolos de aplicación: HTTP](../../networking/intermedio/protocolos-aplicacion.md#http).
 
 ```bash
 curl -i https://api.ejemplo.com/health                  # respuesta con headers
@@ -145,8 +114,6 @@ curl -sS -o /dev/null -w "%{http_code} %{time_total}s\n" https://api.ejemplo.com
 curl -X POST -H "Content-Type: application/json" -d '{"nombre":"dani"}' https://api.ejemplo.com/usuarios
 curl -v --resolve api.ejemplo.com:443:10.0.1.20 https://api.ejemplo.com/   # probar contra una IP concreta
 ```
-
-Petición y respuesta por dentro, versiones, semántica de los métodos, headers y TLS: [Protocolos de aplicación](../../networking/intermedio/protocolos-aplicacion.md#http).
 
 ## Puertos y troubleshooting de red
 

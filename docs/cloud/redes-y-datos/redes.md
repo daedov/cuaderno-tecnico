@@ -17,10 +17,7 @@ Una **virtual network** (red virtual) es tu red privada dentro de la nube: un ra
 Según el [Shared Responsibility Model](../fundamentos/responsabilidad-compartida.md), la **configuración de red es responsabilidad del cliente**. Muchas exposiciones accidentales vienen de aquí: un puerto abierto a `0.0.0.0/0` o una base de datos en una subnet pública.
 
 !!! note "Conceptos previos"
-    Esta nota asume que conoces direcciones IP, notación **CIDR** (`10.0.0.0/16`), puertos, TCP/UDP y DNS. Si no, ver [Linux, redes y scripting](../../devops/fundamentos/linux-redes-scripting.md) y la tabla de [puertos](../../recursos/puertos.md).
-
-!!! info "Fundamentos de redes"
-    Si necesitas la base (modelos OSI y TCP/IP, subnetting, routing, TCP/UDP, DNS, TLS), la sección [Networking](../../networking/basico/fundamentos-redes.md) la recorre de lo más básico a lo avanzado, de forma agnóstica al proveedor.
+    Esta nota asume que conoces direcciones IP, notación **CIDR** (`10.0.0.0/16`), puertos, TCP/UDP y DNS, y no los vuelve a explicar. Si necesitas la base (modelos OSI y TCP/IP, subnetting, routing y NAT, TCP/UDP, DNS, TLS), la sección [Networking](../../networking/basico/fundamentos-redes.md) la recorre de lo más básico a lo avanzado, de forma agnóstica al proveedor; en especial [Direccionamiento IP](../../networking/basico/direccionamiento-ip.md) y [Routing y NAT](../../networking/intermedio/routing-nat.md). Los puertos están en la tabla de [puertos](../../recursos/puertos.md).
 
 ## Vista rápida
 
@@ -41,9 +38,30 @@ Según el [Shared Responsibility Model](../fundamentos/responsabilidad-compartid
 | Conexión dedicada | AWS Direct Connect | Azure ExpressRoute | Cloud Interconnect |
 | Acceso privado a servicios gestionados | VPC endpoints (AWS PrivateLink) | Private Endpoint (Azure Private Link) | Private Service Connect, Private Google Access |
 | CDN | Amazon CloudFront | Azure Front Door | Cloud CDN |
+| Firewall gestionado (perimetral, NGFW) | AWS Network Firewall | Azure Firewall | Cloud Next Generation Firewall (Cloud NGFW) |
+| Load balancer | Elastic Load Balancing (ELB) | Azure Load Balancer, Application Gateway | Cloud Load Balancing |
+| DHCP | Gestionado; se personaliza con DHCP option sets | Gestionado; configuración de la VNet | Gestionado |
 
 !!! info "La VPC de Google Cloud es global"
     En AWS y Azure una VPC/VNet vive en **una región**; para cubrir dos regiones necesitas dos redes conectadas. En Google Cloud una **VPC network es global**: una sola red puede tener subnets en `southamerica-east1` y `us-central1`, y las VMs se comunican por IP privada sin peering. En Azure, además, una subnet abarca todas las zonas de la región; en AWS cada subnet está en **una sola AZ**.
+
+### Equivalencias con on-premise
+
+Si vienes de un datacenter, cada pieza física tiene su equivalente en la tabla anterior (la nube es una red definida por software: ver [Redes de datacenter e híbridas](../../networking/avanzado/redes-datacenter-hibridas.md#sdn)):
+
+| On-premise | Pieza en la nube (fila de la tabla anterior) |
+| --- | --- |
+| Datacenter / red del sitio | Red privada |
+| Switch + VLAN | Subred (en la nube no hay VLANs visibles) |
+| Router y su tabla de rutas | Tabla de rutas (el router lo pone el proveedor) |
+| Firewall de host o ACL en el switch | Firewall a nivel de recurso o de subred |
+| Firewall perimetral / NGFW | Firewall gestionado |
+| Router de borde con NAT | Salida a internet y NAT |
+| Balanceador hardware (F5, etc.) | Load balancer |
+| Servidor DNS interno | DNS gestionado (zonas privadas, ver [DNS](#dns)) |
+| Servidor DHCP | DHCP (integrado en la red) |
+| Circuito MPLS o enlace WAN | Conexión dedicada |
+| Core de la WAN | Hub para muchas redes |
 
 ## Subnets públicas y privadas
 
@@ -92,7 +110,7 @@ Los route tables de este diseño (AWS):
 | Privada AZ b | `0.0.0.0/0` | NAT Gateway b |
 
 !!! tip "Planifica los rangos antes de empezar"
-    Elige rangos privados (RFC 1918: `10.0.0.0/8`, `172.16.0.0/12`, `192.168.0.0/16`) que **no se solapen** con otras redes de la organización ni con la red de la oficina. Dos redes con rangos solapados no se pueden conectar con peering.
+    Elige rangos privados (RFC 1918: `10.0.0.0/8`, `172.16.0.0/12`, `192.168.0.0/16`) que **no se solapen** con otras redes de la organización ni con la red de la oficina. Dos redes con rangos solapados no se pueden conectar con peering. Cómo dividir los rangos y cuántas IPs reserva cada proveedor por subnet: [Direccionamiento IP](../../networking/basico/direccionamiento-ip.md#en-la-nube); un plan de IPs para toda la organización: [Redes de datacenter e híbridas](../../networking/avanzado/redes-datacenter-hibridas.md#planificar-ips-sin-solapamientos).
 
 !!! warning "Un NAT Gateway por zona, pero cuesta"
     Un NAT Gateway por AZ evita que la caída de una zona deje sin salida a la otra, pero cada uno cobra por hora y por GB. Para tráfico hacia servicios del propio proveedor (S3, Storage, APIs de Google), usa **endpoints privados** y ahorra NAT. Ver [FinOps y costos](../fundamentos/finops-costos.md).
@@ -126,8 +144,7 @@ Los route tables de este diseño (AWS):
 | Reglas | Solo **allow** | Allow y **deny**, por número de orden | Allow y deny, por **priority** | Allow y deny, por **priority** |
 | Por defecto | Deniega entrada, permite salida | La NACL por defecto permite todo | Reglas por defecto: permite tráfico interno de la VNet, deniega entrada desde internet | Deniega entrada (*implied deny ingress*), permite salida |
 
-- **Stateful** (con estado): si permites la entrada al puerto 443, la respuesta sale sin regla extra.
-- **Stateless** (sin estado): cada dirección se evalúa por separado; tienes que abrir también los puertos efímeros de respuesta.
+**Stateful** (con estado) significa que, si permites la entrada al puerto 443, la respuesta sale sin regla extra; con uno **stateless** (sin estado) tienes que abrir también los puertos efímeros de respuesta. El porqué y un ejemplo de reglas de NACL están en [Capa de transporte](../../networking/intermedio/capa-transporte.md#firewalls-stateful-y-el-trafico-de-retorno).
 
 !!! tip "Referencia grupos, no IPs"
     En AWS una regla puede permitir tráfico **desde otro security group** ("la app puede hablar con la base de datos"). En Azure se hace con **application security groups** y en Google Cloud con **network tags** o **service accounts** como origen y destino. Es más robusto que mantener listas de IPs.
@@ -152,7 +169,7 @@ resource "aws_vpc_security_group_ingress_rule" "db_desde_app" {
 | --- | --- | --- | --- |
 | Zonas públicas | Route 53 *public hosted zones* | Azure DNS *public zones* | Cloud DNS *public zones* |
 | Zonas privadas | Route 53 *private hosted zones* | Azure Private DNS zones | Cloud DNS *private zones* |
-| Resolver híbrido (on-prem ↔ nube) | Route 53 Resolver endpoints | Azure DNS Private Resolver | Cloud DNS *forwarding zones* y *inbound server policies* |
+| Resolver híbrido (on-prem ↔ nube) | Route 53 Resolver endpoints (*inbound* y *outbound*) | Azure DNS Private Resolver | Cloud DNS *forwarding zones* y *inbound server policies* |
 | Enrutamiento por salud o latencia | Routing policies (*latency, weighted, failover*…) | Azure Traffic Manager | Cloud DNS *routing policies* |
 
 ## Load balancers
@@ -162,21 +179,23 @@ resource "aws_vpc_security_group_ingress_rule" "db_desde_app" {
 | Capa 7 (HTTP/HTTPS) regional | Application Load Balancer (ALB) | Application Gateway | Regional external/internal Application Load Balancer |
 | Capa 7 global | (CloudFront + ALB) | Azure Front Door | Global external Application Load Balancer |
 | Capa 4 (TCP/UDP) | Network Load Balancer (NLB) | Azure Load Balancer | Network Load Balancer (*passthrough* o *proxy*) |
+| Global con IP anycast | AWS Global Accelerator | Azure Front Door, cross-region Load Balancer | Global external Application Load Balancer |
 | Appliances de terceros | Gateway Load Balancer | Gateway Load Balancer | — |
 
-El load balancer suele ser el **único** recurso en subnet pública: termina TLS, reparte el tráfico entre zonas y comprueba la salud (*health checks*) de los destinos. Más sobre su papel en la alta disponibilidad en [Resiliencia](../operacion-y-gobierno/resiliencia.md).
+El load balancer suele ser el **único** recurso en subnet pública: termina TLS, reparte el tráfico entre zonas y comprueba la salud (*health checks*) de los destinos. Cómo funcionan L4 y L7, los algoritmos, los health checks, anycast y GSLB se explica en [Balanceo y alta disponibilidad](../../networking/avanzado/balanceo-alta-disponibilidad.md); su papel en la alta disponibilidad de la arquitectura, en [Resiliencia](../operacion-y-gobierno/resiliencia.md).
 
 ## Conectar redes
 
 ### Peering y hubs
 
 - **Peering**: conecta dos redes por IP privada. **No es transitivo**: si A está conectada con B y B con C, A no llega a C.
-- Para muchas redes se usa un modelo **hub-and-spoke** (concentrador y radios) con un servicio central:
+- Para muchas redes se usa un modelo **hub-and-spoke** (concentrador y radios) con un servicio central (el modelo se explica en [Redes de datacenter e híbridas](../../networking/avanzado/redes-datacenter-hibridas.md#hub-and-spoke)):
 
 | | AWS | Azure | Google Cloud |
 | --- | --- | --- | --- |
 | Peering | VPC peering | VNet peering (también *global VNet peering* entre regiones) | VPC Network Peering |
 | Hub central | **AWS Transit Gateway** (regional), AWS Cloud WAN (global) | **Azure Virtual WAN** o una VNet hub con Azure Firewall | **Network Connectivity Center** |
+| Spoke | VPC adjunta al Transit Gateway | VNet con peering al hub | VPC network como spoke |
 
 ### Conexión con on-premises
 
@@ -186,11 +205,11 @@ El load balancer suele ser el **único** recurso en subnet pública: termina TLS
 | Azure | Azure VPN Gateway (site-to-site, point-to-site) | Azure ExpressRoute |
 | Google Cloud | Cloud VPN (HA VPN) | Cloud Interconnect (Dedicated, Partner) |
 
-La VPN se monta en horas y sirve para empezar; la conexión dedicada tarda semanas en aprovisionarse, pero ofrece ancho de banda estable y latencia predecible. Una conexión dedicada **no va cifrada por defecto**: si lo necesitas, añade una VPN sobre ella o el cifrado que ofrezca el proveedor (por ejemplo, MACsec).
+Ventajas y límites de cada opción (horas frente a semanas de aprovisionamiento, internet frente a circuito privado, BGP para intercambiar rutas) en [Redes de datacenter e híbridas: conectividad híbrida](../../networking/avanzado/redes-datacenter-hibridas.md#conectividad-hibrida). Una conexión dedicada **no va cifrada por defecto**: si lo necesitas, añade una VPN sobre ella o el cifrado que ofrezca el proveedor (por ejemplo, MACsec).
 
 ## CDN y edge
 
-Una **CDN** (*Content Delivery Network*, red de distribución de contenido) guarda copias del contenido en los **edge locations** cercanos al usuario (ver [Modelos de servicio y regiones](../fundamentos/modelos-de-servicio-y-regiones.md)).
+Una **CDN** (*Content Delivery Network*, red de distribución de contenido) guarda copias del contenido en los **edge locations** cercanos al usuario (ver [Modelos de servicio y regiones](../fundamentos/modelos-de-servicio-y-regiones.md)). Cómo funciona por dentro (origin, `Cache-Control`, cache hit ratio) está en [Balanceo y alta disponibilidad: CDN](../../networking/avanzado/balanceo-alta-disponibilidad.md#cdn).
 
 | | AWS | Azure | Google Cloud |
 | --- | --- | --- | --- |

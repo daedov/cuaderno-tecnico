@@ -237,7 +237,7 @@ subprocess.run(["terraform", "plan", "-input=false"], cwd="infra", env=env, chec
 
 ## Programar scripts
 
-Un script que debe correr cada noche (limpiar snapshots, revisar certificados, un reporte de costos) se programa con **cron** o con un **systemd timer** en Linux. Los detalles de systemd están en [Linux, redes y scripting](../../devops/fundamentos/linux-redes-scripting.md#systemd).
+Un script que debe correr cada noche (limpiar snapshots, revisar certificados, un reporte de costos) se programa con **cron** o con un **systemd timer** en Linux. La sintaxis de crontab, los fallos clásicos de cron, el `.timer` completo (`OnCalendar`, `Persistent`, `RandomizedDelaySec`) y cómo habilitarlo y probarlo están en [Procesos y rendimiento en Linux Server](../../servidores/linux/linux-procesos-rendimiento.md#tareas-programadas); systemd en general, en [Linux, redes y scripting](../../devops/fundamentos/linux-redes-scripting.md#systemd). Aquí, lo propio de un script de Python:
 
 === "cron"
 
@@ -261,26 +261,7 @@ Un script que debe correr cada noche (limpiar snapshots, revisar certificados, u
     ExecStart=/opt/scripts/.venv/bin/python /opt/scripts/limpiar.py --apply
     ```
 
-    ```ini title="/etc/systemd/system/limpiar.timer"
-    [Unit]
-    Description=Ejecuta limpiar.service cada día a las 03:00
-
-    [Timer]
-    OnCalendar=*-*-* 03:00:00
-    Persistent=true
-
-    [Install]
-    WantedBy=timers.target
-    ```
-
-    ```bash
-    sudo systemctl daemon-reload
-    sudo systemctl enable --now limpiar.timer
-    systemctl list-timers limpiar.timer
-    journalctl -u limpiar.service --since today
-    ```
-
-    Ventajas sobre cron: logs en el journal sin redirecciones, `Persistent=true` ejecuta la tarea perdida si la máquina estaba apagada, y el servicio corre con su propio usuario y opciones de *hardening*.
+    Se activa con un `limpiar.timer` (`OnCalendar=*-*-* 03:00:00`) que se habilita con `systemctl enable --now limpiar.timer`; los logs quedan en `journalctl -u limpiar.service`. A diferencia de cron, el servicio corre con su propio usuario (`User=`), recibe la configuración y los secretos de un `EnvironmentFile` en lugar de la línea de comandos, y admite opciones de *hardening*.
 
 En la nube, para tareas programadas sin servidor propio tienes **Amazon EventBridge Scheduler**, **Azure Functions** con *timer trigger* y **Cloud Scheduler**, que disparan una función o un job (ver [Serverless](../../cloud/computo/serverless.md)). En Kubernetes, un **CronJob**.
 

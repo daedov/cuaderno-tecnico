@@ -295,23 +295,7 @@ Combínalo con **version pinning** (lockfile o `requirements.txt` con versiones 
 
 ### pre-commit
 
-Con **pre-commit** (ver [Seguridad del código](../../devsecops/codigo-y-dependencias/seguridad-codigo.md#pre-commit-hooks)) los controles corren antes de cada commit:
-
-```yaml title=".pre-commit-config.yaml"
-# Las versiones (rev) son de ejemplo: actualízalas con `pre-commit autoupdate`
-repos:
-  - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: v0.17.2
-    hooks:
-      - id: ruff-check
-        args: [--fix]
-      - id: ruff-format
-
-  - repo: https://github.com/gitleaks/gitleaks
-    rev: v8.24.2
-    hooks:
-      - id: gitleaks
-```
+Con **pre-commit** (ver [Seguridad del código](../../devsecops/codigo-y-dependencias/seguridad-codigo.md#pre-commit-hooks)) los controles corren antes de cada commit. Para un repositorio de scripts, los hooks mínimos son `ruff-check` (con `--fix`), `ruff-format` y `gitleaks`; el `.pre-commit-config.yaml` completo y comentado, con esos hooks y otros, está en [Anatomía de otros archivos](../../recursos/anatomia/otros-archivos.md#pre-commit-configyaml-comentado).
 
 Y en CI se repiten, porque los hooks locales se pueden saltar:
 
@@ -413,23 +397,6 @@ Un script de auditoría necesita saber si el origen de una regla de firewall es 
 
 ## Repaso del recorrido
 
-Con esta nota termina la sección de Python. El camino completo, en orden:
-
-**Fundamentos (el lenguaje)**
-
-1. [Entorno de trabajo con Python](../fundamentos/entorno-python.md): instalar Python, `venv`, `pip`, `uv` y `pipx`.
-2. [Sintaxis y tipos](../fundamentos/sintaxis-tipos.md): variables, strings, f-strings, conversión de tipos y type hints.
-3. [Estructuras de datos](../fundamentos/estructuras-datos.md): list, tuple, dict, set, comprehensions y `collections`.
-4. [Control de flujo y funciones](../fundamentos/control-flujo-funciones.md): condicionales, bucles y funciones puras vs con efectos.
-5. [Errores, módulos y paquetes](../fundamentos/errores-modulos.md): excepciones, `with`, `import` y la librería estándar.
-
-**Scripting (aplicarlo a automatizar)**
-
-6. [Archivos y formatos](archivos-formatos.md): `pathlib`, CSV, JSON, YAML, `.env` y `terraform output -json`.
-7. [Scripts de línea de comandos](scripts-cli.md): `argparse`, exit codes, stdin/stdout/stderr y `logging`.
-8. [Sistema y procesos](sistema-procesos.md): `subprocess`, `os`, `shutil`, cron y systemd timers.
-9. [APIs y HTTP](apis-http.md): `requests`, tokens, timeouts, reintentos y paginación.
-10. [Automatización cloud con SDKs](automatizacion-cloud.md): boto3, Azure SDK y Google Cloud con credenciales sin claves.
-11. [Calidad y seguridad de scripts](calidad-codigo.md): `mypy`, `ruff`, `pytest`, `pyproject.toml`, Bandit y `pip-audit`.
+Con esta nota termina la sección de Python. El camino completo, en orden, está en el [índice de Python](../index.md).
 
 Desde aquí, el siguiente paso natural es llevar estos scripts al pipeline ([Integración continua](../../devops/ci-cd/integracion-continua.md)) o volver al [mapa de relaciones](../../mapa-de-relaciones.md) para ver dónde encajan en Cloud, DevOps y DevSecOps.

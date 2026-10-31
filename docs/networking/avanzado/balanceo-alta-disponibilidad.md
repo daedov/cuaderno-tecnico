@@ -167,15 +167,9 @@ Una **CDN** (*Content Delivery Network*) es una red de **edge locations** (punto
 
 ## En la nube
 
-| Pieza | AWS | Azure | Google Cloud |
-| --- | --- | --- | --- |
-| L7 regional | Application Load Balancer | Application Gateway | Regional Application Load Balancer |
-| L4 | Network Load Balancer | Azure Load Balancer | Network Load Balancer (*passthrough* o *proxy*) |
-| Global con anycast | AWS Global Accelerator | Azure Front Door, cross-region Load Balancer | Global external Application Load Balancer |
-| GSLB por DNS | Route 53 routing policies con health checks | Azure Traffic Manager | Cloud DNS routing policies |
-| CDN | Amazon CloudFront | Azure Front Door | Cloud CDN |
+Los proveedores ofrecen estas piezas como servicios gestionados, ya redundantes entre zonas: load balancers **L4 y L7** regionales (en AWS, Network Load Balancer y Application Load Balancer), balanceadores **globales con anycast** (AWS Global Accelerator, Azure Front Door, el global external Application Load Balancer de Google Cloud), **GSLB por DNS** (routing policies de Route 53 y de Cloud DNS, Azure Traffic Manager) y **CDN** (Amazon CloudFront, Azure Front Door, Cloud CDN).
 
-La tabla completa de load balancers está en [Redes en la nube](../../cloud/redes-y-datos/redes.md#load-balancers), y su papel en arquitecturas multizona en [Arquitecturas de referencia](../../cloud/arquitectura/arquitecturas-referencia.md).
+Las equivalencias completas entre AWS, Azure y Google Cloud están en [Redes en la nube](../../cloud/redes-y-datos/redes.md#load-balancers) (secciones de load balancers, DNS y CDN), y su papel en arquitecturas multizona en [Arquitecturas de referencia](../../cloud/arquitectura/arquitecturas-referencia.md).
 
 ## Relación con otras secciones
 

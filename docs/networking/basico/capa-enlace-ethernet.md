@@ -234,7 +234,7 @@ En la nube **no gestionas la capa 2**: no hay switches, VLANs ni Spanning Tree q
 | Tarjeta de red con su MAC | Elastic network interface (ENI) | Network interface (NIC) | Network interface (vNIC) |
 | Broadcast y multicast en la LAN | No hay broadcast en la VPC | Broadcast y multicast bloqueados en la VNet | Sin broadcast en la VPC |
 
-Por eso, software que depende de broadcast o de IPs "flotantes" anunciadas por ARP (algunos clústeres de alta disponibilidad clásicos) necesita adaptarse en la nube, normalmente con un load balancer o con las APIs del proveedor. Ver [Redes en la nube](../../cloud/redes-y-datos/redes.md) y la tabla de equivalencias de [Redes de datacenter e híbridas](../avanzado/redes-datacenter-hibridas.md).
+Por eso, software que depende de broadcast o de IPs "flotantes" anunciadas por ARP (algunos clústeres de alta disponibilidad clásicos) necesita adaptarse en la nube, normalmente con un load balancer o con las APIs del proveedor. Ver [Redes en la nube](../../cloud/redes-y-datos/redes.md) y su [tabla de equivalencias con on-premise](../../cloud/redes-y-datos/redes.md#equivalencias-con-on-premise).
 
 ## Conclusión práctica
 

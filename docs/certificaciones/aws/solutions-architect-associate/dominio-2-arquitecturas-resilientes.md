@@ -105,7 +105,7 @@ Routing policies: **Simple** (un recurso, sin health checks), **Weighted** (cana
 
 ## Estrategias de disaster recovery
 
-Teoría de RTO/RPO en [Resiliencia](../../../cloud/operacion-y-gobierno/resiliencia.md#rto-y-rpo).
+Teoría de RTO/RPO en [Continuidad de negocio](../../../negocio/continuidad-negocio.md#rto-rpo-y-mtpd); estrategias por proveedor en [Resiliencia](../../../cloud/operacion-y-gobierno/resiliencia.md#estrategias-de-disaster-recovery).
 
 | Estrategia | Qué hay en la región de DR | RPO / RTO típicos | Costo |
 | --- | --- | --- | --- |

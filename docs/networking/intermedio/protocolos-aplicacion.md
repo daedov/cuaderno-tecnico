@@ -69,7 +69,14 @@ Cache-Control: no-store
 
 ### Métodos: seguros e idempotentes
 
-La tabla de métodos y su uso está en [Linux, redes y scripting](../../devops/fundamentos/linux-redes-scripting.md#http). Lo que importa para diseñar y operar es su semántica:
+| Método | Uso |
+| --- | --- |
+| `GET` | Leer un recurso |
+| `POST` | Crear un recurso o ejecutar una acción |
+| `PUT` / `PATCH` | Reemplazar / modificar parcialmente un recurso |
+| `DELETE` | Borrar un recurso |
+
+Lo que importa para diseñar y operar es su semántica:
 
 | Método | **Safe** (no modifica nada) | **Idempotent** (repetirlo da el mismo resultado) |
 | --- | --- | --- |
@@ -82,7 +89,20 @@ Un proxy o un cliente con reintentos solo debería reintentar automáticamente p
 
 ### Códigos de estado
 
-Las clases: `1xx` informativo, `2xx` éxito, `3xx` redirección, `4xx` error del cliente, `5xx` error del servidor. Los habituales y sus pistas de diagnóstico están en [Linux, redes y scripting](../../devops/fundamentos/linux-redes-scripting.md#http). Dos que aparecen en esta nota: `101 Switching Protocols` (cambio a WebSocket) y `301`/`308` (redirección permanente, la que se usa para forzar HTTPS).
+Las clases: `1xx` informativo, `2xx` éxito, `3xx` redirección, `4xx` error del cliente, `5xx` error del servidor. Los habituales y su pista de diagnóstico:
+
+| Código | Significado | Pista típica |
+| --- | --- | --- |
+| `2xx` (200, 201, 204) | Éxito | — |
+| `3xx` (301, 302, 304) | Redirección | Revisa el header `Location` |
+| `400` | Petición mal formada | Revisa el cuerpo o los parámetros |
+| `401` / `403` | No autenticado / sin permiso | Token, credenciales, IAM |
+| `404` | No existe | Ruta, *host* o *ingress* mal configurado |
+| `429` | Demasiadas peticiones | *Rate limiting* |
+| `500` | Error interno de la aplicación | Logs de la app |
+| `502` / `503` / `504` | Error en el *proxy* o *load balancer*: backend caído, sin capacidad o lento | *Health checks*, *timeouts* |
+
+Dos que aparecen en esta nota: `101 Switching Protocols` (cambio a WebSocket) y `301`/`308` (redirección permanente, la que se usa para forzar HTTPS).
 
 ### Headers que conviene conocer
 
@@ -197,7 +217,7 @@ Detalle de dónde terminar TLS (en el load balancer o en el backend) en [Balance
 
 ## SSH
 
-**SSH** (*Secure Shell*) crea un canal cifrado para administrar servidores, copiar archivos (`scp`, `sftp`) y hacer túneles. Su uso diario (llaves, `~/.ssh/config`, `ProxyJump`, port forwarding) está en [Linux, redes y scripting](../../devops/fundamentos/linux-redes-scripting.md#ssh). Desde el punto de vista de red:
+**SSH** (*Secure Shell*) crea un canal cifrado para administrar servidores, copiar archivos (`scp`, `sftp`) y hacer túneles. Su uso diario (llaves, `~/.ssh/config`, `ProxyJump`, port forwarding) está en [Linux, redes y scripting](../../devops/fundamentos/linux-redes-scripting.md#ssh) y, del lado servidor, en [Redes en Linux Server](../../servidores/linux/linux-redes-servidor.md#ssh-del-lado-servidor). Desde el punto de vista de red:
 
 - Corre sobre **TCP 22**. Igual que TLS, negocia claves efímeras y cifra todo después.
 - No usa CAs públicas: la primera vez que te conectas, el cliente te muestra la **host key fingerprint** (huella de la llave del servidor) y la guarda en `~/.ssh/known_hosts`. Si después cambia, SSH avisa con `REMOTE HOST IDENTIFICATION HAS CHANGED`: puede ser una VM reconstruida… o un **MITM** (ataque de intermediario).
@@ -246,6 +266,8 @@ Se usan esquemas `ws://` y `wss://` (cifrado con TLS; usa siempre este). Se usa 
 - [RFC 8446: TLS 1.3](https://www.rfc-editor.org/rfc/rfc8446)
 - [RFC 6455: The WebSocket Protocol](https://www.rfc-editor.org/rfc/rfc6455)
 - [MDN: Generalidades del protocolo HTTP](https://developer.mozilla.org/es/docs/Web/HTTP/Overview)
+- [MDN: métodos de petición HTTP](https://developer.mozilla.org/es/docs/Web/HTTP/Methods)
+- [MDN: códigos de estado de respuesta HTTP](https://developer.mozilla.org/es/docs/Web/HTTP/Status)
 - [MDN: Set-Cookie](https://developer.mozilla.org/es/docs/Web/HTTP/Headers/Set-Cookie)
 - [Cloudflare: ¿Qué sucede en un protocolo de enlace TLS?](https://www.cloudflare.com/es-es/learning/ssl/what-happens-in-a-tls-handshake/)
 - [Let's Encrypt: cómo funciona](https://letsencrypt.org/es/how-it-works/)

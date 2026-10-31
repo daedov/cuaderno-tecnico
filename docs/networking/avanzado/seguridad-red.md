@@ -171,17 +171,9 @@ El modelo clásico de **perímetro** ("dentro de la red es confiable, fuera no")
 
 ## En la nube
 
-| Control | AWS | Azure | Google Cloud |
-| --- | --- | --- | --- |
-| Firewall stateful por recurso | Security group | Network security group (NSG), application security groups | VPC firewall rules, firewall policies |
-| Firewall stateless por subred | Network ACL | — (el NSG en la subnet es stateful) | — |
-| Firewall gestionado / NGFW | AWS Network Firewall | Azure Firewall (Standard, Premium con IDPS e inspección TLS) | Cloud Next Generation Firewall (Cloud NGFW) |
-| WAF | AWS WAF | Azure Web Application Firewall (en Application Gateway o Front Door) | Google Cloud Armor |
-| Protección DDoS | AWS Shield (Standard incluido, Advanced de pago) | Azure DDoS Protection | Google Cloud Armor |
-| VPN site-to-site | AWS Site-to-Site VPN | Azure VPN Gateway | Cloud VPN (HA VPN) |
-| Acceso remoto / ZTNA | AWS Client VPN, AWS Verified Access | VPN Gateway point-to-site, Microsoft Entra Private Access | Identity-Aware Proxy (IAP) |
+Los mismos controles existen como servicios gestionados: firewalls stateful por recurso (security groups, NSG, VPC firewall rules) y, en AWS, uno stateless por subred (Network ACL); firewalls gestionados o NGFW (AWS Network Firewall, Azure Firewall, Cloud NGFW); WAF y protección DDoS (AWS WAF y AWS Shield, Azure WAF y Azure DDoS Protection, Google Cloud Armor); VPN site-to-site, y acceso remoto o ZTNA (AWS Verified Access, Microsoft Entra Private Access, Identity-Aware Proxy).
 
-Detalle de reglas, valores por defecto y ejemplos en [Redes en la nube](../../cloud/redes-y-datos/redes.md#firewalls-stateful-y-stateless) y [Seguridad de redes](../../cloud/seguridad/seguridad-redes.md).
+La comparación por proveedor está en [Seguridad de redes](../../cloud/seguridad/seguridad-redes.md#controles-por-proveedor); las reglas, sus valores por defecto y ejemplos, en [Redes en la nube](../../cloud/redes-y-datos/redes.md#firewalls-stateful-y-stateless).
 
 ## Relación con otras secciones
 

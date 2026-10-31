@@ -32,18 +32,7 @@ Tres conceptos que se confunden a menudo:
 
 ## RTO y RPO
 
-Antes de elegir una arquitectura, el negocio tiene que definir dos números por cada sistema:
-
-- **RTO** (*Recovery Time Objective*, objetivo de tiempo de recuperación): cuánto tiempo **máximo** puede estar el servicio caído. "Debemos volver a estar en línea en menos de 1 hora".
-- **RPO** (*Recovery Point Objective*, objetivo de punto de recuperación): cuántos datos, medidos en tiempo, se pueden **perder**. "Podemos perder como máximo los últimos 15 minutos de datos".
-
-```mermaid
-flowchart LR
-    A[Último backup o réplica] -->|RPO: datos perdidos| B[Desastre]
-    B -->|RTO: tiempo caído| C[Servicio recuperado]
-```
-
-Cuanto más bajos son RTO y RPO, más caro es el diseño. No todos los sistemas necesitan lo mismo: la web de pagos y el entorno de reportes internos no merecen la misma inversión.
+Antes de elegir una arquitectura, el negocio tiene que fijar para cada sistema el **RTO** (*Recovery Time Objective*, cuánto tiempo puede estar caído) y el **RPO** (*Recovery Point Objective*, cuántos datos, medidos en tiempo, se pueden perder). Qué significan, de dónde salen (BIA, MTPD) y cómo se agrupan en tiers de criticidad está en [Continuidad de negocio](../../negocio/continuidad-negocio.md#rto-rpo-y-mtpd). Cuanto más bajos son RTO y RPO, más caro es el diseño: de ellos depende cuánta redundancia necesitas y qué [estrategia de DR](#estrategias-de-disaster-recovery) eliges.
 
 ## Multi-AZ y multi-región
 
@@ -114,7 +103,7 @@ Las cuatro estrategias clásicas, de la más barata a la más cara:
 | **Warm standby** (espera en caliente) | Una copia completa pero reducida del entorno corre en la otra región; en un desastre se escala | Minutos | Segundos a minutos | $$$ |
 | **Multi-site active/active** (activo/activo) | Dos o más regiones atienden tráfico a la vez | Casi cero | Casi cero (según la replicación de datos) | $$$$ |
 
-Los tiempos son orientativos: el RTO real depende de lo automatizado que esté el proceso y de si lo has probado.
+Los tiempos son orientativos: el RTO real depende de lo automatizado que esté el proceso y de si lo has probado. Como regla: un RTO de minutos exige multi-AZ como base más *warm standby* o *active/active* entre regiones, y un RPO casi cero exige replicación síncrona o casi síncrona de los datos (bases de datos globales, réplicas entre regiones); *pilot light* suele apoyarse en réplicas asíncronas.
 
 !!! tip "Sin IaC, no hay DR rápido"
     Recrear una región a mano en medio de un desastre es lento y propenso a errores. Con toda la infraestructura en [Infrastructure as Code](../../devops/iac/infraestructura-como-codigo.md), *backup & restore* y *pilot light* se vuelven mucho más rápidos: cambias la región y aplicas.

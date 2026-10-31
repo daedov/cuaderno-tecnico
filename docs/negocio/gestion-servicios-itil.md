@@ -133,11 +133,11 @@ ITIL tiene fama de burocrático porque muchas organizaciones lo aplicaron con co
 | Práctica ITIL | Cómo se ve en DevOps / SRE |
 | --- | --- |
 | Change enablement | Pipeline con tests, revisión de código en el PR y despliegue gradual como evidencia de bajo riesgo; cambios estándar preaprobados por diseño |
-| Incident management | Alertas sobre SLOs, on-call, Incident Commander, página de estado |
-| Problem management | Postmortems sin culpables con acciones y seguimiento |
+| Incident management | Alertas sobre SLOs, on-call, Incident Commander, página de estado ([Operación y fiabilidad (SRE)](../devops/operacion/operacion-sre.md#incident-management-gestion-de-incidentes), [Comunicación durante incidentes](../devops/operacion/comunicacion-incidentes.md)) |
+| Problem management | Postmortems sin culpables con acciones y seguimiento ([Postmortem](../devops/operacion/postmortem.md), [Análisis de causa raíz](../devops/operacion/analisis-causa-raiz.md)) |
 | Service level management | SLIs, SLOs y error budget |
 | Service request management | Autoservicio: plantillas de IaC, portal interno, aprobaciones automáticas |
-| Knowledge management | Runbooks versionados en Git junto al código |
+| Knowledge management | Runbooks versionados en Git junto al código ([Runbooks y playbooks](../devops/operacion/runbooks-playbooks.md)) |
 
 !!! note "Lo que dice la investigación de DORA"
     La investigación detrás del libro *Accelerate* encontró que exigir **aprobación externa** (un CAB o un responsable ajeno al equipo) para los cambios se asocia con **peor** desempeño de entrega y **no** reduce la tasa de fallos. Lo que funciona mejor es la revisión entre pares y la automatización. Ver [Cultura DevOps y métricas DORA](../devops/fundamentos/cultura-metricas-dora.md).

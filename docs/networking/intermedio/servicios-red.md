@@ -121,10 +121,14 @@ sequenceDiagram
 
 ### Tipos de registro
 
-Los básicos (A, AAAA, CNAME, MX, TXT, NS) están en [Linux, redes y scripting](../../devops/fundamentos/linux-redes-scripting.md#dns). Además:
-
 | Registro | Para qué sirve | Ejemplo |
 | --- | --- | --- |
+| **A** | Nombre → dirección IPv4 | `api.ejemplo.com → 203.0.113.10` |
+| **AAAA** | Nombre → dirección IPv6 | `api.ejemplo.com → 2001:db8::10` |
+| **CNAME** | Alias de otro nombre (no se puede usar en el dominio raíz) | `www.ejemplo.com → ejemplo.github.io` |
+| **MX** | Servidores de correo del dominio, con prioridad | `10 mail.ejemplo.com` |
+| **TXT** | Texto libre: verificación de dominio, SPF, DKIM, DMARC | `"v=spf1 include:_spf.google.com ~all"` |
+| **NS** | Servidores autoritativos de la zona | `ns1.proveedor-dns.com` |
 | **SOA** (*Start of Authority*) | Datos de la zona: servidor primario, contacto, número de serie, TTL negativo | Uno por zona |
 | **PTR** | Resolución inversa: IP → nombre (zonas `in-addr.arpa` e `ip6.arpa`) | `10.113.0.203.in-addr.arpa → api.ejemplo.com` |
 | **SRV** | Dónde está un servicio: host, puerto, prioridad y peso | `_sip._tcp.ejemplo.com` |
@@ -167,7 +171,7 @@ web-lb.ejemplo.net.  60      IN  A      203.0.113.25
 | Número tras el nombre | TTL **restante** en segundos |
 | `SERVER` | Quién respondió. `127.0.0.53` es `systemd-resolved`, que reenvía al resolver configurado |
 
-Comandos útiles: `dig +trace` para ver la cadena raíz → TLD → autoritativo, `dig @ns1.proveedor-dns.com nombre` para preguntar directo al autoritativo y saltarte cachés, y `dig -x 203.0.113.25` para la resolución inversa.
+Comandos útiles: `dig nombre +short` para ver solo la respuesta, `dig +trace` para ver la cadena raíz → TLD → autoritativo, `dig @ns1.proveedor-dns.com nombre` para preguntar directo al autoritativo y saltarte cachés, y `dig -x 203.0.113.25` para la resolución inversa.
 
 ### Split-horizon y zonas privadas
 
@@ -208,15 +212,12 @@ System clock synchronized: yes
 | --- | --- | --- | --- |
 | DHCP | Gestionado; se personaliza con **DHCP option sets** | Gestionado; los servidores DNS se cambian en la configuración de **DNS servers** de la VNet | Gestionado por la VPC |
 | Resolver interno | **Route 53 Resolver** (en la IP base de la VPC + 2 y en `169.254.169.253`) | **Azure-provided DNS** (`168.63.129.16`) | **Metadata server** (`169.254.169.254`) |
-| DNS autoritativo | Amazon Route 53 | Azure DNS | Cloud DNS |
-| Zonas privadas | Private hosted zones | Azure Private DNS zones | Private zones |
-| Resolver híbrido | Route 53 Resolver *inbound/outbound endpoints* | Azure DNS Private Resolver | Forwarding zones e *inbound server policies* |
 | Hora | Amazon Time Sync Service (`169.254.169.123`) | Sincronización con el host de Azure | NTP del metadata server |
 
 !!! tip "DNS híbrido: los dos sentidos"
     En una red híbrida necesitas que la nube resuelva nombres de la oficina **y** que la oficina resuelva las zonas privadas de la nube. Se hace con un **outbound endpoint** o *forwarding zone* (nube → on-premise) y un **inbound endpoint** o *inbound server policy* (on-premise → nube). Lo retomas en [Redes de datacenter e híbridas](../avanzado/redes-datacenter-hibridas.md).
 
-Más detalle de DNS gestionado y routing policies en [Redes en la nube](../../cloud/redes-y-datos/redes.md#dns).
+El DNS autoritativo gestionado (Amazon Route 53, Azure DNS, Cloud DNS), sus zonas privadas, los resolvers híbridos y las routing policies de cada proveedor están en [Redes en la nube](../../cloud/redes-y-datos/redes.md#dns).
 
 ## Relación con otras secciones
 

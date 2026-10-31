@@ -39,7 +39,8 @@ tags:
 | **Imprescindible** | WAF delante de apps públicas | AWS WAF | Azure Web Application Firewall (Front Door, Application Gateway) | Google Cloud Armor |
 | Recomendado | Acceso privado a servicios gestionados | VPC endpoints (gateway e interface, AWS PrivateLink) | Private Endpoint (Azure Private Link), service endpoints | Private Service Connect, Private Google Access |
 | Recomendado | Bloqueo de internet a nivel cuenta/región | VPC Block Public Access | Azure Virtual Network Manager (security admin rules) | Hierarchical firewall policies, org policy `compute.vmExternalIpAccess` |
-| Recomendado | Firewall gestionado / control de egress | AWS Network Firewall, Route 53 Resolver DNS Firewall | Azure Firewall (con reglas FQDN) | Cloud NGFW, Secure Web Proxy |
+| Recomendado | Firewall gestionado / control de egress | AWS Network Firewall, Route 53 Resolver DNS Firewall | Azure Firewall (con reglas FQDN; Premium añade IDPS e inspección TLS) | Cloud NGFW, Secure Web Proxy |
+| Recomendado | Acceso remoto de usuarios (VPN, ZTNA) | AWS Client VPN, AWS Verified Access | VPN Gateway point-to-site, Microsoft Entra Private Access | Identity-Aware Proxy (IAP) |
 | Recomendado | Perímetro de datos para APIs del proveedor | VPC endpoint policies, condiciones `aws:SourceVpce` | Políticas de Private Endpoint, *network security perimeter* | VPC Service Controls |
 | Recomendado | DDoS | AWS Shield Standard (incluido), Shield Advanced | Protección de infraestructura incluida; Azure DDoS Network Protection / IP Protection | Protección incluida en Cloud Armor; Cloud Armor Enterprise |
 | Recomendado | DNS seguro | Route 53 DNSSEC, query logging, DNS Firewall | Azure DNS (DNSSEC en zonas públicas), Azure DNS Private Resolver, DNS security policy | Cloud DNS DNSSEC, DNS logging, response policies |

@@ -111,11 +111,7 @@ Una **red híbrida** conecta el datacenter on-premise (o las oficinas) con una o
 | **VPN site-to-site** (IPsec) | Túnel cifrado por internet | Se monta en horas, barata, cifrada | Latencia y ancho de banda variables (depende de internet) |
 | **Conexión dedicada** | Circuito privado entre tu red y el proveedor, en un punto de interconexión | Ancho de banda estable, latencia predecible, no pasa por internet | Semanas de aprovisionamiento, más cara, **no cifrada por defecto** |
 
-| | VPN | Conexión dedicada |
-| --- | --- | --- |
-| AWS | AWS Site-to-Site VPN | **AWS Direct Connect** |
-| Azure | Azure VPN Gateway | **Azure ExpressRoute** |
-| Google Cloud | Cloud VPN (HA VPN) | **Cloud Interconnect** (Dedicated o Partner) |
+En la nube, la conexión dedicada se llama **AWS Direct Connect**, **Azure ExpressRoute** o **Cloud Interconnect**; los servicios de VPN de cada proveedor están en [Redes en la nube: conexión con on-premises](../../cloud/redes-y-datos/redes.md#conexion-con-on-premises).
 
 En los tres casos las rutas se intercambian normalmente con **BGP**: el router on-premise anuncia sus prefijos y aprende los de la nube. Un diseño típico combina una conexión dedicada como camino principal y una VPN como respaldo, o dos conexiones dedicadas en ubicaciones distintas para alta disponibilidad.
 
@@ -138,28 +134,11 @@ flowchart LR
 - El **hub** concentra la conectividad con on-premise, la salida a internet, el firewall central y el DNS híbrido ([Servicios de red](../intermedio/servicios-red.md#en-la-nube)).
 - Los **spokes** solo se conectan al hub. Si dos spokes deben hablar, el tráfico pasa por el hub (y su firewall), lo que permite inspeccionarlo y controlarlo.
 
-| | AWS | Azure | Google Cloud |
-| --- | --- | --- | --- |
-| Hub gestionado | AWS Transit Gateway (regional), AWS Cloud WAN (global) | Azure Virtual WAN, o una VNet hub con Azure Firewall | Network Connectivity Center |
-| Spoke | VPC adjunta al Transit Gateway | VNet con peering al hub | VPC network como spoke |
+En la nube el hub puede ser un servicio gestionado (AWS Transit Gateway, Azure Virtual WAN, Network Connectivity Center) o una red propia con un firewall; la comparación está en [Redes en la nube: peering y hubs](../../cloud/redes-y-datos/redes.md#peering-y-hubs).
 
-## Equivalencias on-premise ↔ nube
+## En la nube
 
-| On-premise | En la nube | AWS / Azure / Google Cloud |
-| --- | --- | --- |
-| Datacenter / red del sitio | Red virtual | VPC / VNet / VPC network |
-| Switch + VLAN | Subnet | Subnet (en la nube no hay VLANs visibles) |
-| Router y su tabla de rutas | Route table (el router lo pone el proveedor) | Route table / route table (UDR) / routes |
-| Firewall de host o ACL en el switch | Firewall por recurso o subred | Security group y Network ACL / NSG / VPC firewall rules |
-| Firewall perimetral / NGFW | Firewall gestionado | AWS Network Firewall / Azure Firewall / Cloud NGFW |
-| Router de borde con NAT | Gateway de salida | Internet Gateway + NAT Gateway / NAT Gateway / Cloud NAT |
-| Balanceador hardware (F5, etc.) | Load balancer gestionado | ELB / Azure Load Balancer y Application Gateway / Cloud Load Balancing |
-| Servidor DNS interno | DNS privado | Route 53 private hosted zones / Azure Private DNS / Cloud DNS private zones |
-| Servidor DHCP | Integrado en la red | DHCP option sets / configuración de la VNet / gestionado |
-| Circuito MPLS o enlace WAN | Conexión dedicada | Direct Connect / ExpressRoute / Cloud Interconnect |
-| Core de la WAN | Hub de tránsito | Transit Gateway / Virtual WAN / Network Connectivity Center |
-
-La tabla completa de servicios de red en la nube está en [Redes en la nube](../../cloud/redes-y-datos/redes.md#vista-rapida).
+Cada pieza de un datacenter tiene un equivalente gestionado en la nube: el switch con su VLAN pasa a ser una subnet, el firewall perimetral un firewall gestionado, el circuito MPLS una conexión dedicada y el core de la WAN un hub de tránsito. La tabla de equivalencias on-premise ↔ nube, con los nombres en AWS, Azure y Google Cloud, está en [Redes en la nube](../../cloud/redes-y-datos/redes.md#equivalencias-con-on-premise).
 
 ## Planificar IPs sin solapamientos
 

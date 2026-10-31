@@ -214,7 +214,7 @@ Más detalle en [Redes en la nube](../../cloud/redes-y-datos/redes.md).
 | Enfoque | Qué se mira desde ahí | Nota |
 | --- | --- | --- |
 | Cloud (el control) | Las mismas piezas virtualizadas: VPC/VNet, interfaces, firewalls; regiones cercanas para reducir latencia | [Redes en la nube](../../cloud/redes-y-datos/redes.md), [Modelos de servicio y regiones](../../cloud/fundamentos/modelos-de-servicio-y-regiones.md) |
-| DevOps (la automatización) | Medir y diagnosticar la red desde la terminal (`ping`, `ip`, `ss`) | [Linux, redes y scripting](../../devops/fundamentos/linux-redes-scripting.md), [Observabilidad](../../devops/operacion/observabilidad.md) |
+| DevOps (la automatización) | Medir y diagnosticar la red desde la terminal (`ping`, `ip`, `ss`) | [Linux, redes y scripting](../../devops/fundamentos/linux-redes-scripting.md), [Observabilidad](../../monitoreo/fundamentos/observabilidad.md) |
 | Negocio TI (el porqué) | La latencia y la disponibilidad de la red forman parte de lo que se promete a los usuarios | [Niveles de servicio](../../negocio/niveles-de-servicio.md) |
 | Laboratorios (la práctica) | Practicar esto paso a paso | [Lab 01: Diagnóstico de red desde Linux](../../laboratorios/fundamentos/linux-red-diagnostico.md) |
 

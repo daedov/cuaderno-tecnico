@@ -117,7 +117,7 @@ Teoría de RTO/RPO en [Continuidad de negocio](../../../negocio/continuidad-nego
 - **AWS Elastic Disaster Recovery (DRS)**: replicación continua a nivel de bloque de servidores (on-premises o EC2), recuperación en minutos; para legacy **sin cambiar código**.
 - **Service quotas**: en pilot light y warm standby, verifica **antes** que la región de DR tiene cuotas para escalar.
 - **Infraestructura inmutable**: reemplazar desde una AMI o plantilla, no parchear en vivo; así DR es idéntico a producción.
-- **Observabilidad**: CloudWatch dispara Auto Scaling y alarmas; **X-Ray** (*distributed tracing*) muestra qué microservicio causa latencia o errores. Ver [Observabilidad nativa](../../../cloud/operacion-y-gobierno/observabilidad-nativa.md).
+- **Observabilidad**: CloudWatch dispara Auto Scaling y alarmas; **X-Ray** (*distributed tracing*) muestra qué microservicio causa latencia o errores. Ver [Observabilidad nativa](../../../monitoreo/nube/observabilidad-nativa.md).
 
 !!! tip "En el examen"
     Lee los números: "RPO de 24 horas, mínimo costo" → backup and restore. "RTO de minutos, costo moderado" → warm standby. "La base de datos debe estar siempre replicada pero el cómputo puede arrancar en 30 minutos" → pilot light. "Cero tiempo de caída" → active-active.

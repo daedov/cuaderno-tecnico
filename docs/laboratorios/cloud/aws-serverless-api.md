@@ -586,7 +586,7 @@ El rol de la función no tiene `logs:CreateLogGroup`, así que Lambda no puede r
 | `aws logs tail` dice que el log group no existe en Git Bash | Conversión de rutas | `export MSYS_NO_PATHCONV=1` |
 | El código nuevo no se despliega | No cambió el hash del zip | Comprueba que editaste `src/app.py` y que `terraform plan` muestra cambio en `source_code_hash` |
 
-Para el método general, ver [Troubleshooting](../../devops/operacion/troubleshooting.md) y [Leer logs](../../devops/operacion/leer-logs.md).
+Para el método general, ver [Troubleshooting](../../devops/operacion/troubleshooting.md) y [Leer logs](../../monitoreo/logging/leer-logs.md).
 
 ## Información complementaria
 
@@ -594,7 +594,7 @@ Para el método general, ver [Troubleshooting](../../devops/operacion/troublesho
 - **DynamoDB on-demand vs provisioned**: on-demand cobra por petición y encaja con tráfico impredecible o bajo; provisioned es más barato con carga estable. Ver [Almacenamiento y datos](../../cloud/redes-y-datos/almacenamiento-datos.md).
 - **API Gateway como puerta de entrada**: centraliza autenticación, throttling y enrutado delante de las funciones. Ver [Integración y APIs](../../cloud/arquitectura/integracion-apis.md).
 - **Identity-based vs resource-based policy**: el rol dice qué puede hacer la función; la política de la función dice quién puede invocarla. Ver [IAM: AWS, Azure y GCP](../../cloud/fundamentos/iam-comparativa.md).
-- **Logs y observabilidad**: logs estructurados (JSON) facilitan buscar por campos en Logs Insights. Ver [Observabilidad nativa](../../cloud/operacion-y-gobierno/observabilidad-nativa.md).
+- **Logs y observabilidad**: logs estructurados (JSON) facilitan buscar por campos en Logs Insights. Ver [Observabilidad nativa](../../monitoreo/nube/observabilidad-nativa.md).
 - **En el trabajo real** el `terraform apply` lo ejecuta un pipeline con OIDC (sin llaves, como en el [Lab 13](../devsecops/oidc-github-aws.md)), las pruebas locales corren en CI y un escáner de IaC rechaza políticas con `"Action": "*"`.
 
 ## Documentación oficial
@@ -635,8 +635,8 @@ Para el método general, ver [Troubleshooting](../../devops/operacion/troublesho
 
 ## Notas relacionadas
 
-- **Cloud**: [Serverless](../../cloud/computo/serverless.md) · [Almacenamiento y datos](../../cloud/redes-y-datos/almacenamiento-datos.md) · [Arquitecturas de referencia](../../cloud/arquitectura/arquitecturas-referencia.md) · [Integración y APIs](../../cloud/arquitectura/integracion-apis.md) · [IAM: AWS, Azure y GCP](../../cloud/fundamentos/iam-comparativa.md) · [Observabilidad nativa](../../cloud/operacion-y-gobierno/observabilidad-nativa.md) · [FinOps y costos](../../cloud/fundamentos/finops-costos.md)
-- **DevOps**: [Infrastructure as Code](../../devops/iac/infraestructura-como-codigo.md) · [Terraform](../../devops/iac/terraform-basico.md) · [Leer logs](../../devops/operacion/leer-logs.md) · [Troubleshooting](../../devops/operacion/troubleshooting.md)
+- **Cloud**: [Serverless](../../cloud/computo/serverless.md) · [Almacenamiento y datos](../../cloud/redes-y-datos/almacenamiento-datos.md) · [Arquitecturas de referencia](../../cloud/arquitectura/arquitecturas-referencia.md) · [Integración y APIs](../../cloud/arquitectura/integracion-apis.md) · [IAM: AWS, Azure y GCP](../../cloud/fundamentos/iam-comparativa.md) · [Observabilidad nativa](../../monitoreo/nube/observabilidad-nativa.md) · [FinOps y costos](../../cloud/fundamentos/finops-costos.md)
+- **DevOps**: [Infrastructure as Code](../../devops/iac/infraestructura-como-codigo.md) · [Terraform](../../devops/iac/terraform-basico.md) · [Leer logs](../../monitoreo/logging/leer-logs.md) · [Troubleshooting](../../devops/operacion/troubleshooting.md)
 - **DevSecOps**: [Secretos e identidades](../../devsecops/identidades-y-pipeline/secretos-identidades.md) · [Seguridad de IaC](../../devsecops/infraestructura-y-contenedores/seguridad-iac.md) · [Pruebas dinámicas](../../devsecops/codigo-y-dependencias/pruebas-dinamicas.md)
 - **Networking**: [Protocolos de aplicación](../../networking/intermedio/protocolos-aplicacion.md)
 - **Python**: [Errores y módulos](../../python/fundamentos/errores-modulos.md) · [APIs y HTTP](../../python/scripting/apis-http.md) · [Automatización cloud](../../python/scripting/automatizacion-cloud.md) · [Calidad de código](../../python/scripting/calidad-codigo.md)

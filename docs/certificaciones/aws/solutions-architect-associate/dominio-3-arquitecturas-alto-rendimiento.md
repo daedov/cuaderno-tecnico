@@ -280,7 +280,7 @@ Pipeline típico: Firehose (a Parquet) → S3 → Glue crawlers y Data Catalog (
 - [Redes en la nube](../../../cloud/redes-y-datos/redes.md): load balancers, peering, VPN y CDN comparados.
 - [Máquinas virtuales](../../../cloud/computo/maquinas-virtuales.md), [Contenedores gestionados](../../../cloud/computo/contenedores-gestionados.md) y [Serverless](../../../cloud/computo/serverless.md).
 - [Arquitecturas de referencia](../../../cloud/arquitectura/arquitecturas-referencia.md#4-pipeline-de-datos): pipeline de datos.
-- [Observabilidad](../../../devops/operacion/observabilidad.md): medir latencia y saturación para escalar.
+- [Observabilidad](../../../monitoreo/fundamentos/observabilidad.md): medir latencia y saturación para escalar.
 - [Lab 18: AWS: API serverless con Lambda, API Gateway y DynamoDB](../../../laboratorios/cloud/aws-serverless-api.md).
 
 ## Referencias

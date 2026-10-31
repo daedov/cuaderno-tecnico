@@ -16,7 +16,7 @@ tags:
 
 **Troubleshooting** (diagnóstico y resolución de problemas) es encontrar **por qué** algo no se comporta como debería y arreglarlo. No es saberse todos los comandos: es tener un **método** que te lleve de "no funciona" a una causa comprobada sin dar vueltas.
 
-Esta nota es transversal. Para leer la evidencia ver [Cómo leer logs](leer-logs.md); para los problemas de conectividad, [Troubleshooting de red](../../networking/avanzado/troubleshooting-red.md); para coordinar a un equipo durante una caída, la gestión de incidentes de [Operación y fiabilidad (SRE)](operacion-sre.md).
+Esta nota es transversal. Para leer la evidencia ver [Cómo leer logs](../../monitoreo/logging/leer-logs.md); para los problemas de conectividad, [Troubleshooting de red](../../networking/avanzado/troubleshooting-red.md); para coordinar a un equipo durante una caída, la gestión de incidentes de [Operación y fiabilidad (SRE)](operacion-sre.md).
 
 ## Mentalidad y método
 
@@ -112,7 +112,7 @@ flowchart TD
 
 ### Aplicación
 
-- **Logs**: el primer error, no el último, y con el request ID de una petición fallida ([Cómo leer logs](leer-logs.md#metodo-para-leer-logs)).
+- **Logs**: el primer error, no el último, y con el request ID de una petición fallida ([Cómo leer logs](../../monitoreo/logging/leer-logs.md#metodo-para-leer-logs)).
 - **Health checks**: `curl -s -o /dev/null -w '%{http_code}\n' http://localhost:8080/health`. Distingue *liveness* (el proceso vive) de *readiness* (puede atender: tiene base de datos, caché, configuración).
 - **Dependencias**: prueba cada una **desde donde corre la app**, no desde tu portátil: `nc -zv db.interna 5432`, `curl -v https://api.proveedor.com`. Una dependencia lenta produce timeouts en cascada.
 - **Configuración y variables de entorno**: compara la configuración de la versión que funciona con la que falla (`git diff v1.7.2 v1.8.0 -- config/`). En Kubernetes, `kubectl exec deploy/api -- env | sort` (cuidado: imprime secretos en tu terminal; no lo pegues en un ticket).
@@ -294,7 +294,7 @@ Certificate will expire
 1. **Verifica** que el servicio está bien con los mismos datos que mostraban el fallo (métricas, la petición que fallaba).
 2. **Postmortem** sin culpables, con causa raíz y acciones con responsable ([Postmortem](postmortem.md)).
 3. **Runbook**: si el problema puede repetirse, escribe los pasos de diagnóstico y mitigación ([Runbooks y playbooks](runbooks-playbooks.md)).
-4. **Alerta**: ¿qué señal lo habría detectado antes y desde el síntoma del usuario? Créala ([Alertas accionables](observabilidad.md#alertas-accionables)).
+4. **Alerta**: ¿qué señal lo habría detectado antes y desde el síntoma del usuario? Créala ([Alertas](../../monitoreo/alertas/alertas.md#que-merece-una-alerta)).
 5. **Prevención**: un test de regresión, una validación en el pipeline, una alerta de caducidad de certificados.
 
 ## Casos prácticos
@@ -372,8 +372,8 @@ Las salidas de estos casos son ilustrativas, escritas en el formato real de cada
 
 | Enfoque | Qué se mira desde ahí | Nota |
 | --- | --- | --- |
-| Cloud (el control) | Permisos, cuotas, health checks y logs nativos de cada proveedor | [IAM: AWS, Azure y GCP](../../cloud/fundamentos/iam-comparativa.md), [Observabilidad nativa](../../cloud/operacion-y-gobierno/observabilidad-nativa.md), [Resiliencia](../../cloud/operacion-y-gobierno/resiliencia.md) |
-| DevOps (la automatización) | Evidencia para diagnosticar, gestión del incidente, rollbacks y pipelines | [Cómo leer logs](leer-logs.md), [Observabilidad](observabilidad.md), [Operación y fiabilidad (SRE)](operacion-sre.md), [Kubernetes](../contenedores/kubernetes.md), [Despliegue continuo](../ci-cd/despliegue-continuo.md), [Linux, redes y scripting](../fundamentos/linux-redes-scripting.md) |
+| Cloud (el control) | Permisos, cuotas, health checks y logs nativos de cada proveedor | [IAM: AWS, Azure y GCP](../../cloud/fundamentos/iam-comparativa.md), [Observabilidad nativa](../../monitoreo/nube/observabilidad-nativa.md), [Resiliencia](../../cloud/operacion-y-gobierno/resiliencia.md) |
+| DevOps (la automatización) | Evidencia para diagnosticar, gestión del incidente, rollbacks y pipelines | [Cómo leer logs](../../monitoreo/logging/leer-logs.md), [Observabilidad](../../monitoreo/fundamentos/observabilidad.md), [Operación y fiabilidad (SRE)](operacion-sre.md), [Kubernetes](../contenedores/kubernetes.md), [Despliegue continuo](../ci-cd/despliegue-continuo.md), [Linux, redes y scripting](../fundamentos/linux-redes-scripting.md) |
 | DevSecOps (la verificación) | Permisos del pipeline, OIDC y cuándo un fallo es en realidad un incidente de seguridad | [Seguridad del pipeline](../../devsecops/identidades-y-pipeline/seguridad-pipeline.md), [Secretos e identidades](../../devsecops/identidades-y-pipeline/secretos-identidades.md), [Detección y respuesta](../../devsecops/gobierno-y-respuesta/deteccion-respuesta.md) |
 | Networking (la base) | Metodología por capas y casos de conectividad, DNS y TLS | [Troubleshooting de red](../../networking/avanzado/troubleshooting-red.md), [Servicios de red](../../networking/intermedio/servicios-red.md), [Protocolos de aplicación](../../networking/intermedio/protocolos-aplicacion.md) |
 | Negocio TI (el porqué) | Incident y problem management en ITIL: resolver hoy y eliminar la causa para mañana | [Gestión de servicios (ITSM) e ITIL](../../negocio/gestion-servicios-itil.md) |

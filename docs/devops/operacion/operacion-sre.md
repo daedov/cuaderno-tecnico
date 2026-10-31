@@ -20,7 +20,7 @@ DevOps describe una cultura y unas prácticas; SRE es una forma concreta de llev
 Los principios del libro *Site Reliability Engineering* de Google (disponible gratis en su web):
 
 - **Embracing risk** (aceptar el riesgo): el 100 % de fiabilidad no es un objetivo realista ni deseable. Cada "nueve" extra cuesta mucho más y el usuario no lo nota (su wifi o su móvil fallan más que tu servicio).
-- **Service Level Objectives**: la fiabilidad se define con SLIs y SLOs medibles desde el punto de vista del usuario (ver [Observabilidad](observabilidad.md#sli-slo-sla-y-error-budget)).
+- **Service Level Objectives**: la fiabilidad se define con SLIs y SLOs medibles desde el punto de vista del usuario (ver [Observabilidad](../../monitoreo/fundamentos/observabilidad.md#sli-slo-sla-y-error-budget)).
 - **Error budget** (presupuesto de errores): `100 % − SLO` es el margen que se puede "gastar" en cambios, experimentos y fallos. Equilibra velocidad y estabilidad con datos, no con opiniones.
 - **Eliminating toil** (eliminar el trabajo repetitivo): **toil** es el trabajo manual y repetitivo que crece con el servicio sin aportar valor duradero (reiniciar un servicio a mano cada semana, crear usuarios uno a uno). Google propone que no supere el **50 %** del tiempo de un SRE. Definición completa y cómo medirlo y reducirlo en [Prácticas para aprender de incidentes](practicas-aprendizaje.md#medir-y-reducir-el-toil).
 - **Automation** (automatización): lo que se hace más de dos veces se automatiza; la automatización es más rápida, consistente y no se cansa.
@@ -28,7 +28,7 @@ Los principios del libro *Site Reliability Engineering* de Google (disponible gr
 
 ### Política de error budget
 
-Cómo se calcula el error budget y cómo alertar por *burn rate* está en [Observabilidad](observabilidad.md#sli-slo-sla-y-error-budget); el error budget como acuerdo de negocio, en [Niveles de servicio](../../negocio/niveles-de-servicio.md#error-budget-como-acuerdo-de-negocio). Aquí, qué se hace con él. La política se acuerda **antes** de necesitarla, entre producto y ingeniería:
+Cómo se calcula el error budget y cómo alertar por *burn rate* está en [Observabilidad](../../monitoreo/fundamentos/observabilidad.md#sli-slo-sla-y-error-budget); el error budget como acuerdo de negocio, en [Niveles de servicio](../../negocio/niveles-de-servicio.md#error-budget-como-acuerdo-de-negocio). Aquí, qué se hace con él. La política se acuerda **antes** de necesitarla, entre producto y ingeniería:
 
 | Situación | Qué se hace |
 | --- | --- |
@@ -87,7 +87,7 @@ Las métricas típicas de esta fase son **MTTD** (*Mean Time To Detect*, tiempo 
 - **Rotaciones** con suficiente gente: el SRE Book sugiere un mínimo de 8 personas para una rotación en un solo lugar (o 6 por sitio en dos zonas horarias), para que nadie esté de guardia más de una semana de cada varias.
 - **Follow-the-sun** (seguir al sol): equipos en distintas zonas horarias para que nadie haga guardia de noche.
 - **Pocas alertas y buenas**: demasiadas páginas por turno generan **alert fatigue** (fatiga de alertas) y errores. Los umbrales de referencia y la revisión semanal de alertas están en [Prácticas para aprender de incidentes](practicas-aprendizaje.md#revision-semanal-de-operaciones-y-de-alertas).
-- **Escalado claro**: primario, secundario y a quién llamar si no responden. Herramientas como PagerDuty u Opsgenie, o las de la propia plataforma de alertas, gestionan rotaciones y escalados.
+- **Escalado claro**: primario, secundario y a quién llamar si no responden. Las herramientas de on-call (PagerDuty, Grafana Cloud IRM, incident.io…) gestionan rotaciones y escalados; ver [Alertas](../../monitoreo/alertas/alertas.md#notificacion-y-on-call).
 - **Compensación y descanso** después de una noche con incidentes.
 - **Traspaso de guardia** (*handoff*) al cambiar de turno; plantilla en [Prácticas para aprender de incidentes](practicas-aprendizaje.md#traspaso-de-guardia-on-call-handoff).
 
@@ -120,7 +120,7 @@ El autoscaling ayuda, pero no sustituye la planificación: tiene límites, tarda
 | Enfoque | Qué se mira desde ahí | Nota |
 | --- | --- | --- |
 | Cloud (el control) | Alta disponibilidad, disaster recovery, RTO/RPO y costos de la capacidad | [Resiliencia](../../cloud/operacion-y-gobierno/resiliencia.md), [FinOps y costos](../../cloud/fundamentos/finops-costos.md) |
-| DevOps (la automatización) | SLOs y alertas que disparan los incidentes, rollbacks y métricas de entrega | [Observabilidad](observabilidad.md), [Cultura DevOps y métricas DORA](../fundamentos/cultura-metricas-dora.md), [Despliegue continuo](../ci-cd/despliegue-continuo.md), [Troubleshooting](troubleshooting.md), [Postmortem](postmortem.md), [Análisis de causa raíz](analisis-causa-raiz.md), [Runbooks y playbooks](runbooks-playbooks.md), [Comunicación de incidentes](comunicacion-incidentes.md), [Prácticas de aprendizaje](practicas-aprendizaje.md) |
+| DevOps (la automatización) | SLOs y alertas que disparan los incidentes, rollbacks y métricas de entrega | [Observabilidad](../../monitoreo/fundamentos/observabilidad.md), [Cultura DevOps y métricas DORA](../fundamentos/cultura-metricas-dora.md), [Despliegue continuo](../ci-cd/despliegue-continuo.md), [Troubleshooting](troubleshooting.md), [Postmortem](postmortem.md), [Análisis de causa raíz](analisis-causa-raiz.md), [Runbooks y playbooks](runbooks-playbooks.md), [Comunicación de incidentes](comunicacion-incidentes.md), [Prácticas de aprendizaje](practicas-aprendizaje.md) |
 | DevSecOps (la verificación) | Incidentes de seguridad: mismo ciclo de respuesta, con playbooks y SIEM | [Detección y respuesta](../../devsecops/gobierno-y-respuesta/deteccion-respuesta.md) |
 | Negocio TI (el porqué) | SLAs, OLAs y créditos; incidentes, problemas y cambios en el lenguaje de ITIL | [Niveles de servicio](../../negocio/niveles-de-servicio.md), [Gestión de servicios (ITSM) e ITIL](../../negocio/gestion-servicios-itil.md) |
 | Laboratorios (la práctica) | Practicar esto paso a paso | [Lab 11: Observabilidad con Prometheus y Grafana](../../laboratorios/devops/observabilidad-prometheus-grafana.md), [Lab 21: Game day: incidente simulado, troubleshooting y postmortem](../../laboratorios/operacion/game-day-incidente.md) |

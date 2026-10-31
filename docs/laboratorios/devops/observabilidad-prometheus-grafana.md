@@ -24,7 +24,7 @@ tags:
 - **Docker** con **Compose v2** (`docker compose version`) del [Lab 00](../fundamentos/preparar-entorno.md). Puertos libres en `127.0.0.1`: 8000, 9090 y 9093 (la parte 2 usará además 3100, 12345 y 3000).
 - Opcional: **Python 3.12+** para probar la app sin Docker en el paso 1.
 - Haber hecho el [Lab 05](docker-multistage-compose.md) (Dockerfile y Compose).
-- Teoría: [Observabilidad](../../devops/operacion/observabilidad.md) (sobre todo [Prometheus](../../devops/operacion/observabilidad.md#prometheus) y [SLI, SLO, SLA y error budget](../../devops/operacion/observabilidad.md#sli-slo-sla-y-error-budget)) y [Niveles de servicio](../../negocio/niveles-de-servicio.md).
+- Teoría: [Observabilidad](../../monitoreo/fundamentos/observabilidad.md) (sobre todo [Prometheus](../../monitoreo/fundamentos/observabilidad.md#prometheus) y [SLI, SLO, SLA y error budget](../../monitoreo/fundamentos/observabilidad.md#sli-slo-sla-y-error-budget)) y [Niveles de servicio](../../negocio/niveles-de-servicio.md).
 
 Imágenes usadas en esta parte (versiones vigentes al escribir el lab; revisa si hay más nuevas). Las de Loki, Alloy y Grafana están en la [parte 2](observabilidad-logs-grafana.md#antes-de-empezar).
 
@@ -56,7 +56,7 @@ Crea la carpeta `lab11/app/`. La app es un servidor HTTP mínimo con la librerí
 - `http_requests_total{method, path, status}` (**counter**, contador que solo sube): sirve para tasas y porcentajes de error.
 - `http_request_duration_seconds{path}` (**histogram**, histograma por *buckets*): sirve para percentiles de latencia.
 
-Las labels tienen pocos valores posibles (`path` es la ruta, no la URL completa) para no disparar la **cardinalidad** (ver [Prometheus](../../devops/operacion/observabilidad.md#prometheus)).
+Las labels tienen pocos valores posibles (`path` es la ruta, no la URL completa) para no disparar la **cardinalidad** (ver [Prometheus](../../monitoreo/fundamentos/observabilidad.md#prometheus)).
 
 ```python title="app/app.py"
 """App de ejemplo para el Lab 11 (y el Lab 21): expone métricas Prometheus
@@ -582,7 +582,7 @@ curl -s 'http://localhost:9090/api/v1/query?query=up'
 
 ## Retos extra
 
-1. **Alerta por burn rate con dos ventanas**: reescribe `TasaErrores5xxAlta` como en la [nota de observabilidad](../../devops/operacion/observabilidad.md#alertas-accionables) (14,4 × error budget en 1 h y en 5 min). Pista: crea recording rules para `[1h]` y `[5m]`.
+1. **Alerta por burn rate con dos ventanas**: reescribe `TasaErrores5xxAlta` como en la [nota de alertas](../../monitoreo/alertas/alertas.md#alertas-basadas-en-slo-burn-rate) (14,4 × error budget en 1 h y en 5 min). Pista: crea recording rules para `[1h]` y `[5m]`.
 2. **Un receptor real**: envía las alertas a un webhook (por ejemplo, un canal de Slack o Microsoft Teams de pruebas) con `webhook_configs` o `slack_configs` en Alertmanager. No pongas la URL del webhook en Git: es un secreto.
 
 ## Limpieza
@@ -619,10 +619,10 @@ Para un método general, ver [Troubleshooting](../../devops/operacion/troublesho
 
 ## Información complementaria
 
-- **SLI, SLO y error budget**: el SLI es la medida, el SLO el objetivo, el error budget lo que te puedes permitir fallar. Ver [SLI, SLO, SLA y error budget](../../devops/operacion/observabilidad.md#sli-slo-sla-y-error-budget) y, desde negocio, [Niveles de servicio](../../negocio/niveles-de-servicio.md#sli-slo-y-sla-quien-los-usa).
-- **Alertar sobre síntomas**: la alerta del lab mide lo que sufre el usuario (errores, latencia), no la CPU. Ver [Alertas accionables](../../devops/operacion/observabilidad.md#alertas-accionables).
-- **Qué medir**: el counter y el histogram de la app cubren la tasa, los errores y la duración del método RED. Ver [Métodos RED, USE y golden signals](../../devops/operacion/observabilidad.md#metodos-red-use-y-golden-signals).
-- **En la nube**: los equivalentes gestionados son Amazon Managed Service for Prometheus, Azure Monitor (con su servicio gestionado para Prometheus) y Google Cloud Managed Service for Prometheus. Ver [Observabilidad nativa](../../cloud/operacion-y-gobierno/observabilidad-nativa.md).
+- **SLI, SLO y error budget**: el SLI es la medida, el SLO el objetivo, el error budget lo que te puedes permitir fallar. Ver [SLI, SLO, SLA y error budget](../../monitoreo/fundamentos/observabilidad.md#sli-slo-sla-y-error-budget) y, desde negocio, [Niveles de servicio](../../negocio/niveles-de-servicio.md#sli-slo-y-sla-quien-los-usa).
+- **Alertar sobre síntomas**: la alerta del lab mide lo que sufre el usuario (errores, latencia), no la CPU. Ver [Alertas](../../monitoreo/alertas/alertas.md#que-merece-una-alerta).
+- **Qué medir**: el counter y el histogram de la app cubren la tasa, los errores y la duración del método RED. Ver [Métodos RED, USE y golden signals](../../monitoreo/fundamentos/observabilidad.md#metodos-red-use-y-golden-signals).
+- **En la nube**: los equivalentes gestionados son Amazon Managed Service for Prometheus, Azure Monitor (con su servicio gestionado para Prometheus) y Google Cloud Managed Service for Prometheus. Ver [Observabilidad nativa](../../monitoreo/nube/observabilidad-nativa.md).
 
 ## Documentación oficial
 
@@ -656,11 +656,11 @@ Para un método general, ver [Troubleshooting](../../devops/operacion/troublesho
 
 **Cloud**
 
-- [Observabilidad nativa](../../cloud/operacion-y-gobierno/observabilidad-nativa.md)
+- [Observabilidad nativa](../../monitoreo/nube/observabilidad-nativa.md)
 
 **DevOps**
 
-- [Observabilidad: Prometheus, Grafana, OpenTelemetry y SLOs](../../devops/operacion/observabilidad.md)
+- [Observabilidad: Prometheus, Grafana, OpenTelemetry y SLOs](../../monitoreo/fundamentos/observabilidad.md)
 - [Operación y fiabilidad (SRE)](../../devops/operacion/operacion-sre.md)
 - [Runbooks y playbooks](../../devops/operacion/runbooks-playbooks.md)
 - [Troubleshooting](../../devops/operacion/troubleshooting.md)

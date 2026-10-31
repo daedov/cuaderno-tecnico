@@ -83,7 +83,7 @@ Herramientas:
 !!! warning "La status page no puede depender de lo que se cae"
     Alójala fuera de tu infraestructura principal (otro proveedor, otra región o un SaaS). Una status page caída junto con el servicio no sirve.
 
-También conviene que el equipo conozca las páginas de estado de sus proveedores: **AWS Health Dashboard**, **Azure Service Health** (y la página pública de estado de Azure) y **Google Cloud Service Health**. Ver [Observabilidad nativa](../../cloud/operacion-y-gobierno/observabilidad-nativa.md).
+También conviene que el equipo conozca las páginas de estado de sus proveedores: **AWS Health Dashboard**, **Azure Service Health** (y la página pública de estado de Azure) y **Google Cloud Service Health**. Ver [Observabilidad nativa](../../monitoreo/nube/observabilidad-nativa.md).
 
 ## Cadencia de actualizaciones
 
@@ -204,7 +204,7 @@ Cómo se calculan los créditos y qué cubren se ve en [Niveles de servicio](../
 
 | Enfoque | Qué se mira desde ahí | Nota |
 | --- | --- | --- |
-| Cloud (el control) | Estado de los proveedores (Health Dashboard, Service Health) y alertas nativas | [Observabilidad nativa](../../cloud/operacion-y-gobierno/observabilidad-nativa.md), [Resiliencia](../../cloud/operacion-y-gobierno/resiliencia.md) |
+| Cloud (el control) | Estado de los proveedores (Health Dashboard, Service Health) y alertas nativas | [Observabilidad nativa](../../monitoreo/nube/observabilidad-nativa.md), [Resiliencia](../../cloud/operacion-y-gobierno/resiliencia.md) |
 | DevOps (la automatización) | Proceso de incidentes, postmortem y simulacros donde se practica la comunicación | [Operación y fiabilidad (SRE)](operacion-sre.md), [Postmortem](postmortem.md), [Prácticas para aprender de incidentes](practicas-aprendizaje.md) |
 | DevSecOps (la verificación) | Comunicación restringida y obligaciones legales en incidentes de seguridad | [Detección y respuesta](../../devsecops/gobierno-y-respuesta/deteccion-respuesta.md), [Cumplimiento y gobierno](../../devsecops/gobierno-y-respuesta/cumplimiento.md) |
 | Negocio TI (el porqué) | SLAs, créditos, continuidad y comunicación con clientes y dirección | [Niveles de servicio](../../negocio/niveles-de-servicio.md), [Continuidad de negocio](../../negocio/continuidad-negocio.md), [Gestión de servicios (ITSM) e ITIL](../../negocio/gestion-servicios-itil.md) |

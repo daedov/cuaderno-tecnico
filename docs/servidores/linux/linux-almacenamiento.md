@@ -457,7 +457,7 @@ Desde la consola serie: la raíz suele estar en solo lectura, así que `mount -o
 | Enfoque | Qué se mira desde ahí | Nota |
 | --- | --- | --- |
 | Cloud (el control) | Discos de bloque, archivos y objetos en la nube; backups y snapshots gestionados | [Almacenamiento y datos](../../cloud/redes-y-datos/almacenamiento-datos.md), [Máquinas virtuales](../../cloud/computo/maquinas-virtuales.md), [Seguridad del almacenamiento](../../cloud/seguridad/seguridad-almacenamiento.md) |
-| DevOps (la automatización) | Discos y montajes como código, alertas de disco lleno | [Ansible para Linux](../ansible/ansible-linux.md), [Observabilidad](../../devops/operacion/observabilidad.md), [Troubleshooting](../../devops/operacion/troubleshooting.md) |
+| DevOps (la automatización) | Discos y montajes como código, alertas de disco lleno | [Ansible para Linux](../ansible/ansible-linux.md), [Observabilidad](../../monitoreo/fundamentos/observabilidad.md), [Troubleshooting](../../devops/operacion/troubleshooting.md) |
 | DevSecOps (la verificación) | Opciones de montaje seguras (`nodev`, `nosuid`, `noexec`), cifrado de disco | [Hardening de Linux](../../devsecops/hardening/hardening-linux.md) |
 | Servidores | El resto de la administración Linux | [Fundamentos](linux-fundamentos-servidor.md), [Redes](linux-redes-servidor.md), [Procesos y rendimiento](linux-procesos-rendimiento.md) |
 

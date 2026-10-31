@@ -30,7 +30,7 @@ Las herramientas son ejemplos habituales, no una lista obligatoria. Cada ficha e
 - **Qué hace:** construye y opera la infraestructura en uno o varios proveedores cloud de forma segura, repetible y con costos razonables.
 - **Día a día:** redes, cómputo, almacenamiento e IAM; IaC; monitoreo y backups; incidentes de infraestructura, parches y cambios.
 - **Herramientas:** consola y CLI del proveedor, Terraform, Git, CloudWatch / Azure Monitor / Cloud Monitoring, Ansible.
-- **Notas:** [IAM](../cloud/fundamentos/iam-comparativa.md), [Redes en la nube](../cloud/redes-y-datos/redes.md), [Máquinas virtuales](../cloud/computo/maquinas-virtuales.md), [Terraform](../devops/iac/terraform-basico.md), [Observabilidad nativa](../cloud/operacion-y-gobierno/observabilidad-nativa.md).
+- **Notas:** [IAM](../cloud/fundamentos/iam-comparativa.md), [Redes en la nube](../cloud/redes-y-datos/redes.md), [Máquinas virtuales](../cloud/computo/maquinas-virtuales.md), [Terraform](../devops/iac/terraform-basico.md), [Observabilidad nativa](../monitoreo/nube/observabilidad-nativa.md).
 - **Certificaciones:** [Cloud Practitioner](aws/cloud-practitioner/resumen-examen.md) como base y luego [Solutions Architect – Associate](aws/solutions-architect-associate/resumen-examen.md), [AZ-104](azure/azure-administrator/resumen-examen.md) o [Associate Cloud Engineer](google-cloud/associate-cloud-engineer/resumen-examen.md), más [Terraform Associate](hashicorp/terraform-associate/resumen-examen.md) ([ruta sugerida](otras-certificaciones.md#rutas-sugeridas-por-rol)).
 
 ### Cloud Architect / Solutions Architect
@@ -65,7 +65,7 @@ Las herramientas son ejemplos habituales, no una lista obligatoria. Cada ficha e
 - **Qué hace:** mantiene los servicios **fiables** aplicando ingeniería de software a operaciones: SLO, presupuestos de error (*error budget*), automatización y aprendizaje de incidentes.
 - **Día a día:** SLI/SLO con producto, alertas por síntomas, guardias (*on-call*), gestión de incidentes, *postmortems* sin culpables (*blameless*), planificación de capacidad, reducir **toil** (trabajo manual repetitivo).
 - **Herramientas:** Prometheus, Grafana, OpenTelemetry, PagerDuty/Opsgenie, runbooks, chaos engineering.
-- **Notas:** [Operación y fiabilidad (SRE)](../devops/operacion/operacion-sre.md), [Observabilidad](../devops/operacion/observabilidad.md), [Postmortem](../devops/operacion/postmortem.md), [Runbooks y playbooks](../devops/operacion/runbooks-playbooks.md), [Niveles de servicio](../negocio/niveles-de-servicio.md), [Resiliencia](../cloud/operacion-y-gobierno/resiliencia.md).
+- **Notas:** [Operación y fiabilidad (SRE)](../devops/operacion/operacion-sre.md), [Observabilidad](../monitoreo/fundamentos/observabilidad.md), [Postmortem](../devops/operacion/postmortem.md), [Runbooks y playbooks](../devops/operacion/runbooks-playbooks.md), [Niveles de servicio](../negocio/niveles-de-servicio.md), [Resiliencia](../cloud/operacion-y-gobierno/resiliencia.md).
 - **Certificaciones:** pesa más la experiencia que las certificaciones ([ruta sugerida](otras-certificaciones.md#rutas-sugeridas-por-rol)).
 
 ### DevSecOps Engineer / Application Security Engineer
@@ -113,7 +113,7 @@ Las herramientas son ejemplos habituales, no una lista obligatoria. Cada ficha e
 - **Qué hace:** lleva modelos de *machine learning* (aprendizaje automático) e IA generativa a producción de forma repetible: pipelines de entrenamiento, despliegue, monitoreo y gobierno.
 - **Día a día:** entrenamiento continuo, registro de modelos (*model registry*), despliegue e inferencia, monitoreo de deriva (*drift*), infraestructura con GPU, plataformas para aplicaciones con LLM, costos de IA. Según Google, la madurez va de **0** (manual) a **1** (pipeline de ML automatizado) y **2** (CI/CD del propio pipeline).
 - **Herramientas:** Amazon SageMaker AI / Amazon Bedrock, Azure Machine Learning / Microsoft Foundry, Vertex AI, MLflow, Kubeflow.
-- **Notas:** [Kubernetes](../devops/contenedores/kubernetes.md), [Integración continua](../devops/ci-cd/integracion-continua.md), [Observabilidad](../devops/operacion/observabilidad.md), [Python](../python/index.md).
+- **Notas:** [Kubernetes](../devops/contenedores/kubernetes.md), [Integración continua](../devops/ci-cd/integracion-continua.md), [Observabilidad](../monitoreo/fundamentos/observabilidad.md), [Python](../python/index.md).
 - **Certificaciones:** [AI Practitioner](aws/ai-practitioner/resumen-examen.md) como base ([ruta sugerida](otras-certificaciones.md#rutas-sugeridas-por-rol)).
 
 ### Release / Build Engineer
@@ -127,7 +127,7 @@ Las herramientas son ejemplos habituales, no una lista obligatoria. Cada ficha e
 
 - **Qué hace:** atiende incidencias y solicitudes, vigila alertas y resuelve o escala siguiendo runbooks. Es una de las **puertas de entrada** más comunes: ves muchos sistemas y aprendes troubleshooting real.
 - **Día a día:** tickets de primer y segundo nivel, alertas, runbooks, escalamiento, documentar soluciones. Variantes: **NOC** (*Network Operations Center*) vigila redes y servicios; **SOC** (*Security Operations Center*) vigila alertas de seguridad y es la entrada típica a Cloud Security.
-- **Notas:** [Troubleshooting](../devops/operacion/troubleshooting.md), [Leer logs](../devops/operacion/leer-logs.md), [Runbooks y playbooks](../devops/operacion/runbooks-playbooks.md), [Gestión de servicios e ITIL 4](../negocio/gestion-servicios-itil.md).
+- **Notas:** [Troubleshooting](../devops/operacion/troubleshooting.md), [Leer logs](../monitoreo/logging/leer-logs.md), [Runbooks y playbooks](../devops/operacion/runbooks-playbooks.md), [Gestión de servicios e ITIL 4](../negocio/gestion-servicios-itil.md).
 - **Certificaciones:** [Ruta sugerida](otras-certificaciones.md#rutas-sugeridas-por-rol).
 
 ## Tablas comparativas
@@ -173,7 +173,7 @@ Desde la entrada se suele crecer hacia SRE, Platform o Cloud Architect. Qué est
 | Si vienes de… | Apunta a… | Empieza por estas secciones | Laboratorios clave |
 | --- | --- | --- | --- |
 | Soporte o SysAdmin | Cloud Engineer | Networking básico, [Linux, redes y scripting](../devops/fundamentos/linux-redes-scripting.md), Cloud (fundamentos, IAM, redes, cómputo) | 00–03, 08–09, 17, 19 |
-| Cloud Engineer | DevOps, Platform o SRE | DevOps completo, [Observabilidad](../devops/operacion/observabilidad.md), [Operación SRE](../devops/operacion/operacion-sre.md) | 04–11, 21 |
+| Cloud Engineer | DevOps, Platform o SRE | DevOps completo, [Observabilidad](../monitoreo/fundamentos/observabilidad.md), [Operación SRE](../devops/operacion/operacion-sre.md) | 04–11, 21 |
 | Desarrollo de software | DevOps o Platform | [Git](../devops/fundamentos/git-control-versiones.md), CI/CD, contenedores, IaC; luego Cloud | 04–08, 18, 20 |
 | Seguridad o SOC | DevSecOps o Cloud Security | DevSecOps completo, [Fundamentos de seguridad cloud](../cloud/seguridad/fundamentos-seguridad-cloud.md), [IAM](../cloud/fundamentos/iam-comparativa.md) | 12–16 |
 | Redes o NOC | Cloud Network Engineer | Networking intermedio y avanzado, [Redes en la nube](../cloud/redes-y-datos/redes.md) | 01–02, 17, 19 |

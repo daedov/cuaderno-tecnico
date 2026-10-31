@@ -58,7 +58,7 @@ Los detalles por tipo de VM están en [Máquinas virtuales](../computo/maquinas-
     - **Egress** (transferencia de datos de salida): sacar datos hacia internet, entre regiones y a veces entre zonas se cobra. La entrada (*ingress*) suele ser gratuita.
     - **NAT Gateway**: cobra por hora y por GB procesado; en arquitecturas con mucho tráfico saliente puede ser una de las líneas más grandes. Ver [Redes en la nube](../redes-y-datos/redes.md).
     - **Recursos huérfanos**: discos sin VM, *snapshots* antiguos, IPs públicas sin uso, load balancers sin destinos.
-    - **Logs**: ingerir y retener logs en el servicio de observabilidad cuesta. Ver [Observabilidad nativa](../operacion-y-gobierno/observabilidad-nativa.md).
+    - **Logs**: ingerir y retener logs en el servicio de observabilidad cuesta. Ver [Observabilidad nativa](../../monitoreo/nube/observabilidad-nativa.md).
 
 ## Herramientas nativas de costos
 

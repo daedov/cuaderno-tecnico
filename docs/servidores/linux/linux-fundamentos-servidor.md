@@ -494,7 +494,7 @@ Muchas distros mantienen **rsyslog** para escribir también archivos de texto cl
 
 Se lee así: rota cada semana (`weekly`) y conserva 4 archivos antiguos (`rotate 4`); no falla si el log no existe (`missingok`) ni rota si está vacío (`notifempty`); comprime con gzip a partir de la segunda rotación (`compress` + `delaycompress`), y después avisa a rsyslog para que reabra los archivos (`postrotate`). Ojo: logrotate solo admite comentarios en líneas propias que empiecen con `#`, no al final de una directiva.
 
-`sudo logrotate -d /etc/logrotate.d/miapp` hace una prueba en seco (*dry run*) sin rotar nada. Cómo leer e interpretar los logs: [Cómo leer logs](../../devops/operacion/leer-logs.md).
+`sudo logrotate -d /etc/logrotate.d/miapp` hace una prueba en seco (*dry run*) sin rotar nada. Cómo leer e interpretar los logs: [Cómo leer logs](../../monitoreo/logging/leer-logs.md).
 
 ## Hostname y zona horaria
 
@@ -567,7 +567,7 @@ No edites `/usr/lib/systemd/system/nginx.service`. Usa `sudo systemctl edit ngin
 | Enfoque | Qué se mira desde ahí | Nota |
 | --- | --- | --- |
 | Cloud (el control) | Las VMs donde corren estos servidores, imágenes y acceso por consola | [Máquinas virtuales](../../cloud/computo/maquinas-virtuales.md), [Seguridad de máquinas virtuales](../../cloud/seguridad/seguridad-maquinas-virtuales.md) |
-| DevOps (la automatización) | systemd, Bash y SSH para automatizar; gestionar todo esto como código | [Linux, redes y scripting](../../devops/fundamentos/linux-redes-scripting.md), [Ansible](../../devops/iac/ansible.md), [Ansible para Linux](../ansible/ansible-linux.md), [Cómo leer logs](../../devops/operacion/leer-logs.md) |
+| DevOps (la automatización) | systemd, Bash y SSH para automatizar; gestionar todo esto como código | [Linux, redes y scripting](../../devops/fundamentos/linux-redes-scripting.md), [Ansible](../../devops/iac/ansible.md), [Ansible para Linux](../ansible/ansible-linux.md), [Cómo leer logs](../../monitoreo/logging/leer-logs.md) |
 | DevSecOps (la verificación) | sudo, SSH, SUID, auditd, parches y su verificación | [Hardening de Linux](../../devsecops/hardening/hardening-linux.md), [CVE en Linux y sistemas](../../devsecops/vulnerabilidades/cve-linux-sistemas.md) |
 | Servidores | El resto de la administración Linux | [Almacenamiento](linux-almacenamiento.md), [Redes](linux-redes-servidor.md), [Procesos y rendimiento](linux-procesos-rendimiento.md) |
 

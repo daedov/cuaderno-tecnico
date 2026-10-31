@@ -190,7 +190,7 @@ Riesgo = Probabilidad × Impacto
 | Enfoque | Qué se mira desde ahí | Nota |
 | --- | --- | --- |
 | Cloud (el control) | Qué parte de la seguridad te toca y qué servicios nativos la implementan | [Shared Responsibility Model](../cloud/fundamentos/responsabilidad-compartida.md), [Well-Architected Framework](../cloud/fundamentos/well-architected.md), [Fundamentos de seguridad cloud](../cloud/seguridad/fundamentos-seguridad-cloud.md), [IAM: AWS, Azure y GCP](../cloud/fundamentos/iam-comparativa.md) |
-| DevOps (la automatización) | La cultura y el pipeline donde se insertan los controles | [Cultura DevOps y métricas DORA](../devops/fundamentos/cultura-metricas-dora.md), [Integración continua](../devops/ci-cd/integracion-continua.md), [Despliegue continuo](../devops/ci-cd/despliegue-continuo.md), [Observabilidad](../devops/operacion/observabilidad.md) |
+| DevOps (la automatización) | La cultura y el pipeline donde se insertan los controles | [Cultura DevOps y métricas DORA](../devops/fundamentos/cultura-metricas-dora.md), [Integración continua](../devops/ci-cd/integracion-continua.md), [Despliegue continuo](../devops/ci-cd/despliegue-continuo.md), [Observabilidad](../monitoreo/fundamentos/observabilidad.md) |
 | DevSecOps (la verificación) | Cada control de la tabla de fases, en detalle | Ver [Mapa de la sección DevSecOps](#mapa-de-la-seccion-devsecops), [Fundamentos de CVE](vulnerabilidades/fundamentos-cve.md) |
 | Laboratorios (la práctica) | Practicar esto paso a paso | [Lab 12: Escaneos de seguridad en el pipeline](../laboratorios/devsecops/escaneos-en-pipeline.md), [Lab 15: DAST con OWASP ZAP sobre OWASP Juice Shop](../laboratorios/devsecops/dast-zap-juice-shop.md) |
 

@@ -4,6 +4,7 @@ nav:
   - Cloud: cloud
   - DevOps: devops
   - DevSecOps: devsecops
+  - Observabilidad y monitoreo: monitoreo
   - Networking: networking
   - Servidores: servidores
   - Python: python

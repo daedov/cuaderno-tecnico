@@ -59,6 +59,12 @@ plugins:
       lang: es
   - awesome-pages
   - tags
+  # Notas movidas: las URLs antiguas siguen funcionando
+  - redirects:
+      redirect_maps:
+        devops/operacion/observabilidad.md: monitoreo/fundamentos/observabilidad.md
+        devops/operacion/leer-logs.md: monitoreo/logging/leer-logs.md
+        cloud/operacion-y-gobierno/observabilidad-nativa.md: monitoreo/nube/observabilidad-nativa.md
 
 markdown_extensions:
   - admonition

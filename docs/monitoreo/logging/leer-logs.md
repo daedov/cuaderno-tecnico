@@ -15,7 +15,7 @@ tags:
 
 Un **log** (registro) es una línea de texto que un programa escribe cuando pasa algo: arrancó, recibió una petición, falló una conexión. Leídos en orden, los logs cuentan **qué pasó, cuándo y dónde**, y son casi siempre la primera evidencia cuando algo se rompe.
 
-Los logs son uno de los tres pilares de la observabilidad: las **metrics** (métricas) te dicen *que* algo va mal, las **traces** (trazas) *dónde* se fue el tiempo y los logs *qué* pasó exactamente (ver [Observabilidad](observabilidad.md#los-tres-pilares)).
+Los logs son uno de los tres pilares de la observabilidad: las **metrics** (métricas) te dicen *que* algo va mal, las **traces** (trazas) *dónde* se fue el tiempo y los logs *qué* pasó exactamente (ver [Observabilidad](../fundamentos/observabilidad.md#los-tres-pilares)).
 
 ## Anatomía de una línea de log
 
@@ -179,7 +179,7 @@ kubectl get events -n tienda --sort-by=.metadata.creationTimestamp
 
 ## Consultas de logs en la nube
 
-La misma pregunta, **errores por minuto en la última hora**, en cada proveedor. Detalle de cada servicio en [Observabilidad nativa](../../cloud/operacion-y-gobierno/observabilidad-nativa.md).
+La misma pregunta, **errores por minuto en la última hora**, en cada proveedor. Detalle de cada servicio en [Observabilidad nativa](../nube/observabilidad-nativa.md).
 
 === "AWS"
 
@@ -355,8 +355,8 @@ El gateway devolvió un 500. Tienes sus logs y los del servicio de pedidos:
 
 | Enfoque | Qué se mira desde ahí | Nota |
 | --- | --- | --- |
-| Cloud (el control) | Dónde viven los logs de cada nube, cómo se consultan y cuánto cuestan; logs de auditoría | [Observabilidad nativa](../../cloud/operacion-y-gobierno/observabilidad-nativa.md), [Seguridad de logging y detección](../../cloud/seguridad/seguridad-logging-deteccion.md) |
-| DevOps (la automatización) | Centralizar logs, correlacionarlos con métricas y trazas, y usarlos para diagnosticar | [Observabilidad](observabilidad.md), [Troubleshooting](troubleshooting.md), [Operación y fiabilidad (SRE)](operacion-sre.md), [Kubernetes](../contenedores/kubernetes.md) |
+| Cloud (el control) | Dónde viven los logs de cada nube, cómo se consultan y cuánto cuestan; logs de auditoría | [Observabilidad nativa](../nube/observabilidad-nativa.md), [Seguridad de logging y detección](../../cloud/seguridad/seguridad-logging-deteccion.md) |
+| DevOps (la automatización) | Centralizar logs, correlacionarlos con métricas y trazas, y usarlos para diagnosticar | [Observabilidad](../fundamentos/observabilidad.md), [Troubleshooting](../../devops/operacion/troubleshooting.md), [Operación y fiabilidad (SRE)](../../devops/operacion/operacion-sre.md), [Kubernetes](../../devops/contenedores/kubernetes.md) |
 | DevSecOps (la verificación) | Los mismos logs como fuente de detección: escáneres, fuerza bruta, accesos denegados | [Detección y respuesta](../../devsecops/gobierno-y-respuesta/deteccion-respuesta.md) |
 | Networking (la base) | Flow logs, errores de conexión y su significado en la red | [Troubleshooting de red](../../networking/avanzado/troubleshooting-red.md) |
 | Python (la herramienta) | Escribir logs con `logging` y procesar archivos de log grandes | [Scripts de línea de comandos](../../python/scripting/scripts-cli.md), [Archivos y formatos](../../python/scripting/archivos-formatos.md) |

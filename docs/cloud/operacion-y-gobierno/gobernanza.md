@@ -167,7 +167,7 @@ Los logs de auditoría y los hallazgos de seguridad deben salir de las cuentas d
 | Seguridad y auditoría | Cuenta **Audit** con administrador delegado de GuardDuty y Security Hub | Microsoft Defender for Cloud y Microsoft Sentinel a nivel de management group | Security Command Center activado a nivel de organización |
 | Protección de los logs | S3 Object Lock, SCP que impide borrar el trail | Resource locks, RBAC restringido | Log bucket con *retention lock*, Organization Policy |
 
-Qué conviene registrar y vigilar se explica en [Seguridad de logging y detección](../seguridad/seguridad-logging-deteccion.md) y [Observabilidad nativa](observabilidad-nativa.md).
+Qué conviene registrar y vigilar se explica en [Seguridad de logging y detección](../seguridad/seguridad-logging-deteccion.md) y [Observabilidad nativa](../../monitoreo/nube/observabilidad-nativa.md).
 
 ## Comandos para ver la jerarquía
 

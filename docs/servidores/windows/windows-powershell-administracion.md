@@ -232,7 +232,7 @@ Claves útiles de la hashtable: `LogName`, `ProviderName`, `Id`, `Level` (1 crí
 Get-WinEvent -FilterHashtable @{ LogName = 'Security'; Id = 4625; StartTime = (Get-Date).AddHours(-1) }
 ```
 
-En el equipo de prueba, sin elevación, la consulta a Security devolvió *No se encontraron eventos que coincidan con los criterios de selección especificados*: el mensaje engaña, el motivo real es la falta de permisos. Más sobre cómo leer logs en [Cómo leer logs](../../devops/operacion/leer-logs.md); qué auditar y cómo llevarlo a un SIEM en [Hardening de Windows Server](../../devsecops/hardening/hardening-windows.md#logging-de-powershell-y-auditoria-avanzada).
+En el equipo de prueba, sin elevación, la consulta a Security devolvió *No se encontraron eventos que coincidan con los criterios de selección especificados*: el mensaje engaña, el motivo real es la falta de permisos. Más sobre cómo leer logs en [Cómo leer logs](../../monitoreo/logging/leer-logs.md); qué auditar y cómo llevarlo a un SIEM en [Hardening de Windows Server](../../devsecops/hardening/hardening-windows.md#logging-de-powershell-y-auditoria-avanzada).
 
 ## Actualizaciones
 
@@ -535,7 +535,7 @@ Contadores para un primer vistazo (nombres en inglés):
 | `\PhysicalDisk(*)\Avg. Disk sec/Read` y `/Write` | Latencia de disco | > 20–25 ms sostenidos |
 | `\Network Interface(*)\Bytes Total/sec` | Tráfico de red | Cerca del ancho de banda de la NIC |
 
-Es la versión Windows de la metodología USE de [Linux: procesos y rendimiento](../linux/linux-procesos-rendimiento.md). Para histórico y alertas, envía estos contadores a tu plataforma de monitoreo ([Observabilidad](../../devops/operacion/observabilidad.md)).
+Es la versión Windows de la metodología USE de [Linux: procesos y rendimiento](../linux/linux-procesos-rendimiento.md). Para histórico y alertas, envía estos contadores a tu plataforma de monitoreo ([Observabilidad](../../monitoreo/fundamentos/observabilidad.md)).
 
 ## Equivalencias entre Linux y Windows
 
@@ -623,7 +623,7 @@ Igual que el [ejemplo de backup](#tareas-programadas), con `New-ScheduledTaskTri
 | Enfoque | Qué se mira desde ahí | Nota |
 | --- | --- | --- |
 | Servidores (la práctica) | Fundamentos, roles, lo mismo en Linux y automatizado con Ansible | [Windows Server: fundamentos](windows-server-fundamentos.md), [Roles y servicios de Windows Server](windows-roles-servicios.md), [Linux: procesos y rendimiento](../linux/linux-procesos-rendimiento.md), [Linux: almacenamiento](../linux/linux-almacenamiento.md), [Ansible y Windows](../ansible/ansible-windows.md) |
-| DevOps (la automatización) | Leer logs, diagnosticar y observar | [Cómo leer logs](../../devops/operacion/leer-logs.md), [Troubleshooting](../../devops/operacion/troubleshooting.md), [Observabilidad](../../devops/operacion/observabilidad.md), [Sistema y procesos con Python](../../python/scripting/sistema-procesos.md) |
+| DevOps (la automatización) | Leer logs, diagnosticar y observar | [Cómo leer logs](../../monitoreo/logging/leer-logs.md), [Troubleshooting](../../devops/operacion/troubleshooting.md), [Observabilidad](../../monitoreo/fundamentos/observabilidad.md), [Sistema y procesos con Python](../../python/scripting/sistema-procesos.md) |
 | DevSecOps (la verificación) | Auditoría, eventos de seguridad y configuración segura | [Hardening de Windows Server](../../devsecops/hardening/hardening-windows.md), [Detección y respuesta](../../devsecops/gobierno-y-respuesta/deteccion-respuesta.md) |
 | Cloud (el control) | Discos, IPs y firewall de la VM a nivel de plataforma | [Máquinas virtuales](../../cloud/computo/maquinas-virtuales.md), [Redes en la nube](../../cloud/redes-y-datos/redes.md) |
 | Networking (la base) | Diagnóstico de conectividad y DNS | [Troubleshooting de red](../../networking/avanzado/troubleshooting-red.md), [Puertos](../../recursos/puertos.md) |

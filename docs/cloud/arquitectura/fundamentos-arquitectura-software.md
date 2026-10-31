@@ -196,7 +196,7 @@ Consecuencias prácticas:
 | Enfoque | Qué se mira desde ahí | Nota |
 | --- | --- | --- |
 | Cloud (el control) | Estilos y patrones concretos; atributos de calidad vistos como pilares del proveedor | [Estilos de arquitectura](estilos-arquitectura.md), [Arquitectura en la nube](arquitectura-cloud.md), [Well-Architected Framework](../fundamentos/well-architected.md), [Resiliencia](../operacion-y-gobierno/resiliencia.md) |
-| DevOps (la automatización) | Equipos, flujo de trabajo y revisión de ADRs en pull requests; observabilidad como atributo de calidad | [Cultura DevOps y métricas DORA](../../devops/fundamentos/cultura-metricas-dora.md), [Git y control de versiones](../../devops/fundamentos/git-control-versiones.md), [Observabilidad](../../devops/operacion/observabilidad.md) |
+| DevOps (la automatización) | Equipos, flujo de trabajo y revisión de ADRs en pull requests; observabilidad como atributo de calidad | [Cultura DevOps y métricas DORA](../../devops/fundamentos/cultura-metricas-dora.md), [Git y control de versiones](../../devops/fundamentos/git-control-versiones.md), [Observabilidad](../../monitoreo/fundamentos/observabilidad.md) |
 | DevSecOps (la verificación) | Seguridad como atributo de calidad desde el diseño: threat modeling sobre el diagrama C4 | [Fundamentos DevSecOps](../../devsecops/fundamentos-devsecops.md) |
 | Negocio TI (el porqué) | De dónde salen los NFR: valor, costos, SLAs y deuda técnica como decisión de negocio | [TI y negocio](../../negocio/ti-y-negocio.md), [Niveles de servicio](../../negocio/niveles-de-servicio.md), [Proyectos y producto en TI](../../negocio/gestion-proyectos-producto.md) |
 

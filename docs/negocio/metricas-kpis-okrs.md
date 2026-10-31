@@ -134,8 +134,8 @@ Informe mensual de plataforma (ejemplo de estructura)
 | Enfoque | Qué se mira desde ahí | Nota |
 | --- | --- | --- |
 | Negocio TI (el porqué) | De dónde salen los objetivos y cómo se miden servicios y proyectos | [TI y negocio](ti-y-negocio.md), [Niveles de servicio](niveles-de-servicio.md), [Proyectos y producto en TI](gestion-proyectos-producto.md) |
-| Cloud (el control) | Métricas de costo por unidad y datos de uso de la nube | [FinOps y costos](../cloud/fundamentos/finops-costos.md), [Observabilidad nativa](../cloud/operacion-y-gobierno/observabilidad-nativa.md) |
-| DevOps (la automatización) | Métricas DORA, SLIs y los datos del pipeline | [Cultura DevOps y métricas DORA](../devops/fundamentos/cultura-metricas-dora.md), [Observabilidad](../devops/operacion/observabilidad.md) |
+| Cloud (el control) | Métricas de costo por unidad y datos de uso de la nube | [FinOps y costos](../cloud/fundamentos/finops-costos.md), [Observabilidad nativa](../monitoreo/nube/observabilidad-nativa.md) |
+| DevOps (la automatización) | Métricas DORA, SLIs y los datos del pipeline | [Cultura DevOps y métricas DORA](../devops/fundamentos/cultura-metricas-dora.md), [Observabilidad](../monitoreo/fundamentos/observabilidad.md) |
 | DevSecOps (la verificación) | KPIs de seguridad: remediación de vulnerabilidades, cumplimiento de controles | [Detección y respuesta](../devsecops/gobierno-y-respuesta/deteccion-respuesta.md), [Cumplimiento y gobierno](../devsecops/gobierno-y-respuesta/cumplimiento.md) |
 | Laboratorios (la práctica) | Practicar esto paso a paso | [Lab 11: Observabilidad con Prometheus y Grafana](../laboratorios/devops/observabilidad-prometheus-grafana.md) |
 

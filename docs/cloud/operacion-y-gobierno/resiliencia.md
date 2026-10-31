@@ -136,7 +136,7 @@ flowchart LR
 ```
 
 !!! danger "Empieza con radio de impacto pequeño"
-    Haz los primeros experimentos en un entorno de pruebas, con una **condición de parada** definida (por ejemplo, detener el experimento si salta una alarma) y con alguien vigilando. Pasa a producción solo cuando el equipo y la [observabilidad](observabilidad-nativa.md) estén preparados.
+    Haz los primeros experimentos en un entorno de pruebas, con una **condición de parada** definida (por ejemplo, detener el experimento si salta una alarma) y con alguien vigilando. Pasa a producción solo cuando el equipo y la [observabilidad](../../monitoreo/nube/observabilidad-nativa.md) estén preparados.
 
 Cómo se organizan los incidentes, el on-call y los postmortems se ve en [Operación y fiabilidad (SRE)](../../devops/operacion/operacion-sre.md); cómo probar la infraestructura automáticamente con entornos efímeros, en [Pruebas de infraestructura](../../devops/iac/pruebas-infraestructura.md).
 
@@ -154,7 +154,7 @@ Cómo se organizan los incidentes, el on-call y los postmortems se ve en [Operac
 
 | Enfoque | Qué se mira desde ahí | Nota |
 | --- | --- | --- |
-| Cloud (el control) | Regiones y zonas, réplicas de datos, alarmas y backups | [Modelos de servicio y regiones](../fundamentos/modelos-de-servicio-y-regiones.md), [Almacenamiento y datos](../redes-y-datos/almacenamiento-datos.md), [Observabilidad nativa](observabilidad-nativa.md) |
+| Cloud (el control) | Regiones y zonas, réplicas de datos, alarmas y backups | [Modelos de servicio y regiones](../fundamentos/modelos-de-servicio-y-regiones.md), [Almacenamiento y datos](../redes-y-datos/almacenamiento-datos.md), [Observabilidad nativa](../../monitoreo/nube/observabilidad-nativa.md) |
 | DevOps (la automatización) | Incidentes, on-call, SLOs y capacity planning; probar la infraestructura y recrearla con IaC; despliegues sin caída | [Operación y fiabilidad (SRE)](../../devops/operacion/operacion-sre.md), [Pruebas de infraestructura](../../devops/iac/pruebas-infraestructura.md), [Despliegue continuo](../../devops/ci-cd/despliegue-continuo.md) |
 | DevSecOps (la verificación) | Respuesta a incidentes de seguridad y recuperación ante ransomware | [Detección y respuesta](../../devsecops/gobierno-y-respuesta/deteccion-respuesta.md) |
 | Negocio TI (el porqué) | De dónde salen el RTO y el RPO (BIA, tiers de criticidad) y cuánta disponibilidad se compromete | [Continuidad de negocio](../../negocio/continuidad-negocio.md), [Niveles de servicio](../../negocio/niveles-de-servicio.md) |

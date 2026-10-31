@@ -179,7 +179,7 @@ log.error("No se pudo subir el backup")
 - Pasa los valores como argumentos (`log.info("Subiendo %s", archivo)`), no con f-string: el texto solo se construye si el nivel está activo.
 - Dentro de un `except`, **`log.exception("...")`** registra el mensaje con el *traceback* completo.
 - **Nunca registres secretos**: tokens, contraseñas ni cabeceras `Authorization`. Los logs acaban en sistemas que lee mucha gente.
-- Si los logs los va a leer una plataforma (CloudWatch, Loki…), considera el formato JSON (ver [Observabilidad](../../devops/operacion/observabilidad.md)).
+- Si los logs los va a leer una plataforma (CloudWatch, Loki…), considera el formato JSON (ver [Observabilidad](../../monitoreo/fundamentos/observabilidad.md)).
 
 ## Typer y Click
 
@@ -373,7 +373,7 @@ Usa como entrada el `access.log` de [Archivos y formatos](archivos-formatos.md#a
 
 | Enfoque | Qué se mira desde ahí | Nota |
 | --- | --- | --- |
-| DevOps (la automatización) | Scripts que se convierten en pasos de pipeline y cuyo exit code decide si el build pasa | [Linux, redes y scripting](../../devops/fundamentos/linux-redes-scripting.md), [Integración continua](../../devops/ci-cd/integracion-continua.md), [Observabilidad](../../devops/operacion/observabilidad.md) |
+| DevOps (la automatización) | Scripts que se convierten en pasos de pipeline y cuyo exit code decide si el build pasa | [Linux, redes y scripting](../../devops/fundamentos/linux-redes-scripting.md), [Integración continua](../../devops/ci-cd/integracion-continua.md), [Observabilidad](../../monitoreo/fundamentos/observabilidad.md) |
 | DevSecOps (la verificación) | Validar argumentos con `choices` y `type`, y no escribir secretos en los logs | [Seguridad del código](../../devsecops/codigo-y-dependencias/seguridad-codigo.md) |
 | Python (la herramienta) | Funciones, `if __name__ == "__main__":` y lectura de JSON | [Control de flujo y funciones](../fundamentos/control-flujo-funciones.md), [Errores, módulos y paquetes](../fundamentos/errores-modulos.md), [Archivos y formatos](archivos-formatos.md) |
 | Laboratorios (la práctica) | Practicar esto paso a paso | [Lab 03: Script en Python para analizar logs](../../laboratorios/fundamentos/python-analizar-logs.md), [Lab 20: Google Cloud: desplegar un contenedor en Cloud Run](../../laboratorios/cloud/gcp-cloud-run.md) |

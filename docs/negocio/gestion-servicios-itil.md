@@ -156,7 +156,7 @@ Las aprobaciones dentro del pipeline (*environments* protegidos, revisores oblig
 | Enfoque | Qué se mira desde ahí | Nota |
 | --- | --- | --- |
 | Negocio TI (el porqué) | Acordar niveles de servicio, medirlos y gobernar el riesgo de los cambios | [Niveles de servicio](niveles-de-servicio.md), [Métricas, KPIs y OKRs](metricas-kpis-okrs.md), [Gobierno y riesgo de TI](gobierno-riesgo-ti.md) |
-| Cloud (el control) | Inventario y configuración reales de los recursos; tags de responsable | [Gobernanza](../cloud/operacion-y-gobierno/gobernanza.md), [Observabilidad nativa](../cloud/operacion-y-gobierno/observabilidad-nativa.md) |
+| Cloud (el control) | Inventario y configuración reales de los recursos; tags de responsable | [Gobernanza](../cloud/operacion-y-gobierno/gobernanza.md), [Observabilidad nativa](../monitoreo/nube/observabilidad-nativa.md) |
 | DevOps (la automatización) | Incidentes, on-call y postmortems; cambios como despliegues automatizados | [Operación y fiabilidad (SRE)](../devops/operacion/operacion-sre.md), [Despliegue continuo](../devops/ci-cd/despliegue-continuo.md), [Cultura DevOps y métricas DORA](../devops/fundamentos/cultura-metricas-dora.md) |
 | DevSecOps (la verificación) | Aprobaciones en el pipeline, incidentes de seguridad y evidencias para auditoría | [Seguridad del pipeline](../devsecops/identidades-y-pipeline/seguridad-pipeline.md), [Detección y respuesta](../devsecops/gobierno-y-respuesta/deteccion-respuesta.md), [Cumplimiento y gobierno](../devsecops/gobierno-y-respuesta/cumplimiento.md) |
 | Laboratorios (la práctica) | Practicar esto paso a paso | [Lab 21: Game day: incidente simulado, troubleshooting y postmortem](../laboratorios/operacion/game-day-incidente.md) |

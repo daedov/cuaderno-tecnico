@@ -35,7 +35,7 @@ Aquí encuentras apuntes, atajos, comandos y referencias para tener a mano en el
 
     ---
 
-    CI/CD, automatización, IaC, contenedores y observabilidad.
+    CI/CD, automatización, IaC, contenedores y operación.
 
     [:octicons-arrow-right-24: Ir a DevOps](devops/index.md)
 
@@ -46,6 +46,14 @@ Aquí encuentras apuntes, atajos, comandos y referencias para tener a mano en el
     Seguridad integrada en el pipeline: SAST, DAST, SCA y secretos.
 
     [:octicons-arrow-right-24: Ir a DevSecOps](devsecops/index.md)
+
+-   :material-monitor-dashboard:{ .lg .middle } **Observabilidad y monitoreo**
+
+    ---
+
+    Métricas, logs, alertas y on-call: qué medir, cómo centralizarlo y a quién avisar.
+
+    [:octicons-arrow-right-24: Ir a Observabilidad y monitoreo](monitoreo/index.md)
 
 -   :material-lan:{ .lg .middle } **Networking**
 

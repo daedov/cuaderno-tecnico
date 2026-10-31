@@ -3,3 +3,5 @@
 mkdocs>=1.6,<2.0
 mkdocs-material>=9.7,<10.0
 mkdocs-awesome-pages-plugin>=2.9,<3.0
+# 1.2.2: la 1.2.3 añade como dependencia properdocs, un fork de MkDocs.
+mkdocs-redirects==1.2.2

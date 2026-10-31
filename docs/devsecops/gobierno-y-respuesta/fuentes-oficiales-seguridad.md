@@ -292,8 +292,8 @@ flowchart LR
 
 | Enfoque | Qué se mira desde ahí | Nota |
 | --- | --- | --- |
-| Cloud (el control) | Estado del proveedor, alertas nativas y qué parchea cada parte | [Observabilidad nativa](../../cloud/operacion-y-gobierno/observabilidad-nativa.md), [Shared Responsibility Model](../../cloud/fundamentos/responsabilidad-compartida.md), [Resiliencia](../../cloud/operacion-y-gobierno/resiliencia.md) |
-| DevOps (la automatización) | Llevar avisos al canal de alertas e incidentes; comprobar el estado del proveedor al depurar | [Observabilidad](../../devops/operacion/observabilidad.md), [Operación y fiabilidad (SRE)](../../devops/operacion/operacion-sre.md), [Troubleshooting](../../devops/operacion/troubleshooting.md#nube) |
+| Cloud (el control) | Estado del proveedor, alertas nativas y qué parchea cada parte | [Observabilidad nativa](../../monitoreo/nube/observabilidad-nativa.md), [Shared Responsibility Model](../../cloud/fundamentos/responsabilidad-compartida.md), [Resiliencia](../../cloud/operacion-y-gobierno/resiliencia.md) |
+| DevOps (la automatización) | Llevar avisos al canal de alertas e incidentes; comprobar el estado del proveedor al depurar | [Observabilidad](../../monitoreo/fundamentos/observabilidad.md), [Operación y fiabilidad (SRE)](../../devops/operacion/operacion-sre.md), [Troubleshooting](../../devops/operacion/troubleshooting.md#nube) |
 | DevSecOps (la verificación) | Qué significa cada señal, cómo investigar un aviso y cómo priorizarlo | [Fundamentos de CVE](../vulnerabilidades/fundamentos-cve.md), [Cómo investigar un CVE](../vulnerabilidades/investigar-un-cve.md), [Detección y respuesta](deteccion-respuesta.md), [Cumplimiento y gobierno](cumplimiento.md) |
 | Negocio TI (el porqué) | Usar los informes de amenazas para justificar riesgo e inversión | [Gobierno y riesgo de TI](../../negocio/gobierno-riesgo-ti.md) |
 | Python (la herramienta) | Consumir feeds y APIs con timeouts y reintentos | [APIs y HTTP](../../python/scripting/apis-http.md) |

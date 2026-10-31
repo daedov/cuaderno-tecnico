@@ -1,0 +1,7 @@
+nav:
+  - index.md
+  - Fundamentos: fundamentos
+  - Logging: logging
+  - Alertas: alertas
+  - En la nube: nube
+  - ...

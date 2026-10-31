@@ -8,7 +8,7 @@ tags:
 
 # Formatos de logs
 
-Referencia de los formatos de log más comunes y cómo leer cada campo. El método para buscar la causa, las herramientas de terminal y los ejercicios están en [Cómo leer logs](../devops/operacion/leer-logs.md).
+Referencia de los formatos de log más comunes y cómo leer cada campo. El método para buscar la causa, las herramientas de terminal y los ejercicios están en [Cómo leer logs](../monitoreo/logging/leer-logs.md).
 
 ## syslog
 

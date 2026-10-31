@@ -25,7 +25,7 @@ tags:
     - El stack (`app`, `carga`, `prometheus`, `alertmanager` y `node-exporter`) levantado o parado con `docker compose stop`; da igual, el paso 3 lo arranca.
     - Sin fallos inyectados (`TASA_ERRORES` y `LATENCIA_MS` a `0`). Si cerraste la terminal, no hace falta hacer nada; en PowerShell, si exportaste variables, usa `Remove-Item Env:LATENCIA_MS, Env:TASA_ERRORES`.
 - Puertos libres en `127.0.0.1`: 3100, 12345 y 3000 (además de 8000, 9090 y 9093, que ya usa la parte 1).
-- Teoría: [Logs centralizados](../../devops/operacion/observabilidad.md#logs-centralizados), [Grafana](../../devops/operacion/observabilidad.md#grafana) y [Cómo leer logs](../../devops/operacion/leer-logs.md).
+- Teoría: [Logs centralizados](../../monitoreo/fundamentos/observabilidad.md#logs-centralizados), [Grafana](../../monitoreo/fundamentos/observabilidad.md#grafana) y [Cómo leer logs](../../monitoreo/logging/leer-logs.md).
 
 Imágenes que añade esta parte (versiones vigentes al escribir el lab; revisa si hay más nuevas). Las de la app, Prometheus, Alertmanager y node-exporter están en la [parte 1](observabilidad-prometheus-grafana.md#antes-de-empezar).
 
@@ -104,7 +104,7 @@ loki.write "local" {
 }
 ```
 
-Loki indexa solo las labels (`service`, `container`, `lab`): deben ser pocas y estables, igual que en Prometheus. Ver [Logs centralizados](../../devops/operacion/observabilidad.md#logs-centralizados).
+Loki indexa solo las labels (`service`, `container`, `lab`): deben ser pocas y estables, igual que en Prometheus. Ver [Logs centralizados](../../monitoreo/fundamentos/observabilidad.md#logs-centralizados).
 
 !!! warning "El socket de Docker es un acceso muy privilegiado"
     Montar `/var/run/docker.sock` en un contenedor le da control casi total sobre Docker del host. Aquí se monta en solo lectura y en local; en producción se usan agentes con permisos acotados o la integración nativa del orquestador (por ejemplo, Alloy como DaemonSet en Kubernetes leyendo `/var/log/pods`).
@@ -343,7 +343,7 @@ Las comprobaciones de Prometheus y Alertmanager (`promtool`, `amtool`, `up`) son
 
 ## Retos extra
 
-1. **Trazas con OpenTelemetry**: añade `opentelemetry-distro` y `opentelemetry-exporter-otlp` a la app, ejecútala con `opentelemetry-instrument python app.py` y envía las trazas por OTLP a Grafana Tempo o a Jaeger (añade el servicio y su datasource). Pista: `OTEL_SERVICE_NAME` y `OTEL_EXPORTER_OTLP_ENDPOINT`; ver [Trazas distribuidas con OpenTelemetry](../../devops/operacion/observabilidad.md#trazas-distribuidas-con-opentelemetry).
+1. **Trazas con OpenTelemetry**: añade `opentelemetry-distro` y `opentelemetry-exporter-otlp` a la app, ejecútala con `opentelemetry-instrument python app.py` y envía las trazas por OTLP a Grafana Tempo o a Jaeger (añade el servicio y su datasource). Pista: `OTEL_SERVICE_NAME` y `OTEL_EXPORTER_OTLP_ENDPOINT`; ver [Trazas distribuidas con OpenTelemetry](../../monitoreo/fundamentos/observabilidad.md#trazas-distribuidas-con-opentelemetry).
 2. **Alertas en Grafana**: crea la misma regla del SLO como alerta de Grafana y provisiónala por archivo en `provisioning/alerting/`. Compara las dos opciones.
 3. **Un panel más**: añade al `app.json` un panel con la consulta LogQL `sum by (status) (count_over_time({service="app"} | json [1m]))` y compáralo con el panel de peticiones por status de Prometheus.
 
@@ -382,10 +382,10 @@ Para los problemas de la app, Prometheus y las alertas, ver los [problemas comun
 
 ## Información complementaria
 
-- **Tres pilares**: métricas para saber **que** algo pasa, logs para saber **qué** pasó, trazas para saber **dónde**. Ver [Observabilidad](../../devops/operacion/observabilidad.md#los-tres-pilares).
+- **Tres pilares**: métricas para saber **que** algo pasa, logs para saber **qué** pasó, trazas para saber **dónde**. Ver [Observabilidad](../../monitoreo/fundamentos/observabilidad.md#los-tres-pilares).
 - **Logs estructurados**: una línea JSON por petición, con `request_id`, permite filtrar en Loki por campos. Ver [Logs JSON estructurados](../../recursos/formatos-de-logs.md#logs-json-estructurados).
-- **Loki frente a ELK / OpenSearch**: qué indexa cada uno y cuándo conviene. Ver [Logs centralizados](../../devops/operacion/observabilidad.md#logs-centralizados).
-- **En la nube**: Amazon Managed Grafana, Azure Managed Grafana y los servicios de logs de cada proveedor. Ver [Observabilidad nativa](../../cloud/operacion-y-gobierno/observabilidad-nativa.md).
+- **Loki frente a ELK / OpenSearch**: qué indexa cada uno y cuándo conviene. Ver [Logs centralizados](../../monitoreo/fundamentos/observabilidad.md#logs-centralizados).
+- **En la nube**: Amazon Managed Grafana, Azure Managed Grafana y los servicios de logs de cada proveedor. Ver [Observabilidad nativa](../../monitoreo/nube/observabilidad-nativa.md).
 - **En el trabajo real**: el stack suele ir en Kubernetes con el chart `kube-prometheus-stack`, los dashboards y reglas viven en Git y se revisan como código, y cada alerta enlaza a su runbook. Ver [Runbooks y playbooks](../../devops/operacion/runbooks-playbooks.md).
 
 ## Documentación oficial
@@ -416,12 +416,12 @@ Para los problemas de la app, Prometheus y las alertas, ver los [problemas comun
 
 **Cloud**
 
-- [Observabilidad nativa](../../cloud/operacion-y-gobierno/observabilidad-nativa.md)
+- [Observabilidad nativa](../../monitoreo/nube/observabilidad-nativa.md)
 
 **DevOps**
 
-- [Observabilidad: Prometheus, Grafana, OpenTelemetry y SLOs](../../devops/operacion/observabilidad.md)
-- [Cómo leer logs](../../devops/operacion/leer-logs.md)
+- [Observabilidad: Prometheus, Grafana, OpenTelemetry y SLOs](../../monitoreo/fundamentos/observabilidad.md)
+- [Cómo leer logs](../../monitoreo/logging/leer-logs.md)
 - [Runbooks y playbooks](../../devops/operacion/runbooks-playbooks.md)
 - [Troubleshooting](../../devops/operacion/troubleshooting.md)
 - [Guía de comandos de Docker](../../recursos/comandos/docker.md)

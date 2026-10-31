@@ -246,7 +246,7 @@ AWS recomienda el rango 1024–65535 en las NACL porque los clientes pueden usar
 | Enfoque | Qué se mira desde ahí | Nota |
 | --- | --- | --- |
 | Cloud (el control) | Security groups (stateful) frente a Network ACLs (stateless); load balancers L4 | [Redes en la nube](../../cloud/redes-y-datos/redes.md) |
-| DevOps (la automatización) | Diagnóstico con `ss`, `nc` y `curl`; *timeouts*, reintentos y reutilización de conexiones; services L4 en Kubernetes | [Linux, redes y scripting](../../devops/fundamentos/linux-redes-scripting.md), [Kubernetes](../../devops/contenedores/kubernetes.md), [Observabilidad](../../devops/operacion/observabilidad.md) |
+| DevOps (la automatización) | Diagnóstico con `ss`, `nc` y `curl`; *timeouts*, reintentos y reutilización de conexiones; services L4 en Kubernetes | [Linux, redes y scripting](../../devops/fundamentos/linux-redes-scripting.md), [Kubernetes](../../devops/contenedores/kubernetes.md), [Observabilidad](../../monitoreo/fundamentos/observabilidad.md) |
 | DevSecOps (la verificación) | Puertos abiertos de más, reglas `0.0.0.0/0`, network policies que limitan puertos entre pods | [Seguridad de IaC](../../devsecops/infraestructura-y-contenedores/seguridad-iac.md), [Seguridad de Kubernetes](../../devsecops/infraestructura-y-contenedores/seguridad-kubernetes.md) |
 | Laboratorios (la práctica) | Practicar esto paso a paso | [Lab 01: Diagnóstico de red desde Linux](../../laboratorios/fundamentos/linux-red-diagnostico.md), [Lab 17: AWS: VPC con subnets públicas y privadas y una EC2](../../laboratorios/cloud/aws-vpc-ec2.md) |
 

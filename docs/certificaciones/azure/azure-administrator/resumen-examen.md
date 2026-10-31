@@ -153,7 +153,7 @@ az group delete -n rg-az104-lab --yes --no-wait
 | Storage y redundancia | [Almacenamiento y datos](../../../cloud/redes-y-datos/almacenamiento-datos.md) |
 | Cómputo y contenedores | [Máquinas virtuales](../../../cloud/computo/maquinas-virtuales.md), [Contenedores gestionados](../../../cloud/computo/contenedores-gestionados.md) |
 | Redes | [Redes en la nube](../../../cloud/redes-y-datos/redes.md) |
-| Monitoreo y DR | [Observabilidad nativa](../../../cloud/operacion-y-gobierno/observabilidad-nativa.md), [Resiliencia](../../../cloud/operacion-y-gobierno/resiliencia.md) |
+| Monitoreo y DR | [Observabilidad nativa](../../../monitoreo/nube/observabilidad-nativa.md), [Resiliencia](../../../cloud/operacion-y-gobierno/resiliencia.md) |
 
 ## Referencias
 

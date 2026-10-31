@@ -24,12 +24,13 @@ flowchart LR
     S -->|valida y audita| C
 ```
 
-Alrededor de esas tres capas hay tres secciones transversales:
+Alrededor de esas tres capas hay secciones transversales:
 
 | Sección | Rol | Para qué sirve |
 | --- | --- | --- |
 | [Negocio TI](negocio/index.md) | **El porqué** | Traducir decisiones técnicas a valor, costo, riesgo y niveles de servicio |
 | [Networking](networking/index.md) | **La base** | Los fundamentos de red que hay debajo de la nube y del datacenter on-premise |
+| [Observabilidad y monitoreo](monitoreo/index.md) | **Los ojos** | Medir, centralizar logs y alertar sobre lo que corre en las tres capas |
 | [Servidores](servidores/index.md) | **La base de sistemas** | Administrar Linux Server y Windows Server y automatizarlos con Ansible |
 | [Python](python/index.md) | **La herramienta** | Automatizar tareas de las tres capas con scripts |
 
@@ -48,14 +49,14 @@ flowchart TB
 | **Redes** | VPC, security groups, subnets: [Redes](cloud/redes-y-datos/redes.md) | Definirlas como código: [Infrastructure as Code](devops/iac/infraestructura-como-codigo.md) | Escanear reglas abiertas (`0.0.0.0/0`): [Seguridad de IaC](devsecops/infraestructura-y-contenedores/seguridad-iac.md), [Seguridad de Kubernetes](devsecops/infraestructura-y-contenedores/seguridad-kubernetes.md) |
 | **Secretos** | KMS, Secrets Manager: [Seguridad de cifrado y secretos](cloud/seguridad/seguridad-cifrado-secretos.md) | Inyectarlos en despliegues: [Despliegue continuo](devops/ci-cd/despliegue-continuo.md), [Ansible](devops/iac/ansible.md) | Detectarlos en commits; rotación: [Seguridad del código](devsecops/codigo-y-dependencias/seguridad-codigo.md), [Secretos e identidades](devsecops/identidades-y-pipeline/secretos-identidades.md) |
 | **Contenedores** | ECS/EKS, registry: [Contenedores gestionados](cloud/computo/contenedores-gestionados.md) | Build y deploy: [Docker](devops/contenedores/docker.md), [Kubernetes](devops/contenedores/kubernetes.md) | Escaneo de imágenes y firma: [Seguridad de contenedores](devsecops/infraestructura-y-contenedores/seguridad-contenedores.md), [Software supply chain](devsecops/codigo-y-dependencias/cadena-suministro.md) |
-| **Logs** | CloudTrail, CloudWatch: [Observabilidad nativa](cloud/operacion-y-gobierno/observabilidad-nativa.md), [Seguridad de logging y detección](cloud/seguridad/seguridad-logging-deteccion.md) | Centralizar y alertar: [Observabilidad](devops/operacion/observabilidad.md) | Detección, SIEM, auditoría: [Detección y respuesta](devsecops/gobierno-y-respuesta/deteccion-respuesta.md) |
+| **Logs** | CloudTrail, CloudWatch: [Observabilidad nativa](monitoreo/nube/observabilidad-nativa.md), [Seguridad de logging y detección](cloud/seguridad/seguridad-logging-deteccion.md) | Centralizar y alertar: [Observabilidad](monitoreo/fundamentos/observabilidad.md) | Detección, SIEM, auditoría: [Detección y respuesta](devsecops/gobierno-y-respuesta/deteccion-respuesta.md) |
 | **Cambios** | Config, tags: [Gobernanza](cloud/operacion-y-gobierno/gobernanza.md) | CI/CD, GitOps: [Despliegue continuo](devops/ci-cd/despliegue-continuo.md) | Policy as code, aprobaciones: [Seguridad de IaC](devsecops/infraestructura-y-contenedores/seguridad-iac.md), [Seguridad del pipeline](devsecops/identidades-y-pipeline/seguridad-pipeline.md) |
 
 ### Conceptos transversales
 
 | Concepto | Negocio TI (el porqué) | Técnico (el cómo) |
 | --- | --- | --- |
-| **Niveles de servicio** | Acordar y comunicar SLA/SLO: [Niveles de servicio](negocio/niveles-de-servicio.md) | Medir SLI y gestionar el error budget: [Observabilidad](devops/operacion/observabilidad.md), [Operación y SRE](devops/operacion/operacion-sre.md) |
+| **Niveles de servicio** | Acordar y comunicar SLA/SLO: [Niveles de servicio](negocio/niveles-de-servicio.md) | Medir SLI y gestionar el error budget: [Observabilidad](monitoreo/fundamentos/observabilidad.md), [Operación y SRE](devops/operacion/operacion-sre.md) |
 | **Continuidad** | BIA, BCP, RTO/RPO aceptables: [Continuidad de negocio](negocio/continuidad-negocio.md) | Diseñar y probar el DR: [Resiliencia](cloud/operacion-y-gobierno/resiliencia.md) |
 | **Costos** | TCO, ROI, CapEx vs OpEx: [TI y negocio](negocio/ti-y-negocio.md) | Optimizar la factura: [FinOps y costos](cloud/fundamentos/finops-costos.md) |
 | **Métricas** | KPIs y OKRs: [Métricas, KPIs y OKRs](negocio/metricas-kpis-okrs.md) | Métricas DORA: [Cultura DevOps y DORA](devops/fundamentos/cultura-metricas-dora.md) |
@@ -74,7 +75,7 @@ Las flechas marcan dónde un tema de una capa se apoya en otro de otra capa.
 - [Redes](cloud/redes-y-datos/redes.md) → DevSecOps: segmentación y políticas de red ([Seguridad de Kubernetes](devsecops/infraestructura-y-contenedores/seguridad-kubernetes.md), [Seguridad de IaC](devsecops/infraestructura-y-contenedores/seguridad-iac.md)).
 - [IAM](cloud/fundamentos/iam-comparativa.md) → DevOps: roles para pipelines ([Integración continua](devops/ci-cd/integracion-continua.md)) → DevSecOps: auditoría de permisos ([Secretos e identidades](devsecops/identidades-y-pipeline/secretos-identidades.md)).
 - [Fundamentos de seguridad cloud](cloud/seguridad/fundamentos-seguridad-cloud.md) → DevSecOps: CSPM y cumplimiento ([Cumplimiento](devsecops/gobierno-y-respuesta/cumplimiento.md)).
-- [Observabilidad nativa](cloud/operacion-y-gobierno/observabilidad-nativa.md) → DevOps: observabilidad ([Observabilidad](devops/operacion/observabilidad.md)).
+- [Observabilidad nativa](monitoreo/nube/observabilidad-nativa.md) → DevOps: observabilidad ([Observabilidad](monitoreo/fundamentos/observabilidad.md)).
 
 ### Desde DevOps
 
@@ -82,7 +83,7 @@ Las flechas marcan dónde un tema de una capa se apoya en otro de otra capa.
 - [Integración continua](devops/ci-cd/integracion-continua.md) → DevSecOps: aquí se insertan los escaneos ([Escaneo en el pipeline](devsecops/escaneos/escaneo-en-pipeline.md)).
 - [Infrastructure as Code](devops/iac/infraestructura-como-codigo.md) → Cloud: aprovisiona todo lo de la capa Cloud → DevSecOps: escaneo de IaC ([Seguridad de IaC](devsecops/infraestructura-y-contenedores/seguridad-iac.md)).
 - [Docker](devops/contenedores/docker.md) y [Kubernetes](devops/contenedores/kubernetes.md) → DevSecOps: seguridad de imágenes y clústeres.
-- [Observabilidad](devops/operacion/observabilidad.md) → DevSecOps: monitoreo de seguridad ([Detección y respuesta](devsecops/gobierno-y-respuesta/deteccion-respuesta.md)).
+- [Observabilidad](monitoreo/fundamentos/observabilidad.md) → DevSecOps: monitoreo de seguridad ([Detección y respuesta](devsecops/gobierno-y-respuesta/deteccion-respuesta.md)).
 
 ### Desde DevSecOps
 

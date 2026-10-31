@@ -77,7 +77,7 @@ Cómo organizarlo:
 
 Pasos:
 
-1. Define el **steady state** (estado estable) con métricas: por ejemplo, el SLI de éxito de peticiones (ver [Observabilidad](observabilidad.md#sli-slo-sla-y-error-budget)).
+1. Define el **steady state** (estado estable) con métricas: por ejemplo, el SLI de éxito de peticiones (ver [Observabilidad](../../monitoreo/fundamentos/observabilidad.md#sli-slo-sla-y-error-budget)).
 2. Formula una hipótesis: "si cae una zona, el SLI no baja del 99,9 %".
 3. Inyecta el fallo empezando por un **blast radius** (radio de impacto) pequeño, en un entorno de pruebas y luego, con cuidado, en producción.
 4. Compara con el steady state y corrige lo que falle.
@@ -168,7 +168,7 @@ El objetivo es combatir el **alert fatigue** (fatiga de alertas): cuando la mayo
 | Páginas fuera de horario | Tendencia creciente = riesgo de agotamiento |
 | Alertas sin runbook | Cualquier número mayor que cero |
 
-Cómo escribir alertas accionables (síntomas, burn rate, varias ventanas) está en [Observabilidad](observabilidad.md#alertas-accionables).
+Cómo escribir alertas accionables (síntomas, burn rate, varias ventanas) está en [Alertas](../../monitoreo/alertas/alertas.md).
 
 ## Medir y reducir el toil
 
@@ -232,8 +232,8 @@ También se puede hacer una revisión **transversal**: cada trimestre, leer junt
 
 | Enfoque | Qué se mira desde ahí | Nota |
 | --- | --- | --- |
-| Cloud (el control) | Simulacros de DR, inyección de fallos y alarmas nativas | [Resiliencia](../../cloud/operacion-y-gobierno/resiliencia.md), [Observabilidad nativa](../../cloud/operacion-y-gobierno/observabilidad-nativa.md) |
-| DevOps (la automatización) | Postmortems, RCA, runbooks, alertas accionables, chaos engineering y cultura | [Operación y fiabilidad (SRE)](operacion-sre.md), [Postmortem](postmortem.md), [Análisis de causa raíz](analisis-causa-raiz.md), [Runbooks y playbooks](runbooks-playbooks.md), [Comunicación durante incidentes](comunicacion-incidentes.md), [Observabilidad](observabilidad.md), [Cultura DevOps y métricas DORA](../fundamentos/cultura-metricas-dora.md) |
+| Cloud (el control) | Simulacros de DR, inyección de fallos y alarmas nativas | [Resiliencia](../../cloud/operacion-y-gobierno/resiliencia.md), [Observabilidad nativa](../../monitoreo/nube/observabilidad-nativa.md) |
+| DevOps (la automatización) | Postmortems, RCA, runbooks, alertas accionables, chaos engineering y cultura | [Operación y fiabilidad (SRE)](operacion-sre.md), [Postmortem](postmortem.md), [Análisis de causa raíz](analisis-causa-raiz.md), [Runbooks y playbooks](runbooks-playbooks.md), [Comunicación durante incidentes](comunicacion-incidentes.md), [Observabilidad](../../monitoreo/fundamentos/observabilidad.md), [Cultura DevOps y métricas DORA](../fundamentos/cultura-metricas-dora.md) |
 | DevSecOps (la verificación) | Tabletop exercises de incidentes de seguridad y lecciones aprendidas | [Detección y respuesta](../../devsecops/gobierno-y-respuesta/deteccion-respuesta.md) |
 | Negocio TI (el porqué) | Pruebas de continuidad, métricas de fiabilidad y riesgo | [Continuidad de negocio](../../negocio/continuidad-negocio.md), [Niveles de servicio](../../negocio/niveles-de-servicio.md), [Gobierno y riesgo de TI](../../negocio/gobierno-riesgo-ti.md) |
 | Laboratorios (la práctica) | Practicar esto paso a paso | [Lab 21: Game day: incidente simulado, troubleshooting y postmortem](../../laboratorios/operacion/game-day-incidente.md) |

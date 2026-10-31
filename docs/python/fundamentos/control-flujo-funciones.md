@@ -342,7 +342,7 @@ tmpfs           3.9G     0  3.9G   0% /dev/shm
 | Enfoque | Qué se mira desde ahí | Nota |
 | --- | --- | --- |
 | Cloud (el control) | Esperar a que un recurso esté disponible y reintentar ante límites de la API | [Resiliencia](../../cloud/operacion-y-gobierno/resiliencia.md) |
-| DevOps (la automatización) | Umbrales de alerta y comprobaciones de salud que luego hace el sistema de monitoreo | [Observabilidad](../../devops/operacion/observabilidad.md), [Linux, redes y scripting](../../devops/fundamentos/linux-redes-scripting.md) |
+| DevOps (la automatización) | Umbrales de alerta y comprobaciones de salud que luego hace el sistema de monitoreo | [Observabilidad](../../monitoreo/fundamentos/observabilidad.md), [Linux, redes y scripting](../../devops/fundamentos/linux-redes-scripting.md) |
 | DevSecOps (la verificación) | Separar la lógica que decide de la que actúa para poder probarla y simular (`--dry-run`) antes de tocar producción | [Seguridad del pipeline](../../devsecops/identidades-y-pipeline/seguridad-pipeline.md) |
 | Python (la herramienta) | Qué pasa cuando algo falla dentro de una función y cómo repartir el código en módulos | [Errores, módulos y paquetes](errores-modulos.md) |
 | Laboratorios (la práctica) | Practicar esto paso a paso | [Lab 03: Script en Python para analizar logs](../../laboratorios/fundamentos/python-analizar-logs.md) |

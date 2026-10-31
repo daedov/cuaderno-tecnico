@@ -30,8 +30,7 @@ Cada tema se ve también desde [Cloud](../cloud/index.md) (dónde corre) y [DevS
 
 ## Operación
 
-- [Observabilidad](operacion/observabilidad.md): Prometheus, Grafana, Loki/ELK, OpenTelemetry, SLI/SLO
-- [Cómo leer logs](operacion/leer-logs.md): anatomía de una línea, método, herramientas y ejercicios (formatos en [Recursos](../recursos/formatos-de-logs.md))
+- Observabilidad, logs y alertas: tienen sección propia en [Observabilidad y monitoreo](../monitoreo/index.md)
 - [Troubleshooting](operacion/troubleshooting.md): método de diagnóstico y checklists por capa
 - [Operación y fiabilidad (SRE)](operacion/operacion-sre.md): principios, política de error budget, severidades y ciclo de vida de un incidente, on-call, capacity planning
 - [Postmortem](operacion/postmortem.md): cultura blameless, plantilla, timeline, seguimiento de acciones y ejemplo completo

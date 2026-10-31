@@ -34,7 +34,7 @@ Otras de nivel asociado (teóricas, **250 USD**, vigentes en el [catálogo ofici
 
 | Certificación | Qué demuestra | Para quién |
 | --- | --- | --- |
-| [PCA – Prometheus Certified Associate](https://training.linuxfoundation.org/certification/prometheus-certified-associate/) | Métricas, PromQL, alertas e instrumentación con Prometheus | SRE, quien opera [observabilidad](../devops/operacion/observabilidad.md) |
+| [PCA – Prometheus Certified Associate](https://training.linuxfoundation.org/certification/prometheus-certified-associate/) | Métricas, PromQL, alertas e instrumentación con Prometheus | SRE, quien opera [observabilidad](../monitoreo/fundamentos/observabilidad.md) |
 | [CGOA – Certified GitOps Associate](https://training.linuxfoundation.org/certification/certified-gitops-associate-cgoa/) | Principios GitOps y herramientas como Argo CD y Flux | DevOps / Platform ([despliegue continuo](../devops/ci-cd/despliegue-continuo.md)) |
 | [OTCA – OpenTelemetry Certified Associate](https://training.linuxfoundation.org/certification/opentelemetry-certified-associate-otca/) | Trazas, métricas y logs con OpenTelemetry, Collector, instrumentación | SRE, observabilidad |
 | CCA (Cilium), CAPA (Argo), CBA (Backstage), ICA (Istio) | Una herramienta concreta del ecosistema | Solo si tu equipo usa esa herramienta. Formato de ICA: **verificar** |

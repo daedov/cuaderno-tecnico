@@ -33,7 +33,7 @@ tags:
 - **Teoría recomendada** (el lab la practica, no la repite):
     - [Operación y fiabilidad (SRE)](../../devops/operacion/operacion-sre.md#incident-management-gestion-de-incidentes): severidades, roles y ciclo de vida del incidente.
     - [Prácticas de aprendizaje](../../devops/operacion/practicas-aprendizaje.md#game-days): cómo se organiza un game day.
-    - [Troubleshooting](../../devops/operacion/troubleshooting.md) y [Leer logs](../../devops/operacion/leer-logs.md).
+    - [Troubleshooting](../../devops/operacion/troubleshooting.md) y [Leer logs](../../monitoreo/logging/leer-logs.md).
     - [Comunicación durante incidentes](../../devops/operacion/comunicacion-incidentes.md), [Runbooks y playbooks](../../devops/operacion/runbooks-playbooks.md).
     - [Postmortem](../../devops/operacion/postmortem.md) y [Análisis de causa raíz](../../devops/operacion/analisis-causa-raiz.md).
 
@@ -266,7 +266,7 @@ dd: error writing '/datos/relleno': No space left on device
 
 `dd` intenta escribir 20 MB y se detiene al llenar los 10 MB del volumen. Es exactamente lo que pasa cuando un log o un backup crece sin control.
 
-**Equipo de respuesta**: en unos 3 minutos salta **TasaErrores5xxAlta** (la app sigue viva, así que AppCaida no salta). En el dashboard, el panel por status muestra `500` donde antes había `200`; las peticiones a `/` siguen en `200` porque no escriben en el volumen: una pista de que el problema es propio de los pedidos. Investiga con los logs, como en [Leer logs](../../devops/operacion/leer-logs.md#metodo-para-leer-logs):
+**Equipo de respuesta**: en unos 3 minutos salta **TasaErrores5xxAlta** (la app sigue viva, así que AppCaida no salta). En el dashboard, el panel por status muestra `500` donde antes había `200`; las peticiones a `/` siguen en `200` porque no escriben en el volumen: una pista de que el problema es propio de los pedidos. Investiga con los logs, como en [Leer logs](../../monitoreo/logging/leer-logs.md#metodo-para-leer-logs):
 
 ```bash
 docker compose logs --since 5m app | grep ERROR | tail -1
@@ -478,7 +478,7 @@ Más casos en [Troubleshooting: contenedores](../../devops/operacion/troubleshoo
 
 - **Game day, Wheel of Misfortune y tabletop**: tipos de simulacro y cuándo usar cada uno; ver [Prácticas de aprendizaje](../../devops/operacion/practicas-aprendizaje.md#comparativa-de-simulacros).
 - **Roles y severidades**: IC, communications lead, scribe; ver [Comunicación durante incidentes](../../devops/operacion/comunicacion-incidentes.md#roles) y las severidades en [Operación y fiabilidad (SRE)](../../devops/operacion/operacion-sre.md#severidades).
-- **Alertar por síntomas**: alertas que reflejan lo que nota el usuario, con `for` para evitar ruido; ver [Observabilidad](../../devops/operacion/observabilidad.md#alertas-accionables).
+- **Alertar por síntomas**: alertas que reflejan lo que nota el usuario, con `for` para evitar ruido; ver [Alertas](../../monitoreo/alertas/alertas.md#que-merece-una-alerta).
 - **Método de troubleshooting**: define el problema, pregunta qué cambió, una hipótesis cada vez; ver [Troubleshooting](../../devops/operacion/troubleshooting.md#mentalidad-y-metodo).
 - **Postmortem blameless y RCA**: ver [Postmortem](../../devops/operacion/postmortem.md#cultura-blameless-y-just-culture) y [Análisis de causa raíz](../../devops/operacion/analisis-causa-raiz.md).
 - **MTTD, MTTR y SLA**: cómo se traducen estos tiempos en disponibilidad y error budget; ver [Niveles de servicio](../../negocio/niveles-de-servicio.md).
@@ -531,17 +531,17 @@ Más casos en [Troubleshooting: contenedores](../../devops/operacion/troubleshoo
 - **DevOps**
     - [Operación y fiabilidad (SRE)](../../devops/operacion/operacion-sre.md)
     - [Troubleshooting](../../devops/operacion/troubleshooting.md)
-    - [Leer logs](../../devops/operacion/leer-logs.md)
+    - [Leer logs](../../monitoreo/logging/leer-logs.md)
     - [Comunicación durante incidentes](../../devops/operacion/comunicacion-incidentes.md)
     - [Runbooks y playbooks](../../devops/operacion/runbooks-playbooks.md)
     - [Postmortem](../../devops/operacion/postmortem.md)
     - [Análisis de causa raíz](../../devops/operacion/analisis-causa-raiz.md)
     - [Prácticas de aprendizaje](../../devops/operacion/practicas-aprendizaje.md)
-    - [Observabilidad](../../devops/operacion/observabilidad.md)
+    - [Observabilidad](../../monitoreo/fundamentos/observabilidad.md)
     - [Docker](../../devops/contenedores/docker.md)
     - [Despliegue continuo](../../devops/ci-cd/despliegue-continuo.md)
 - **Cloud**
-    - [Observabilidad nativa](../../cloud/operacion-y-gobierno/observabilidad-nativa.md)
+    - [Observabilidad nativa](../../monitoreo/nube/observabilidad-nativa.md)
     - [Resiliencia](../../cloud/operacion-y-gobierno/resiliencia.md)
 - **DevSecOps**
     - [Detección y respuesta](../../devsecops/gobierno-y-respuesta/deteccion-respuesta.md)

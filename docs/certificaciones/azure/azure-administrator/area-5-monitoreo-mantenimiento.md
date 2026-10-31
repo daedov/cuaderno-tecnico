@@ -21,7 +21,7 @@ tags:
 
 ## Azure Monitor: métricas y logs
 
-Métricas frente a logs y la comparación con CloudWatch y Cloud Monitoring están en [Observabilidad nativa](../../../cloud/operacion-y-gobierno/observabilidad-nativa.md). Lo propio de Azure:
+Métricas frente a logs y la comparación con CloudWatch y Cloud Monitoring están en [Observabilidad nativa](../../../monitoreo/nube/observabilidad-nativa.md). Lo propio de Azure:
 
 | | **Metrics** | **Logs** |
 | --- | --- | --- |
@@ -220,9 +220,9 @@ Qué es backup frente a DR, RTO y RPO está en [Resiliencia](../../../cloud/oper
 
 | Tema | Nota del cuaderno |
 | --- | --- |
-| Azure Monitor frente a CloudWatch y Cloud Monitoring | [Observabilidad nativa](../../../cloud/operacion-y-gobierno/observabilidad-nativa.md) |
-| SLI/SLO, alertas útiles y OpenTelemetry | [Observabilidad](../../../devops/operacion/observabilidad.md) |
-| Leer e interpretar logs | [Leer logs](../../../devops/operacion/leer-logs.md) |
+| Azure Monitor frente a CloudWatch y Cloud Monitoring | [Observabilidad nativa](../../../monitoreo/nube/observabilidad-nativa.md) |
+| SLI/SLO, alertas útiles y OpenTelemetry | [Observabilidad](../../../monitoreo/fundamentos/observabilidad.md) |
+| Leer e interpretar logs | [Leer logs](../../../monitoreo/logging/leer-logs.md) |
 | HA, DR, RTO/RPO y pruebas de DR | [Resiliencia](../../../cloud/operacion-y-gobierno/resiliencia.md) |
 | BCP, BIA y criticidad de sistemas | [Continuidad de negocio](../../../negocio/continuidad-negocio.md) |
 | Diagnóstico de red | [Troubleshooting de red](../../../networking/avanzado/troubleshooting-red.md) |

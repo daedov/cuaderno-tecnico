@@ -101,7 +101,7 @@ Cómo deshacer cada paso de mitigación.
 
 ## Ejemplo: disco lleno en un nodo Linux
 
-Runbook para nodos Linux con métricas de `node_exporter` en Prometheus (ver [Observabilidad](observabilidad.md)). Los comandos de Linux se repasan en [Linux, redes y scripting](../fundamentos/linux-redes-scripting.md) y en la [guía de comandos de Linux](../../recursos/comandos/linux.md).
+Runbook para nodos Linux con métricas de `node_exporter` en Prometheus (ver [Observabilidad](../../monitoreo/fundamentos/observabilidad.md)). Los comandos de Linux se repasan en [Linux, redes y scripting](../fundamentos/linux-redes-scripting.md) y en la [guía de comandos de Linux](../../recursos/comandos/linux.md).
 
 ````markdown title="runbooks/nodo-disco-lleno.md"
 # Runbook: NodeFilesystemAlmostFull
@@ -202,7 +202,7 @@ groups:
           runbook_url: "https://git.ejemplo.com/plataforma/runbooks/-/blob/main/nodo-disco-lleno.md"
 ```
 
-Las alarmas nativas permiten lo mismo: incluir la URL en la descripción de la alarma de CloudWatch o de la alerta de Azure Monitor o Cloud Monitoring, que llega a la notificación (ver [Observabilidad nativa](../../cloud/operacion-y-gobierno/observabilidad-nativa.md)).
+Las alarmas nativas permiten lo mismo: incluir la URL en la descripción de la alarma de CloudWatch o de la alerta de Azure Monitor o Cloud Monitoring, que llega a la notificación (ver [Observabilidad nativa](../../monitoreo/nube/observabilidad-nativa.md)).
 
 !!! warning "Alerta sin runbook = alerta a revisar"
     Si una alerta no tiene runbook, o nadie sabría qué hacer al recibirla, probablemente no debería despertar a nadie. Revísala en la revisión semanal de alertas (ver [Prácticas para aprender de incidentes](practicas-aprendizaje.md#revision-semanal-de-operaciones-y-de-alertas)).
@@ -278,8 +278,8 @@ Un runbook desactualizado es peor que no tenerlo: da una falsa sensación de seg
 
 | Enfoque | Qué se mira desde ahí | Nota |
 | --- | --- | --- |
-| Cloud (el control) | Alarmas nativas que enlazan runbooks y servicios de automatización | [Observabilidad nativa](../../cloud/operacion-y-gobierno/observabilidad-nativa.md), [Resiliencia](../../cloud/operacion-y-gobierno/resiliencia.md) |
-| DevOps (la automatización) | Alertas que disparan runbooks, scripts y configuración idempotente | [Operación y fiabilidad (SRE)](operacion-sre.md), [Observabilidad](observabilidad.md), [Troubleshooting](troubleshooting.md), [Ansible](../iac/ansible.md), [Postmortem](postmortem.md) |
+| Cloud (el control) | Alarmas nativas que enlazan runbooks y servicios de automatización | [Observabilidad nativa](../../monitoreo/nube/observabilidad-nativa.md), [Resiliencia](../../cloud/operacion-y-gobierno/resiliencia.md) |
+| DevOps (la automatización) | Alertas que disparan runbooks, scripts y configuración idempotente | [Operación y fiabilidad (SRE)](operacion-sre.md), [Observabilidad](../../monitoreo/fundamentos/observabilidad.md), [Troubleshooting](troubleshooting.md), [Ansible](../iac/ansible.md), [Postmortem](postmortem.md) |
 | DevSecOps (la verificación) | Playbooks de incidentes de seguridad y permisos de las automatizaciones | [Detección y respuesta](../../devsecops/gobierno-y-respuesta/deteccion-respuesta.md), [Secretos e identidades](../../devsecops/identidades-y-pipeline/secretos-identidades.md) |
 | Negocio TI (el porqué) | Knowledge management y SOPs exigidos por auditoría | [Gestión de servicios (ITSM) e ITIL](../../negocio/gestion-servicios-itil.md) |
 | Python (la herramienta) | Convertir pasos manuales en scripts | [Sistema y procesos](../../python/scripting/sistema-procesos.md) |

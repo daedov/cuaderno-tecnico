@@ -43,7 +43,7 @@ Controles y buenas prácticas de seguridad por servicio en AWS, Azure y Google C
 
 ## Operación y gobierno
 
-- [Observabilidad nativa](operacion-y-gobierno/observabilidad-nativa.md): CloudWatch, Azure Monitor, Cloud Monitoring
+- [Observabilidad nativa](../monitoreo/nube/observabilidad-nativa.md): CloudWatch, Azure Monitor, Cloud Monitoring (en la sección [Observabilidad y monitoreo](../monitoreo/index.md))
 - [Resiliencia](operacion-y-gobierno/resiliencia.md): high availability, autoscaling, disaster recovery, RTO/RPO
 - [Gobernanza](operacion-y-gobierno/gobernanza.md): landing zone, tagging, guardrails, multi-account
 

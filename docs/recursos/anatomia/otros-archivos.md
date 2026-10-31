@@ -126,7 +126,7 @@ scrape_configs:                                # [obligatorio en la práctica] q
 
 ## Reglas de alerta de Prometheus comentadas
 
-Mismas métricas que la app de los Labs 11 y 21 (`http_requests_total` con labels `path` y `status`, y el histograma de latencia). Para el criterio de qué merece una alerta, ver [Alertas accionables](../../devops/operacion/observabilidad.md#alertas-accionables).
+Mismas métricas que la app de los Labs 11 y 21 (`http_requests_total` con labels `path` y `status`, y el histograma de latencia). Para el criterio de qué merece una alerta, ver [Alertas](../../monitoreo/alertas/alertas.md#que-merece-una-alerta).
 
 ```yaml title="observabilidad/prometheus/reglas/alertas.yml"
 groups:                                        # [obligatorio] lista de grupos
@@ -498,7 +498,7 @@ argocd app diff lab-devops-app-prod
 - [Lab 11: Observabilidad con Prometheus y Grafana](../../laboratorios/devops/observabilidad-prometheus-grafana.md): `prometheus.yml`, recording y alerting rules (probadas con `promtool`), Alertmanager y Grafana en Docker Compose, con las mismas métricas y alertas de esta página.
 - [Lab 21: Game day de un incidente](../../laboratorios/operacion/game-day-incidente.md): reutiliza el stack del Lab 11 para inyectar fallos, ver saltar estas alertas y escribir el postmortem.
 - [Lab 07: Pipeline de CI con GitHub Actions](../../laboratorios/devops/github-actions-ci.md): el reto extra 1 crea el `dependabot.yml`.
-- Teoría: [Observabilidad](../../devops/operacion/observabilidad.md), [Despliegue continuo y GitOps](../../devops/ci-cd/despliegue-continuo.md), [Seguridad del código](../../devsecops/codigo-y-dependencias/seguridad-codigo.md) y [Software supply chain](../../devsecops/codigo-y-dependencias/cadena-suministro.md).
+- Teoría: [Observabilidad](../../monitoreo/fundamentos/observabilidad.md), [Despliegue continuo y GitOps](../../devops/ci-cd/despliegue-continuo.md), [Seguridad del código](../../devsecops/codigo-y-dependencias/seguridad-codigo.md) y [Software supply chain](../../devsecops/codigo-y-dependencias/cadena-suministro.md).
 - Anatomía de los pipelines: [GitHub Actions](github-actions.md) y [GitLab CI](gitlab-ci.md).
 
 !!! example "Practica en el laboratorio"

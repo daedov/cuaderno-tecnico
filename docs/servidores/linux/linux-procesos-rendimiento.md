@@ -11,7 +11,7 @@ tags:
 > Ver y controlar procesos, entender límites, memoria, CPU, carga e I/O, programar tareas con cron y systemd timers, y diagnosticar un servidor lento con un método (USE y "60 segundos").
 
 !!! info "Antes de leer"
-    Conviene haber leído [Linux Server: fundamentos de administración](linux-fundamentos-servidor.md) (systemd, unit files y journald). Para métricas y alertas a nivel de flota mira [Observabilidad](../../devops/operacion/observabilidad.md); la metodología general de diagnóstico está en [Troubleshooting](../../devops/operacion/troubleshooting.md).
+    Conviene haber leído [Linux Server: fundamentos de administración](linux-fundamentos-servidor.md) (systemd, unit files y journald). Para métricas y alertas a nivel de flota mira [Observabilidad](../../monitoreo/fundamentos/observabilidad.md); la metodología general de diagnóstico está en [Troubleshooting](../../devops/operacion/troubleshooting.md).
 
 !!! note "Cómo se probaron los ejemplos"
     Salidas reales y abreviadas de un contenedor Ubuntu 24.04 con systemd (sysstat 12.6). Un contenedor comparte el kernel con la máquina (WSL2, 20 CPU, 7,6 GiB), así que `uptime`, `free` y `vmstat` muestran los valores de ese kernel. El OOM killer se provocó en un contenedor aparte limitado a 100 MB, para no afectar a nada más. `iotop` no funciona dentro del contenedor (`couldn't get netlink family id`) y se describe según su manual.
@@ -399,8 +399,8 @@ Un zombie no consume CPU ni memoria: solo una entrada en la tabla de procesos. *
 
 | Enfoque | Qué se mira desde ahí | Nota |
 | --- | --- | --- |
-| Cloud (el control) | Tamaño de la VM, créditos de CPU, IOPS del disco, métricas nativas | [Máquinas virtuales](../../cloud/computo/maquinas-virtuales.md), [Observabilidad nativa](../../cloud/operacion-y-gobierno/observabilidad-nativa.md) |
-| DevOps (la automatización) | Métricas, alertas y diagnóstico a escala; programar scripts | [Observabilidad](../../devops/operacion/observabilidad.md), [Troubleshooting](../../devops/operacion/troubleshooting.md), [Sistema y procesos con Python](../../python/scripting/sistema-procesos.md), [Ansible para Linux](../ansible/ansible-linux.md) |
+| Cloud (el control) | Tamaño de la VM, créditos de CPU, IOPS del disco, métricas nativas | [Máquinas virtuales](../../cloud/computo/maquinas-virtuales.md), [Observabilidad nativa](../../monitoreo/nube/observabilidad-nativa.md) |
+| DevOps (la automatización) | Métricas, alertas y diagnóstico a escala; programar scripts | [Observabilidad](../../monitoreo/fundamentos/observabilidad.md), [Troubleshooting](../../devops/operacion/troubleshooting.md), [Sistema y procesos con Python](../../python/scripting/sistema-procesos.md), [Ansible para Linux](../ansible/ansible-linux.md) |
 | DevSecOps (la verificación) | Procesos inesperados, límites de servicios y auditoría | [Hardening de Linux](../../devsecops/hardening/hardening-linux.md), [Detección y respuesta](../../devsecops/gobierno-y-respuesta/deteccion-respuesta.md) |
 | Servidores | El resto de la administración Linux | [Fundamentos](linux-fundamentos-servidor.md), [Almacenamiento](linux-almacenamiento.md), [Redes](linux-redes-servidor.md) |
 

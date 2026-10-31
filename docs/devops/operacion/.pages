@@ -1,6 +1,4 @@
 nav:
-  - observabilidad.md
-  - leer-logs.md
   - troubleshooting.md
   - operacion-sre.md
   - postmortem.md

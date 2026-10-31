@@ -190,7 +190,7 @@ kubectl get configauditreports -A -o wide
 kubectl get rbacassessmentreports -A -o wide
 ```
 
-Como son CRDs, puedes exportarlos con Prometheus (el operador expone métricas) y alertar desde Grafana (ver [Observabilidad](../../devops/operacion/observabilidad.md)). Kubescape tiene un operador equivalente con su propio chart de Helm.
+Como son CRDs, puedes exportarlos con Prometheus (el operador expone métricas) y alertar desde Grafana (ver [Observabilidad](../../monitoreo/fundamentos/observabilidad.md)). Kubescape tiene un operador equivalente con su propio chart de Helm.
 
 ## Integrarlo en el pipeline
 
@@ -296,7 +296,7 @@ El ciclo general está en [Gestión de hallazgos](escaneo-en-pipeline.md#gestion
 | Enfoque | Qué se mira desde ahí | Nota |
 | --- | --- | --- |
 | Cloud (el control) | EKS, AKS y GKE: qué gestiona el proveedor y qué tú; servicios nativos de postura y detección | [Contenedores gestionados](../../cloud/computo/contenedores-gestionados.md), [Responsabilidad compartida](../../cloud/fundamentos/responsabilidad-compartida.md), [Seguridad de contenedores y Kubernetes](../../cloud/seguridad/seguridad-contenedores-kubernetes.md) |
-| DevOps (la automatización) | Los objetos que se evalúan y cómo llegan al clúster | [Kubernetes](../../devops/contenedores/kubernetes.md), [Despliegue continuo](../../devops/ci-cd/despliegue-continuo.md), [Observabilidad](../../devops/operacion/observabilidad.md) |
+| DevOps (la automatización) | Los objetos que se evalúan y cómo llegan al clúster | [Kubernetes](../../devops/contenedores/kubernetes.md), [Despliegue continuo](../../devops/ci-cd/despliegue-continuo.md), [Observabilidad](../../monitoreo/fundamentos/observabilidad.md) |
 | DevSecOps (la verificación) | Controles del clúster, manifests antes de desplegar, imágenes, cuenta cloud y cumplimiento | [Seguridad de Kubernetes](../infraestructura-y-contenedores/seguridad-kubernetes.md), [IaC scanning](iac-scanning.md), [Container scanning](container-scanning.md), [CSPM](cspm.md), [Cumplimiento y gobierno](../gobierno-y-respuesta/cumplimiento.md), [Escaneo de seguridad en el pipeline](escaneo-en-pipeline.md) |
 | Laboratorios (la práctica) | Practicar esto paso a paso | [Lab 12: Escaneos de seguridad en el pipeline](../../laboratorios/devsecops/escaneos-en-pipeline.md), [Lab 14: Endurecer un clúster: Pod Security, NetworkPolicy y Kyverno](../../laboratorios/devsecops/seguridad-kubernetes.md) |
 

@@ -14,7 +14,7 @@ tags:
 > Qué logs tienen que estar activos sí o sí en AWS, Azure y Google Cloud, cómo protegerlos para que nadie los borre, dónde centralizarlos, qué servicios de detección activar y qué alertas mínimas configurar.
 
 !!! info "Antes de leer"
-    En el [Shared Responsibility Model](../fundamentos/responsabilidad-compartida.md), el proveedor **genera** buena parte de los logs, pero **activarlos, retenerlos, protegerlos y revisarlos** es tarea tuya: muchos (data events, Data Access audit logs, resource logs) vienen apagados por defecto. Conviene haber leído [Observabilidad nativa](../operacion-y-gobierno/observabilidad-nativa.md) (CloudWatch, Azure Monitor, Cloud Logging) y la parte de cuentas centrales de [Gobernanza](../operacion-y-gobierno/gobernanza.md).
+    En el [Shared Responsibility Model](../fundamentos/responsabilidad-compartida.md), el proveedor **genera** buena parte de los logs, pero **activarlos, retenerlos, protegerlos y revisarlos** es tarea tuya: muchos (data events, Data Access audit logs, resource logs) vienen apagados por defecto. Conviene haber leído [Observabilidad nativa](../../monitoreo/nube/observabilidad-nativa.md) (CloudWatch, Azure Monitor, Cloud Logging) y la parte de cuentas centrales de [Gobernanza](../operacion-y-gobierno/gobernanza.md).
 
 ## ¿Por qué importa?
 
@@ -292,8 +292,8 @@ Los fragmentos de Terraform con estos controles (y los guardrails de organizaci�
 
 | Enfoque | Qué se mira desde ahí | Nota |
 | --- | --- | --- |
-| Cloud (el control) | Observabilidad; cuentas centrales; identidades y red | [Observabilidad nativa](../operacion-y-gobierno/observabilidad-nativa.md), [Gobernanza](../operacion-y-gobierno/gobernanza.md), [Seguridad de identidades](seguridad-identidades.md), [Seguridad de redes](seguridad-redes.md) |
-| DevOps (la automatización) | Centralizar logs y alertas como código; observabilidad y guardias | [Observabilidad](../../devops/operacion/observabilidad.md), [Operación y fiabilidad (SRE)](../../devops/operacion/operacion-sre.md), [Infrastructure as Code](../../devops/iac/infraestructura-como-codigo.md) |
+| Cloud (el control) | Observabilidad; cuentas centrales; identidades y red | [Observabilidad nativa](../../monitoreo/nube/observabilidad-nativa.md), [Gobernanza](../operacion-y-gobierno/gobernanza.md), [Seguridad de identidades](seguridad-identidades.md), [Seguridad de redes](seguridad-redes.md) |
+| DevOps (la automatización) | Centralizar logs y alertas como código; observabilidad y guardias | [Observabilidad](../../monitoreo/fundamentos/observabilidad.md), [Operación y fiabilidad (SRE)](../../devops/operacion/operacion-sre.md), [Infrastructure as Code](../../devops/iac/infraestructura-como-codigo.md) |
 | DevSecOps (la verificación) | SIEM, triage, playbooks y forense; auditoría continua y retención por cumplimiento | [Detección y respuesta](../../devsecops/gobierno-y-respuesta/deteccion-respuesta.md), [Cumplimiento y gobierno](../../devsecops/gobierno-y-respuesta/cumplimiento.md), [CSPM](../../devsecops/escaneos/cspm.md) |
 | Networking (la base) | Flow logs y herramientas para investigar tráfico | [Troubleshooting de red](../../networking/avanzado/troubleshooting-red.md) |
 | Laboratorios (la práctica) | Practicar esto paso a paso | [Lab 16: Auditar tu cuenta cloud con Prowler (CSPM)](../../laboratorios/devsecops/cspm-prowler.md) |

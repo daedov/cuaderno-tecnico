@@ -288,7 +288,7 @@ reglas = [
 | Enfoque | Qué se mira desde ahí | Nota |
 | --- | --- | --- |
 | Cloud (el control) | Security groups, tags y respuestas de la API que se convierten en listas y diccionarios | [Redes en la nube](../../cloud/redes-y-datos/redes.md), [Gobernanza](../../cloud/operacion-y-gobierno/gobernanza.md) |
-| DevOps (la automatización) | Contar y agrupar eventos de logs antes de llevarlos a un sistema central | [Observabilidad](../../devops/operacion/observabilidad.md) |
+| DevOps (la automatización) | Contar y agrupar eventos de logs antes de llevarlos a un sistema central | [Observabilidad](../../monitoreo/fundamentos/observabilidad.md) |
 | DevSecOps (la verificación) | Detectar reglas abiertas a `0.0.0.0/0` y diferencias entre lo declarado y lo real | [Seguridad de IaC](../../devsecops/infraestructura-y-contenedores/seguridad-iac.md) |
 | Networking (la base) | Qué puertos deberían estar expuestos y por qué | [Seguridad de red](../../networking/avanzado/seguridad-red.md), [Puertos comunes](../../recursos/puertos.md) |
 | Python (la herramienta) | Recorrer estas estructuras con bucles y funciones | [Control de flujo y funciones](control-flujo-funciones.md) |

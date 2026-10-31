@@ -72,7 +72,7 @@ Consejo: un dashboard por servicio con las señales de oro arriba (ver más abaj
 En contenedores los logs se escriben a `stdout`/`stderr` y un agente (Fluent Bit, Grafana Alloy, el OpenTelemetry Collector) los recoge y los envía a un backend central.
 
 !!! tip "Aprender a leer logs"
-    Formatos, método para encontrar la causa, herramientas de terminal y ejercicios resueltos en [Cómo leer logs](leer-logs.md).
+    Formatos, método para encontrar la causa, herramientas de terminal y ejercicios resueltos en [Cómo leer logs](../logging/leer-logs.md).
 
 | | **Loki** (Grafana Labs) | **ELK / OpenSearch** |
 | --- | --- | --- |
@@ -149,38 +149,13 @@ El SLO interno debe ser **más estricto** que el SLA, para enterarte antes de in
 - Error budget: 0,1 % × 43 200 = **43,2 minutos** de indisponibilidad total al mes.
 - Si la API recibe 10 millones de peticiones al mes: 0,1 % = **10 000 peticiones fallidas** permitidas.
 
-El error budget de cada SLO (99 %, 99,9 %, 99,99 %…) por año, mes y semana está en [la tabla de los nueves](../../negocio/niveles-de-servicio.md#la-tabla-de-los-nueves). Qué hacer cuando queda o se agota el presupuesto lo decide la [política de error budget](operacion-sre.md#politica-de-error-budget).
+El error budget de cada SLO (99 %, 99,9 %, 99,99 %…) por año, mes y semana está en [la tabla de los nueves](../../negocio/niveles-de-servicio.md#la-tabla-de-los-nueves). Qué hacer cuando queda o se agota el presupuesto lo decide la [política de error budget](../../devops/operacion/operacion-sre.md#politica-de-error-budget).
 
 ## Alertas accionables
 
-Una buena alerta cumple tres condiciones: es **urgente**, es **real** (afecta a usuarios o lo hará pronto) y alguien **puede hacer algo**. Si no, debería ser un ticket o un panel, no un aviso a las 3 de la mañana.
+Una buena alerta cumple tres condiciones: es **urgente**, es **real** (afecta a usuarios o lo hará pronto) y alguien **puede hacer algo**. Si no, debería ser un ticket o un panel, no un aviso a las 3 de la mañana. Se alerta sobre **síntomas** (el 5 % de los pagos falla) y no sobre causas (CPU al 90 %), y la forma más fiable de hacerlo con un SLO es medir el **burn rate** del error budget.
 
-- **Alerta sobre síntomas, no sobre causas**: "el 5 % de los pagos falla" en vez de "CPU al 90 %". La CPU alta sin impacto en usuarios no debería despertar a nadie.
-- **Alerta sobre el error budget con burn rate**: el **burn rate** (velocidad de consumo) indica cuántas veces más rápido de lo sostenible se está gastando el presupuesto. Con burn rate 1 se agota justo al final de la ventana; con 14,4, un 2 % del presupuesto mensual se va en una hora.
-- **Varias ventanas**: el *SRE Workbook* de Google propone, por ejemplo, avisar de inmediato si el burn rate supera 14,4 en 1 hora (y en 5 minutos, para confirmar que sigue ocurriendo) y abrir un ticket si supera 1 en 3 días.
-- **Cada alerta con su runbook** enlazado.
-
-```yaml title="alertas-slo.yaml"
-groups:
-  - name: slo-api
-    rules:
-      - alert: APIErrorBudgetBurnRapido
-        expr: |
-          (
-            sum(rate(http_requests_total{service="api", code=~"5.."}[1h]))
-              / sum(rate(http_requests_total{service="api"}[1h]))
-          ) > (14.4 * 0.001)
-          and
-          (
-            sum(rate(http_requests_total{service="api", code=~"5.."}[5m]))
-              / sum(rate(http_requests_total{service="api"}[5m]))
-          ) > (14.4 * 0.001)
-        labels:
-          severity: page
-        annotations:
-          summary: "La API está consumiendo el error budget 14 veces más rápido de lo sostenible"
-          runbook_url: "https://wiki.ejemplo.com/runbooks/api-errores"
-```
+Severidades, anatomía de una regla, burn rate con varias ventanas, Alertmanager y on-call en [Alertas](../alertas/alertas.md).
 
 ## Métodos RED, USE y golden signals
 
@@ -196,14 +171,15 @@ RED y golden signals son casi lo mismo visto desde el servicio; USE sirve para d
 
 ## Servicios gestionados
 
-Si no quieres operar Prometheus y Grafana tú misma, cada nube los ofrece gestionados, compatibles con PromQL y con los dashboards de Grafana, y los tres reciben OpenTelemetry. La tabla de servicios por proveedor (Prometheus y Grafana gestionados, trazas, OTLP) y las herramientas nativas de cada nube están en [Observabilidad nativa](../../cloud/operacion-y-gobierno/observabilidad-nativa.md#vista-rapida).
+Si no quieres operar Prometheus y Grafana tú misma, cada nube los ofrece gestionados, compatibles con PromQL y con los dashboards de Grafana, y los tres reciben OpenTelemetry. La tabla de servicios por proveedor (Prometheus y Grafana gestionados, trazas, OTLP) y las herramientas nativas de cada nube están en [Observabilidad nativa](../nube/observabilidad-nativa.md#vista-rapida).
 
 ## Relación con otras secciones
 
 | Enfoque | Qué se mira desde ahí | Nota |
 | --- | --- | --- |
-| Cloud (el control) | Métricas y logs que ya genera cada servicio de la nube, logs de auditoría | [Observabilidad nativa](../../cloud/operacion-y-gobierno/observabilidad-nativa.md) |
-| DevOps (la automatización) | Usar SLOs y alertas para operar, gestionar incidentes y medir entregas | [Operación y fiabilidad (SRE)](operacion-sre.md), [Kubernetes](../contenedores/kubernetes.md), [Cultura DevOps y métricas DORA](../fundamentos/cultura-metricas-dora.md), [Cómo leer logs](leer-logs.md), [Troubleshooting](troubleshooting.md) |
+| Observabilidad y monitoreo | Qué medir en cada capa, cómo alertar y cómo llegan los logs | [Qué monitorear](que-monitorear.md), [Alertas](../alertas/alertas.md), [Pipeline de logs](../logging/pipeline-de-logs.md) |
+| Cloud (el control) | Métricas y logs que ya genera cada servicio de la nube, logs de auditoría | [Observabilidad nativa](../nube/observabilidad-nativa.md) |
+| DevOps (la automatización) | Usar SLOs y alertas para operar, gestionar incidentes y medir entregas | [Operación y fiabilidad (SRE)](../../devops/operacion/operacion-sre.md), [Kubernetes](../../devops/contenedores/kubernetes.md), [Cultura DevOps y métricas DORA](../../devops/fundamentos/cultura-metricas-dora.md), [Cómo leer logs](../logging/leer-logs.md), [Troubleshooting](../../devops/operacion/troubleshooting.md) |
 | DevSecOps (la verificación) | Monitoreo de seguridad: los mismos logs alimentan el SIEM y la detección de amenazas | [Detección y respuesta](../../devsecops/gobierno-y-respuesta/deteccion-respuesta.md) |
 | Negocio TI (el porqué) | Qué se acuerda con clientes (SLA), cuánto cuesta cada nueve y disponibilidad compuesta | [Niveles de servicio](../../negocio/niveles-de-servicio.md) |
 | Laboratorios (la práctica) | Practicar esto paso a paso | [Lab 03: Script en Python para analizar logs](../../laboratorios/fundamentos/python-analizar-logs.md), [Lab 11: Observabilidad con Prometheus y Grafana](../../laboratorios/devops/observabilidad-prometheus-grafana.md), [Lab 21: Game day: incidente simulado, troubleshooting y postmortem](../../laboratorios/operacion/game-day-incidente.md) |

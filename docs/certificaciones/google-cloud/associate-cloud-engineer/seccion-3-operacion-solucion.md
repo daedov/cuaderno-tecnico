@@ -162,7 +162,7 @@ Las **rutas estáticas** (`gcloud compute routes create`) envían un rango (por 
 
 ## Cloud Monitoring
 
-Conceptos de métricas, logs, trazas y alarmas en [Observabilidad nativa](../../../cloud/operacion-y-gobierno/observabilidad-nativa.md). Lo propio de Google Cloud:
+Conceptos de métricas, logs, trazas y alarmas en [Observabilidad nativa](../../../monitoreo/nube/observabilidad-nativa.md). Lo propio de Google Cloud:
 
 - **Metrics scope**: un proyecto central ve métricas de hasta cientos de proyectos.
 - **Alerting policies**: condición (umbral, ausencia de datos, PromQL) + **notification channels** (correo, SMS, Slack, PagerDuty, Pub/Sub, webhooks). **Uptime checks** desde varias ubicaciones.
@@ -299,7 +299,7 @@ gcloud logging read 'resource.type="gce_instance" AND severity>=ERROR' --limit=2
 
 ## Para profundizar
 
-- [Observabilidad nativa](../../../cloud/operacion-y-gobierno/observabilidad-nativa.md) y [Observabilidad](../../../devops/operacion/observabilidad.md)
+- [Observabilidad nativa](../../../monitoreo/nube/observabilidad-nativa.md) y [Observabilidad](../../../monitoreo/fundamentos/observabilidad.md)
 - [Resiliencia](../../../cloud/operacion-y-gobierno/resiliencia.md) y [Continuidad de negocio](../../../negocio/continuidad-negocio.md)
 - [Kubernetes](../../../devops/contenedores/kubernetes.md) y [Seguridad de Kubernetes](../../../devsecops/infraestructura-y-contenedores/seguridad-kubernetes.md)
 - [Redes en la nube](../../../cloud/redes-y-datos/redes.md) y [Troubleshooting de red](../../../networking/avanzado/troubleshooting-red.md)

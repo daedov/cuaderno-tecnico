@@ -83,7 +83,7 @@ Pensado para 6–8 horas por semana con práctica real en un proyecto de pruebas
 | 1 | Sección 1 | [Sección 1](seccion-1-entorno-solucion-cloud.md), [modelos de servicio y regiones](../../../cloud/fundamentos/modelos-de-servicio-y-regiones.md) y [gobernanza](../../../cloud/operacion-y-gobierno/gobernanza.md). Crea un proyecto, un **budget con alertas** y practica `gcloud config` |
 | 2 | Sección 2: cómputo | [Sección 2](seccion-2-planificar-implementar.md), [máquinas virtuales](../../../cloud/computo/maquinas-virtuales.md) y [contenedores gestionados](../../../cloud/computo/contenedores-gestionados.md). Práctica: MIG con autoscaling, Cloud Run, clúster Autopilot |
 | 3 | Sección 2: datos y redes | [Almacenamiento y datos](../../../cloud/redes-y-datos/almacenamiento-datos.md) y [redes](../../../cloud/redes-y-datos/redes.md). Práctica: VPC custom, firewall rules, Cloud NAT, bucket con lifecycle |
-| 4 | Sección 3 | [Sección 3](seccion-3-operacion-solucion.md) y [observabilidad nativa](../../../cloud/operacion-y-gobierno/observabilidad-nativa.md). Práctica: snapshot schedule, traffic splitting en Cloud Run, alerta, log sink a BigQuery |
+| 4 | Sección 3 | [Sección 3](seccion-3-operacion-solucion.md) y [observabilidad nativa](../../../monitoreo/nube/observabilidad-nativa.md). Práctica: snapshot schedule, traffic splitting en Cloud Run, alerta, log sink a BigQuery |
 | 5 | Sección 4 | [Sección 4](seccion-4-acceso-seguridad.md) e [IAM comparativa](../../../cloud/fundamentos/iam-comparativa.md). Práctica: custom role, impersonation, Workload Identity Federation for GKE |
 | 6 | Repaso | *Sample questions* oficiales, preguntas de práctica de cada nota y el laboratorio de abajo sin mirar la documentación |
 
@@ -140,7 +140,7 @@ Las genéricas (*cost-effective*, *operational overhead*, *audit*…) están en 
 
 - Base: [Modelos de servicio y regiones](../../../cloud/fundamentos/modelos-de-servicio-y-regiones.md), [Gobernanza](../../../cloud/operacion-y-gobierno/gobernanza.md), [FinOps y costos](../../../cloud/fundamentos/finops-costos.md)
 - Servicios: [Máquinas virtuales](../../../cloud/computo/maquinas-virtuales.md), [Contenedores gestionados](../../../cloud/computo/contenedores-gestionados.md), [Redes en la nube](../../../cloud/redes-y-datos/redes.md), [Almacenamiento y datos](../../../cloud/redes-y-datos/almacenamiento-datos.md)
-- Operación y seguridad: [Observabilidad nativa](../../../cloud/operacion-y-gobierno/observabilidad-nativa.md), [IAM comparativa](../../../cloud/fundamentos/iam-comparativa.md)
+- Operación y seguridad: [Observabilidad nativa](../../../monitoreo/nube/observabilidad-nativa.md), [IAM comparativa](../../../cloud/fundamentos/iam-comparativa.md)
 - Comandos: [gcloud CLI](../../../recursos/comandos/google-cli.md), [kubectl](../../../recursos/comandos/kubectl.md), [Terraform](../../../recursos/comandos/terraform.md)
 
 !!! example "Practica en el laboratorio"

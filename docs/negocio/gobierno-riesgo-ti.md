@@ -88,7 +88,7 @@ El **risk register** (registro de riesgos) es la lista viva de riesgos identific
 | R-04 | Subida de precio del proveedor de observabilidad | 2 | 2 | 4 – medio | Mitigar: instrumentar con OpenTelemetry para poder cambiar | CTO | Aceptado parcialmente | Anual |
 
 !!! tip "Un riesgo sin dueño no se gestiona"
-    Cada riesgo necesita una persona responsable (no "TI" ni "el equipo") y una fecha de revisión. El R-04 muestra un caso típico: [OpenTelemetry](../devops/operacion/observabilidad.md#trazas-distribuidas-con-opentelemetry) reduce la dependencia del proveedor.
+    Cada riesgo necesita una persona responsable (no "TI" ni "el equipo") y una fecha de revisión. El R-04 muestra un caso típico: [OpenTelemetry](../monitoreo/fundamentos/observabilidad.md#trazas-distribuidas-con-opentelemetry) reduce la dependencia del proveedor.
 
 ### Apetito y tolerancia al riesgo
 
@@ -163,7 +163,7 @@ flowchart LR
 | --- | --- | --- |
 | Negocio TI (el porqué) | Riesgo en los business case, gestión de servicios y continuidad | [TI y negocio](ti-y-negocio.md), [Gestión de servicios (ITSM) e ITIL](gestion-servicios-itil.md), [Continuidad de negocio](continuidad-negocio.md) |
 | Cloud (el control) | Guardrails, estructura de cuentas, responsabilidad compartida y costos de salida | [Gobernanza](../cloud/operacion-y-gobierno/gobernanza.md), [Shared Responsibility Model](../cloud/fundamentos/responsabilidad-compartida.md), [FinOps y costos](../cloud/fundamentos/finops-costos.md) |
-| DevOps (la automatización) | Herramientas abiertas que reducen el lock-in; IaC como evidencia de cambios | [Infrastructure as Code](../devops/iac/infraestructura-como-codigo.md), [Observabilidad](../devops/operacion/observabilidad.md) |
+| DevOps (la automatización) | Herramientas abiertas que reducen el lock-in; IaC como evidencia de cambios | [Infrastructure as Code](../devops/iac/infraestructura-como-codigo.md), [Observabilidad](../monitoreo/fundamentos/observabilidad.md) |
 | DevSecOps (la verificación) | Threat modeling, marcos de cumplimiento, CSPM y respuesta a incidentes | [Fundamentos DevSecOps](../devsecops/fundamentos-devsecops.md), [Cumplimiento y gobierno](../devsecops/gobierno-y-respuesta/cumplimiento.md), [Cadena de suministro](../devsecops/codigo-y-dependencias/cadena-suministro.md) |
 
 ## Referencias

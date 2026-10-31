@@ -16,7 +16,7 @@ tags:
 Un **service level** (nivel de servicio) es la respuesta medible a "¿qué tan bien tiene que funcionar este servicio?". Sin un número acordado, cada caída es una discusión: para el cliente cualquier fallo es inaceptable y para el equipo técnico "estuvo bien casi todo el mes".
 
 !!! info "Esta nota es la vista de negocio"
-    Cómo **medir** un SLI con Prometheus, calcular el error budget y alertar por *burn rate* está en [Observabilidad](../devops/operacion/observabilidad.md#sli-slo-sla-y-error-budget). Cómo **operar** con el error budget (política de congelación, incidentes, postmortems) está en [Operación y fiabilidad (SRE)](../devops/operacion/operacion-sre.md#politica-de-error-budget). Aquí se ve quién acuerda esos números, qué se firma, cuánto cuesta cada nueve y cómo se comunica.
+    Cómo **medir** un SLI con Prometheus, calcular el error budget y alertar por *burn rate* está en [Observabilidad](../monitoreo/fundamentos/observabilidad.md#sli-slo-sla-y-error-budget). Cómo **operar** con el error budget (política de congelación, incidentes, postmortems) está en [Operación y fiabilidad (SRE)](../devops/operacion/operacion-sre.md#politica-de-error-budget). Aquí se ve quién acuerda esos números, qué se firma, cuánto cuesta cada nueve y cómo se comunica.
 
 ## SLI, SLO y SLA: quién los usa
 
@@ -162,7 +162,7 @@ flowchart LR
 | --- | --- | --- |
 | **MTBF** (*Mean Time Between Failures*, tiempo medio entre fallos) | Tiempo medio de funcionamiento entre un fallo y el siguiente | Más alto = el sistema falla menos (calidad, pruebas, arquitectura) |
 | **MTTF** (*Mean Time To Failure*, tiempo medio hasta el fallo) | Como el MTBF, para componentes que no se reparan (un disco) | Más alto = componente más duradero |
-| **MTTD** (*Mean Time To Detect*, tiempo medio de detección) | Desde que empieza el fallo hasta que alguien o algo lo detecta | Más bajo = mejor [observabilidad](../devops/operacion/observabilidad.md) y alertas |
+| **MTTD** (*Mean Time To Detect*, tiempo medio de detección) | Desde que empieza el fallo hasta que alguien o algo lo detecta | Más bajo = mejor [observabilidad](../monitoreo/fundamentos/observabilidad.md) y alertas |
 | **MTTA** (*Mean Time To Acknowledge*, tiempo medio de reconocimiento) | Desde la alerta hasta que una persona la toma | Más bajo = guardias bien organizadas |
 | **MTTR** (*Mean Time To Restore/Recover/Repair*, tiempo medio de recuperación) | Desde el fallo hasta que el servicio vuelve | Más bajo = mitigación rápida (rollback, failover, runbooks) |
 
@@ -259,8 +259,8 @@ revision: trimestral
 | Enfoque | Qué se mira desde ahí | Nota |
 | --- | --- | --- |
 | Negocio TI (el porqué) | Costo de downtime, gestión de niveles de servicio en ITIL, continuidad y KPIs de servicio | [TI y negocio](ti-y-negocio.md), [Gestión de servicios (ITSM) e ITIL](gestion-servicios-itil.md), [Continuidad de negocio](continuidad-negocio.md), [Métricas, KPIs y OKRs](metricas-kpis-okrs.md) |
-| Cloud (el control) | Multi-AZ y multi-región para alcanzar los nueves; métricas nativas para medirlos | [Resiliencia](../cloud/operacion-y-gobierno/resiliencia.md), [Observabilidad nativa](../cloud/operacion-y-gobierno/observabilidad-nativa.md), [Well-Architected Framework](../cloud/fundamentos/well-architected.md) |
-| DevOps (la automatización) | Medir SLIs, alertar por burn rate y operar con error budget | [Observabilidad](../devops/operacion/observabilidad.md), [Operación y fiabilidad (SRE)](../devops/operacion/operacion-sre.md), [Despliegue continuo](../devops/ci-cd/despliegue-continuo.md) |
+| Cloud (el control) | Multi-AZ y multi-región para alcanzar los nueves; métricas nativas para medirlos | [Resiliencia](../cloud/operacion-y-gobierno/resiliencia.md), [Observabilidad nativa](../monitoreo/nube/observabilidad-nativa.md), [Well-Architected Framework](../cloud/fundamentos/well-architected.md) |
+| DevOps (la automatización) | Medir SLIs, alertar por burn rate y operar con error budget | [Observabilidad](../monitoreo/fundamentos/observabilidad.md), [Operación y fiabilidad (SRE)](../devops/operacion/operacion-sre.md), [Despliegue continuo](../devops/ci-cd/despliegue-continuo.md) |
 | DevSecOps (la verificación) | SLA de remediación de vulnerabilidades y respuesta a incidentes de seguridad | [Detección y respuesta](../devsecops/gobierno-y-respuesta/deteccion-respuesta.md) |
 | Laboratorios (la práctica) | Practicar esto paso a paso | [Lab 11: Observabilidad con Prometheus y Grafana](../laboratorios/devops/observabilidad-prometheus-grafana.md), [Lab 21: Game day: incidente simulado, troubleshooting y postmortem](../laboratorios/operacion/game-day-incidente.md) |
 

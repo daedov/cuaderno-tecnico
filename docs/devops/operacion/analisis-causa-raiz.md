@@ -120,7 +120,7 @@ Ordenar los hechos con hora exacta (UTC) y marcar los **huecos**: tiempo en que 
 | 17:56 | Se decide no cancelarlo porque está "casi terminado" | Decisión con información incompleta: no se sabía cuánto faltaba |
 | 17:59 | Termina el índice; las escrituras se liberan | |
 
-El análisis del timeline suele revelar factores que no aparecen en ningún porqué: aquí, la falta de un runbook de bloqueos y la ausencia de información para decidir si cancelar. Para reconstruirlo, ver [Cómo leer logs](leer-logs.md).
+El análisis del timeline suele revelar factores que no aparecen en ningún porqué: aquí, la falta de un runbook de bloqueos y la ausencia de información para decidir si cancelar. Para reconstruirlo, ver [Cómo leer logs](../../monitoreo/logging/leer-logs.md).
 
 ## Change analysis: ¿qué cambió?
 
@@ -208,8 +208,8 @@ Un RCA también se puede abrir **sin** incidente grave: cuando la biblioteca de 
 
 | Enfoque | Qué se mira desde ahí | Nota |
 | --- | --- | --- |
-| Cloud (el control) | Logs de auditoría y métricas nativas para reconstruir hechos y cambios | [Observabilidad nativa](../../cloud/operacion-y-gobierno/observabilidad-nativa.md), [Almacenamiento y datos](../../cloud/redes-y-datos/almacenamiento-datos.md) |
-| DevOps (la automatización) | El postmortem que recoge el análisis; cambios y migraciones en el pipeline | [Postmortem](postmortem.md), [Troubleshooting](troubleshooting.md), [Cómo leer logs](leer-logs.md), [Despliegue continuo](../ci-cd/despliegue-continuo.md), [Observabilidad](observabilidad.md) |
+| Cloud (el control) | Logs de auditoría y métricas nativas para reconstruir hechos y cambios | [Observabilidad nativa](../../monitoreo/nube/observabilidad-nativa.md), [Almacenamiento y datos](../../cloud/redes-y-datos/almacenamiento-datos.md) |
+| DevOps (la automatización) | El postmortem que recoge el análisis; cambios y migraciones en el pipeline | [Postmortem](postmortem.md), [Troubleshooting](troubleshooting.md), [Cómo leer logs](../../monitoreo/logging/leer-logs.md), [Despliegue continuo](../ci-cd/despliegue-continuo.md), [Observabilidad](../../monitoreo/fundamentos/observabilidad.md) |
 | DevSecOps (la verificación) | Análisis posterior a incidentes de seguridad y controles en el pipeline | [Detección y respuesta](../../devsecops/gobierno-y-respuesta/deteccion-respuesta.md), [Seguridad del pipeline](../../devsecops/identidades-y-pipeline/seguridad-pipeline.md) |
 | Negocio TI (el porqué) | Problem management, known errors y registro de riesgos | [Gestión de servicios (ITSM) e ITIL](../../negocio/gestion-servicios-itil.md), [Gobierno y riesgo de TI](../../negocio/gobierno-riesgo-ti.md) |
 | Laboratorios (la práctica) | Practicar esto paso a paso | [Lab 21: Game day: incidente simulado, troubleshooting y postmortem](../../laboratorios/operacion/game-day-incidente.md) |

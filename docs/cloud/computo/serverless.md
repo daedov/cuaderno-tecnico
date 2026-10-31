@@ -189,7 +189,7 @@ Para exponer funciones como una API pública se suele poner un **API gateway** d
 | Enfoque | Qué se mira desde ahí | Nota |
 | --- | --- | --- |
 | Cloud (el control) | Otras opciones de cómputo; permisos y secretos de la función; costos | [Contenedores gestionados](contenedores-gestionados.md), [Máquinas virtuales](maquinas-virtuales.md), [IAM](../fundamentos/iam-comparativa.md), [FinOps y costos](../fundamentos/finops-costos.md) |
-| DevOps (la automatización) | Empaquetar y desplegar funciones desde el pipeline; versiones y alias para *canary* | [Despliegue continuo](../../devops/ci-cd/despliegue-continuo.md), [Infrastructure as Code](../../devops/iac/infraestructura-como-codigo.md), [Observabilidad](../../devops/operacion/observabilidad.md) |
+| DevOps (la automatización) | Empaquetar y desplegar funciones desde el pipeline; versiones y alias para *canary* | [Despliegue continuo](../../devops/ci-cd/despliegue-continuo.md), [Infrastructure as Code](../../devops/iac/infraestructura-como-codigo.md), [Observabilidad](../../monitoreo/fundamentos/observabilidad.md) |
 | DevSecOps (la verificación) | Dependencias de la función, secretos y seguridad de la API | [Software supply chain](../../devsecops/codigo-y-dependencias/cadena-suministro.md), [Secretos e identidades](../../devsecops/identidades-y-pipeline/secretos-identidades.md), [Pruebas dinámicas](../../devsecops/codigo-y-dependencias/pruebas-dinamicas.md) |
 | Laboratorios (la práctica) | Practicar esto paso a paso | [Lab 18: AWS: API serverless con Lambda, API Gateway y DynamoDB](../../laboratorios/cloud/aws-serverless-api.md), [Lab 20: Google Cloud: desplegar un contenedor en Cloud Run](../../laboratorios/cloud/gcp-cloud-run.md) |
 

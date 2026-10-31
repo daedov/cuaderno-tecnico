@@ -235,7 +235,7 @@ sudo ausearch -k identidad -ts today -i
 
 La baseline pide un journal **persistente** (`Storage=persistent`, para que los logs sobrevivan al reinicio), comprimido (`Compress=yes`) y con tope de disco (`SystemMaxUse=`). Cómo se configura con un drop-in y por qué con `Storage=auto` puede ser volátil: [Persistencia del journal](../../servidores/linux/linux-fundamentos-servidor.md#persistencia-del-journal).
 
-Los logs que solo están en el servidor desaparecen si un atacante los borra o si la instancia se elimina. Envíalos a un sistema central (rsyslog/syslog-ng, el agente de la nube u OpenTelemetry), como se ve en [Observabilidad](../../devops/operacion/observabilidad.md) y [Logging y detección en la nube](../../cloud/seguridad/seguridad-logging-deteccion.md).
+Los logs que solo están en el servidor desaparecen si un atacante los borra o si la instancia se elimina. Envíalos a un sistema central (rsyslog/syslog-ng, el agente de la nube u OpenTelemetry), como se ve en [Observabilidad](../../monitoreo/fundamentos/observabilidad.md) y [Logging y detección en la nube](../../cloud/seguridad/seguridad-logging-deteccion.md).
 
 ## SELinux y AppArmor
 

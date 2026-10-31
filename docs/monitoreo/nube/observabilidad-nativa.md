@@ -14,7 +14,7 @@ tags:
 
 La **observability** (observabilidad) es la capacidad de entender qué pasa dentro de un sistema a partir de los datos que emite. La **observabilidad nativa** es la que te da el propio proveedor: los servicios de la nube publican métricas y logs automáticamente en su herramienta de monitoreo, sin instalar nada.
 
-Es el punto de partida natural, pero no el único: muchas organizaciones combinan la herramienta nativa con un stack abierto (Prometheus, Grafana, OpenTelemetry), que se ve en [Observabilidad](../../devops/operacion/observabilidad.md) de DevOps.
+Es el punto de partida natural, pero no el único: muchas organizaciones combinan la herramienta nativa con un stack abierto (Prometheus, Grafana, OpenTelemetry), que se ve en [Observabilidad](../fundamentos/observabilidad.md) de DevOps.
 
 ## Métricas, logs y trazas
 
@@ -118,7 +118,7 @@ Buenas prácticas para controlar costos:
 - **No subas `DEBUG` en producción** salvo de forma temporal.
 - **Retención distinta por tipo**: logs de aplicación unas semanas; logs de auditoría y seguridad, lo que exija el [cumplimiento](../../devsecops/gobierno-y-respuesta/cumplimiento.md), en almacenamiento barato.
 - **Muestreo** (*sampling*) de trazas: no hace falta guardar el 100 % de las peticiones correctas.
-- Vigila el costo de observabilidad dentro de [FinOps y costos](../fundamentos/finops-costos.md).
+- Vigila el costo de observabilidad dentro de [FinOps y costos](../../cloud/fundamentos/finops-costos.md).
 
 ## Alarmas útiles
 
@@ -167,18 +167,18 @@ Una mala alarma despierta a alguien sin motivo (*alert fatigue*, fatiga de alert
     # Después, crea una alerting policy sobre la métrica logging/user/errores-api
     ```
 
-La definición de **SLI/SLO** (indicadores y objetivos de nivel de servicio) y las alertas basadas en *error budget* se tratan en [Observabilidad](../../devops/operacion/observabilidad.md) y [Operación y fiabilidad (SRE)](../../devops/operacion/operacion-sre.md).
+La definición de **SLI/SLO** (indicadores y objetivos de nivel de servicio) y las alertas basadas en *error budget* se tratan en [Observabilidad](../fundamentos/observabilidad.md) y [Operación y fiabilidad (SRE)](../../devops/operacion/operacion-sre.md).
 
 ## Observabilidad y seguridad
 
-Los logs de plataforma también son una fuente de seguridad: los **audit logs** (CloudTrail, Activity Log, Cloud Audit Logs) se explican en [Seguridad de logging y detección](../seguridad/seguridad-logging-deteccion.md), y enviarlos a un SIEM para detectar ataques se ve en [Detección y respuesta](../../devsecops/gobierno-y-respuesta/deteccion-respuesta.md). Conviene que los logs de seguridad vayan a una cuenta o proyecto central (ver [Gobernanza](gobernanza.md)).
+Los logs de plataforma también son una fuente de seguridad: los **audit logs** (CloudTrail, Activity Log, Cloud Audit Logs) se explican en [Seguridad de logging y detección](../../cloud/seguridad/seguridad-logging-deteccion.md), y enviarlos a un SIEM para detectar ataques se ve en [Detección y respuesta](../../devsecops/gobierno-y-respuesta/deteccion-respuesta.md). Conviene que los logs de seguridad vayan a una cuenta o proyecto central (ver [Gobernanza](../../cloud/operacion-y-gobierno/gobernanza.md)).
 
 ## Relación con otras secciones
 
 | Enfoque | Qué se mira desde ahí | Nota |
 | --- | --- | --- |
-| Cloud (el control) | Audit logs, health checks y cuentas centrales de logs | [Seguridad de logging y detección](../seguridad/seguridad-logging-deteccion.md), [Resiliencia](resiliencia.md), [Gobernanza](gobernanza.md) |
-| DevOps (la automatización) | Centralizar y alertar con Prometheus, Grafana y OpenTelemetry; SLOs, on-call e incidentes | [Observabilidad](../../devops/operacion/observabilidad.md), [Operación y fiabilidad (SRE)](../../devops/operacion/operacion-sre.md) |
+| Cloud (el control) | Audit logs, health checks y cuentas centrales de logs | [Seguridad de logging y detección](../../cloud/seguridad/seguridad-logging-deteccion.md), [Resiliencia](../../cloud/operacion-y-gobierno/resiliencia.md), [Gobernanza](../../cloud/operacion-y-gobierno/gobernanza.md) |
+| DevOps (la automatización) | Centralizar y alertar con Prometheus, Grafana y OpenTelemetry; SLOs, on-call e incidentes | [Observabilidad](../fundamentos/observabilidad.md), [Operación y fiabilidad (SRE)](../../devops/operacion/operacion-sre.md) |
 | DevSecOps (la verificación) | Usar logs y métricas para detectar ataques, SIEM y auditoría | [Detección y respuesta](../../devsecops/gobierno-y-respuesta/deteccion-respuesta.md) |
 | Laboratorios (la práctica) | Practicar esto paso a paso | [Lab 11: Observabilidad con Prometheus y Grafana](../../laboratorios/devops/observabilidad-prometheus-grafana.md), [Lab 18: AWS: API serverless con Lambda, API Gateway y DynamoDB](../../laboratorios/cloud/aws-serverless-api.md), [Lab 20: Google Cloud: desplegar un contenedor en Cloud Run](../../laboratorios/cloud/gcp-cloud-run.md), [Lab 21: Game day: incidente simulado, troubleshooting y postmortem](../../laboratorios/operacion/game-day-incidente.md) |
 

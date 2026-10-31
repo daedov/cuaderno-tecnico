@@ -196,7 +196,7 @@ En la nube, el CDC puede venir del propio servicio de datos: DynamoDB Streams, e
 | Enfoque | Qué se mira desde ahí | Nota |
 | --- | --- | --- |
 | Cloud (el control) | Estilos que usan estas integraciones; funciones detrás del gateway; patrones de resiliencia en las llamadas | [Estilos de arquitectura](estilos-arquitectura.md), [Arquitectura en la nube](arquitectura-cloud.md), [Arquitecturas de referencia](arquitecturas-referencia.md), [Serverless](../computo/serverless.md) |
-| DevOps (la automatización) | Exponer servicios con Ingress/Gateway API, trazas distribuidas entre servicios y colas | [Kubernetes](../../devops/contenedores/kubernetes.md), [Observabilidad](../../devops/operacion/observabilidad.md) |
+| DevOps (la automatización) | Exponer servicios con Ingress/Gateway API, trazas distribuidas entre servicios y colas | [Kubernetes](../../devops/contenedores/kubernetes.md), [Observabilidad](../../monitoreo/fundamentos/observabilidad.md) |
 | DevSecOps (la verificación) | Seguridad de APIs (OWASP API Security Top 10), DAST, autenticación entre servicios | [Pruebas dinámicas](../../devsecops/codigo-y-dependencias/pruebas-dinamicas.md), [Secretos e identidades](../../devsecops/identidades-y-pipeline/secretos-identidades.md) |
 | Networking (la base) | HTTP, TLS y WebSockets por debajo de las APIs; balanceo L7 | [Protocolos de aplicación](../../networking/intermedio/protocolos-aplicacion.md), [Balanceo y alta disponibilidad](../../networking/avanzado/balanceo-alta-disponibilidad.md) |
 | Laboratorios (la práctica) | Practicar esto paso a paso | [Lab 18: AWS: API serverless con Lambda, API Gateway y DynamoDB](../../laboratorios/cloud/aws-serverless-api.md) |

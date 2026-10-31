@@ -247,7 +247,7 @@ Para **regresión**: **MAE** (error absoluto medio), **RMSE** (castiga más los 
 | Cómputo donde corren los modelos | [Máquinas virtuales](../../../cloud/computo/maquinas-virtuales.md), [Serverless](../../../cloud/computo/serverless.md), [Contenedores gestionados](../../../cloud/computo/contenedores-gestionados.md) |
 | Almacenamiento de datos de entrenamiento | [Almacenamiento y datos](../../../cloud/redes-y-datos/almacenamiento-datos.md) |
 | MLOps como CI/CD | [Integración continua](../../../devops/ci-cd/integracion-continua.md), [Despliegue continuo](../../../devops/ci-cd/despliegue-continuo.md) |
-| Monitoreo y drift | [Observabilidad](../../../devops/operacion/observabilidad.md) |
+| Monitoreo y drift | [Observabilidad](../../../monitoreo/fundamentos/observabilidad.md) |
 | Métricas de negocio y ROI | [Métricas, KPIs y OKRs](../../../negocio/metricas-kpis-okrs.md) |
 | Siguiente dominio | [Dominio 2: Fundamentals of GenAI](dominio-2-fundamentos-ia-generativa.md) |
 

@@ -690,12 +690,12 @@ Más casos de diagnóstico en [Troubleshooting](../../devops/operacion/troublesh
 
 ## Información complementaria
 
-- **Formato combined y lectura de logs**: qué significa cada campo y cómo interpretar 4xx y 5xx; ver [Leer logs](../../devops/operacion/leer-logs.md).
+- **Formato combined y lectura de logs**: qué significa cada campo y cómo interpretar 4xx y 5xx; ver [Leer logs](../../monitoreo/logging/leer-logs.md).
 - **Counter y defaultdict**: las dos estructuras que resuelven el 80 % de los "cuenta cuántos…" en scripting; ver [Estructuras de datos](../../python/fundamentos/estructuras-datos.md).
 - **Excepciones y `with`**: por qué el archivo se abre con un context manager y se captura `OSError`; ver [Errores, módulos y paquetes](../../python/fundamentos/errores-modulos.md).
 - **stdout, stderr y exit codes**: el contrato entre un script y el pipeline que lo ejecuta; ver [Scripts de línea de comandos](../../python/scripting/scripts-cli.md#exit-codes).
 - **pytest y ruff**: ver [Calidad y seguridad de scripts](../../python/scripting/calidad-codigo.md).
-- **En el trabajo real**: para volúmenes grandes los logs se consultan en una plataforma central (Loki, Elasticsearch, CloudWatch Logs Insights, Log Analytics) y las alertas salen de métricas ([Observabilidad](../../devops/operacion/observabilidad.md)). Un script como este sigue siendo útil para analizar un archivo concreto durante un incidente, para un *quality gate* en CI o para preparar datos de un postmortem ([Lab 21](../operacion/game-day-incidente.md)).
+- **En el trabajo real**: para volúmenes grandes los logs se consultan en una plataforma central (Loki, Elasticsearch, CloudWatch Logs Insights, Log Analytics) y las alertas salen de métricas ([Observabilidad](../../monitoreo/fundamentos/observabilidad.md)). Un script como este sigue siendo útil para analizar un archivo concreto durante un incidente, para un *quality gate* en CI o para preparar datos de un postmortem ([Lab 21](../operacion/game-day-incidente.md)).
 
 ## Documentación oficial
 
@@ -743,8 +743,8 @@ Más casos de diagnóstico en [Troubleshooting](../../devops/operacion/troublesh
     - [Scripts de línea de comandos](../../python/scripting/scripts-cli.md)
     - [Calidad y seguridad de scripts](../../python/scripting/calidad-codigo.md)
 - **DevOps**
-    - [Leer logs](../../devops/operacion/leer-logs.md)
-    - [Observabilidad](../../devops/operacion/observabilidad.md)
+    - [Leer logs](../../monitoreo/logging/leer-logs.md)
+    - [Observabilidad](../../monitoreo/fundamentos/observabilidad.md)
     - [Troubleshooting](../../devops/operacion/troubleshooting.md)
     - [Integración continua](../../devops/ci-cd/integracion-continua.md)
 - **DevSecOps**

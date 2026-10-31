@@ -131,7 +131,7 @@ DORA ofrece además un **quick check** en su web para que un equipo compare su d
 
 | Enfoque | Qué se mira desde ahí | Nota |
 | --- | --- | --- |
-| Cloud (el control) | Los pilares de excelencia operativa y fiabilidad; dónde se miden los incidentes | [Well-Architected Framework](../../cloud/fundamentos/well-architected.md), [Observabilidad nativa](../../cloud/operacion-y-gobierno/observabilidad-nativa.md) |
+| Cloud (el control) | Los pilares de excelencia operativa y fiabilidad; dónde se miden los incidentes | [Well-Architected Framework](../../cloud/fundamentos/well-architected.md), [Observabilidad nativa](../../monitoreo/nube/observabilidad-nativa.md) |
 | DevOps (la automatización) | De dónde salen los datos de deployment frequency y lead time; cómo se recupera un fallo | [Integración continua](../ci-cd/integracion-continua.md), [Despliegue continuo](../ci-cd/despliegue-continuo.md), [Operación y fiabilidad (SRE)](../operacion/operacion-sre.md) |
 | DevSecOps (la verificación) | Integrar la seguridad sin frenar el flujo (*shift-left*) | [Fundamentos DevSecOps](../../devsecops/fundamentos-devsecops.md) |
 | Negocio TI (el porqué) | Cómo se convierten las métricas en KPIs y OKRs y cómo presentarlas a negocio | [Métricas, KPIs y OKRs](../../negocio/metricas-kpis-okrs.md) |

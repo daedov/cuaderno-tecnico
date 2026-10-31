@@ -255,7 +255,7 @@ Comandos frecuentes en las guías de [kubectl](../../recursos/comandos/kubectl.m
 | Enfoque | Qué se mira desde ahí | Nota |
 | --- | --- | --- |
 | Cloud (el control) | EKS, AKS y GKE, registries, redes del clúster | [Contenedores gestionados](../../cloud/computo/contenedores-gestionados.md), [Redes en la nube](../../cloud/redes-y-datos/redes.md) |
-| DevOps (la automatización) | Imágenes, despliegues graduales y GitOps, métricas del clúster | [Docker](docker.md), [Despliegue continuo](../ci-cd/despliegue-continuo.md), [Observabilidad](../operacion/observabilidad.md) |
+| DevOps (la automatización) | Imágenes, despliegues graduales y GitOps, métricas del clúster | [Docker](docker.md), [Despliegue continuo](../ci-cd/despliegue-continuo.md), [Observabilidad](../../monitoreo/fundamentos/observabilidad.md) |
 | DevSecOps (la verificación) | RBAC, Pod Security Standards, network policies, admission control | [Seguridad de Kubernetes](../../devsecops/infraestructura-y-contenedores/seguridad-kubernetes.md), [Seguridad de contenedores](../../devsecops/infraestructura-y-contenedores/seguridad-contenedores.md) |
 | Laboratorios (la práctica) | Practicar esto paso a paso | [Lab 00 (parte 1): Herramientas locales](../../laboratorios/fundamentos/preparar-entorno.md), [Lab 02: Plan de direccionamiento IP para una VPC](../../laboratorios/fundamentos/subnetting-plan-ips.md), [Lab 06: Desplegar una app en Kubernetes local con kind](../../laboratorios/devops/kubernetes-local-kind.md), [Lab 14: Endurecer un clúster: Pod Security, NetworkPolicy y Kyverno](../../laboratorios/devsecops/seguridad-kubernetes.md) |
 

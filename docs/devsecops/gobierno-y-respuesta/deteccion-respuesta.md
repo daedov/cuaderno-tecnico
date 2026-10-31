@@ -24,7 +24,7 @@ Ningún control preventivo es perfecto: una credencial se filtra, aparece una CV
 | **Vulnerability management** (gestión de vulnerabilidades) | ¿Qué debilidades tengo y en qué orden las arreglo? |
 | **Incident response** (respuesta a incidentes) | ¿Qué hago, paso a paso, cuando ocurre? |
 
-Se apoya en la observabilidad (logs, métricas, alertas) de [Observabilidad](../../devops/operacion/observabilidad.md) y en la gestión de incidentes de [Operación y fiabilidad (SRE)](../../devops/operacion/operacion-sre.md), pero con foco en seguridad.
+Se apoya en la observabilidad (logs, métricas, alertas) de [Observabilidad](../../monitoreo/fundamentos/observabilidad.md) y en la gestión de incidentes de [Operación y fiabilidad (SRE)](../../devops/operacion/operacion-sre.md), pero con foco en seguridad.
 
 ## Detección
 
@@ -196,8 +196,8 @@ Ante una VM comprometida, el instinto es apagarla o borrarla. **No lo hagas**: p
 
 | Enfoque | Qué se mira desde ahí | Nota |
 | --- | --- | --- |
-| Cloud (el control) | Qué logs de auditoría activar y proteger, y servicios de detección nativos (GuardDuty, Defender, SCC) | [Seguridad de logging y detección](../../cloud/seguridad/seguridad-logging-deteccion.md), [Observabilidad nativa](../../cloud/operacion-y-gobierno/observabilidad-nativa.md) |
-| DevOps (la automatización) | Centralizar logs y alertas; gestión de incidentes, on-call y postmortems | [Observabilidad](../../devops/operacion/observabilidad.md), [Operación y fiabilidad (SRE)](../../devops/operacion/operacion-sre.md), [Postmortem](../../devops/operacion/postmortem.md), [Comunicación de incidentes](../../devops/operacion/comunicacion-incidentes.md), [Runbooks y playbooks](../../devops/operacion/runbooks-playbooks.md), [Cómo leer logs](../../devops/operacion/leer-logs.md) |
+| Cloud (el control) | Qué logs de auditoría activar y proteger, y servicios de detección nativos (GuardDuty, Defender, SCC) | [Seguridad de logging y detección](../../cloud/seguridad/seguridad-logging-deteccion.md), [Observabilidad nativa](../../monitoreo/nube/observabilidad-nativa.md) |
+| DevOps (la automatización) | Centralizar logs y alertas; gestión de incidentes, on-call y postmortems | [Observabilidad](../../monitoreo/fundamentos/observabilidad.md), [Operación y fiabilidad (SRE)](../../devops/operacion/operacion-sre.md), [Postmortem](../../devops/operacion/postmortem.md), [Comunicación de incidentes](../../devops/operacion/comunicacion-incidentes.md), [Runbooks y playbooks](../../devops/operacion/runbooks-playbooks.md), [Cómo leer logs](../../monitoreo/logging/leer-logs.md) |
 | DevSecOps (la verificación) | De dónde salen las vulnerabilidades y los controles que evitan repetir el incidente | [Seguridad de contenedores](../infraestructura-y-contenedores/seguridad-contenedores.md), [Secretos e identidades](../identidades-y-pipeline/secretos-identidades.md), [Cumplimiento y gobierno](cumplimiento.md), [Fundamentos de CVE](../vulnerabilidades/fundamentos-cve.md), [Cómo investigar un CVE](../vulnerabilidades/investigar-un-cve.md) |
 | Laboratorios (la práctica) | Practicar esto paso a paso | [Lab 03: Script en Python para analizar logs](../../laboratorios/fundamentos/python-analizar-logs.md), [Lab 11: Observabilidad con Prometheus y Grafana](../../laboratorios/devops/observabilidad-prometheus-grafana.md), [Lab 12: Escaneos de seguridad en el pipeline](../../laboratorios/devsecops/escaneos-en-pipeline.md), [Lab 15: DAST con OWASP ZAP sobre OWASP Juice Shop](../../laboratorios/devsecops/dast-zap-juice-shop.md), [Lab 16: Auditar tu cuenta cloud con Prowler (CSPM)](../../laboratorios/devsecops/cspm-prowler.md), [Lab 21: Game day: incidente simulado, troubleshooting y postmortem](../../laboratorios/operacion/game-day-incidente.md) |
 

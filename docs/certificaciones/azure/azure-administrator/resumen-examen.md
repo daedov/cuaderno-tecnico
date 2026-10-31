@@ -12,18 +12,17 @@ tags:
 !!! warning "Versión del temario"
     Estas notas siguen el *study guide* oficial con **skills measured as of April 17, 2026** (consultado en octubre de 2026). Microsoft actualiza el temario varias veces al año y publica los cambios en la sección *Change log* del study guide. La versión en **inglés** se actualiza primero; las traducciones (incluido el español) se actualizan unas ocho semanas después. Revisa el study guide antes de agendar.
 
+Lo genérico de cualquier examen (ritmo, *flag for review*, palabras clave, *online proctored*, dumps) está en [Cómo preparar un examen](../../como-preparar-un-examen.md). Aquí solo va lo propio de AZ-104.
+
 ## ¿Qué es?
 
-**Microsoft Certified: Azure Administrator Associate** es la certificación de nivel *Associate* (intermedio) para quien **implementa, administra y monitorea** un entorno de Azure: identidades, gobierno, almacenamiento, cómputo, redes virtuales, monitoreo y backup. Se obtiene aprobando **un solo examen: AZ-104**.
-
-Es el equivalente en Azure a la [Associate Cloud Engineer de Google Cloud](../../google-cloud/associate-cloud-engineer/resumen-examen.md): ambas evalúan el día a día de operar una nube. Para comparar conceptos entre proveedores, usa las notas de [IAM](../../../cloud/identidad-y-seguridad/iam-comparativa.md), [Redes en la nube](../../../cloud/redes-y-datos/redes.md) y [Máquinas virtuales](../../../cloud/computo/maquinas-virtuales.md).
+**Microsoft Certified: Azure Administrator Associate** es la certificación de nivel *Associate* (intermedio) para quien **implementa, administra y monitorea** un entorno de Azure: identidades, gobierno, almacenamiento, cómputo, redes virtuales, monitoreo y backup. Se obtiene aprobando **un solo examen: AZ-104**. Es el equivalente a la [Associate Cloud Engineer de Google Cloud](../../google-cloud/associate-cloud-engineer/resumen-examen.md).
 
 ## Formato del examen
 
 | Dato | Valor |
 | --- | --- |
 | Código | **AZ-104: Microsoft Azure Administrator** |
-| Nivel | Associate (intermedio) |
 | Duración | **100 minutos** para responder (unos 120 minutos de tiempo en la sala, con instrucciones y encuesta); 120/140 si el examen incluye laboratorios |
 | Número de preguntas | No es fijo; Microsoft indica que la mayoría de sus exámenes tiene entre **40 y 60** |
 | Tipos de pregunta | Opción múltiple, arrastrar y soltar, *hot area* (seleccionar en una imagen), *build list*, series de "¿esta solución cumple el objetivo?" (*Yes/No*), **case studies** (casos de estudio) y posibles **interactive components** (componentes interactivos o laboratorios) |
@@ -35,40 +34,23 @@ Es el equivalente en Azure a la [Associate Cloud Engineer de Google Cloud](../..
 | Requisitos previos | Ninguno obligatorio |
 | Reintentos | Puedes repetir a las 24 horas del primer intento; los siguientes tienen esperas mayores (ver *retake policy*) |
 
+## Particularidades de los exámenes de Microsoft
+
 !!! info "Microsoft Learn abierto durante el examen"
     En los exámenes de nivel Associate puedes abrir **Microsoft Learn** dentro del examen (solo `learn.microsoft.com`, sin Q&A ni tu perfil). El reloj no se detiene: úsalo para dudas puntuales (un nombre de comando, un límite), no para cada pregunta.
 
-!!! note "¿Hay laboratorios?"
-    La página del examen dice que *puede* haber componentes interactivos. Microsoft no publica la lista de exámenes con laboratorios porque puede retirarlos en cualquier momento. Al empezar el examen, la pantalla de introducción indica la duración y si hay laboratorios. Prepárate igual para hacer las tareas en el portal y con CLI.
+- **Case studies y series Yes/No**: al terminar una sección de caso de estudio o una serie de "¿esta solución cumple el objetivo?" **no puedes volver** a ella. Revisa antes de pasar.
+- **Pausas**: si tomas un descanso, no puedes volver a las preguntas vistas antes de él.
+- **¿Hay laboratorios?** La página del examen dice que *puede* haber componentes interactivos; Microsoft no publica en qué exámenes. La pantalla de introducción indica la duración y si hay laboratorios. Prepárate igual para hacer las tareas en el portal y con CLI.
+- **Renovación anual gratuita**: a diferencia de AWS o Google, vence a los 12 meses, pero el *renewal assessment* no cuesta nada.
+
+!!! tip "Trampas propias de AZ-104"
+    - *Without downtime* (sin tiempo de inactividad) suele decidir entre dos opciones válidas (p. ej. availability zones, deployment slots).
+    - Descarta por requisitos técnicos: tier mínimo (slots desde Standard), SKU (Bastion `/26`, Archive no en ZRS), región (vault de backup en la misma región que la VM), licencia (grupos dinámicos con P1).
 
 ## Objetivo profesional
 
-### Perfil de candidato según Microsoft
-
-El *audience profile* de [Microsoft Learn](https://learn.microsoft.com/en-us/credentials/certifications/azure-administrator/) dice, resumido, que la persona candidata tiene **experiencia en implementar, administrar y monitorear el entorno de Azure de una organización**: redes virtuales, almacenamiento, cómputo, identidad, seguridad y gobierno. Suele formar parte de un equipo más grande que implementa la infraestructura cloud y **coordina con otros roles** (redes, seguridad, bases de datos, desarrollo, DevOps). Debe conocer sistemas operativos, redes, servidores y virtualización, y tener experiencia con PowerShell, Azure CLI, el portal, plantillas ARM o Bicep y Microsoft Entra ID.
-
-### Para qué roles sirve
-
-- [Cloud Engineer](../../roles-profesionales.md#cloud-engineer), [Infrastructure Engineer / SysAdmin](../../roles-profesionales.md#infrastructure-engineer-sysadmin-moderno) y [Support / Cloud Operations](../../roles-profesionales.md#support-cloud-operations) en empresas con Azure.
-- Es **prerrequisito obligatorio** de Azure Solutions Architect Expert (AZ-305) y una de las vías para DevOps Engineer Expert (AZ-400).
-- Ver [Roles profesionales](../../roles-profesionales.md).
-
-### Qué demuestra ante un empleador
-
-| Demuestra | No demuestra |
-| --- | --- |
-| Que sabes administrar Azure en el día a día: Entra ID, RBAC, Azure Policy, redes, VMs, App Service, contenedores, storage, backup y monitoreo | Que sepas diseñar soluciones completas (eso es AZ-305) |
-| Que puedes hacer tareas en el portal, con CLI y PowerShell (el examen puede incluir laboratorios) | Que sepas automatizar con pipelines e IaC a escala |
-| Que te mantienes al día: se renueva cada 12 meses | Experiencia en seguridad avanzada o redes complejas (SC-500, AZ-700) |
-
-### Qué certificación sigue
-
-- [Terraform Associate](../../hashicorp/terraform-associate/resumen-examen.md), si tu equipo usa Terraform en vez de Bicep.
-- AZ-305 (arquitectura), AZ-400 (DevOps), AZ-700 (redes) o SC-500 (seguridad, reemplazo de AZ-500): ver [Otras certificaciones](../../otras-certificaciones.md#microsoft-azure).
-
-## Perfil recomendado
-
-El study guide pide experiencia con sistemas operativos, redes, servidores y virtualización, y uso práctico de **PowerShell**, **Azure CLI**, el **Azure portal**, **ARM templates o Bicep** y **Microsoft Entra ID**. Microsoft no exige un tiempo mínimo, pero el examen asume que ya administraste recursos reales (no solo teoría). Si empiezas desde cero, AZ-900 (Azure Fundamentals) es opcional pero útil.
+Pensada para quien administra Azure en el día a día y coordina con redes, seguridad, bases de datos y DevOps; el study guide pide práctica con PowerShell, Azure CLI, el portal, ARM o Bicep y Entra ID (AZ-900 es opcional si empiezas de cero). Sirve para [Cloud Engineer](../../roles-profesionales.md#cloud-engineer), [Infrastructure Engineer / SysAdmin](../../roles-profesionales.md#infrastructure-engineer-sysadmin-moderno) y [Support / Cloud Operations](../../roles-profesionales.md#support-cloud-operations). Es **prerrequisito obligatorio** de AZ-305 (arquitectura) y una de las vías para AZ-400 (DevOps); también siguen AZ-700 (redes), SC-500 (seguridad) o [Terraform Associate](../../hashicorp/terraform-associate/resumen-examen.md). Ver [Otras certificaciones](../../otras-certificaciones.md#microsoft-azure).
 
 ## Áreas de habilidad y su peso
 
@@ -80,17 +62,6 @@ El study guide pide experiencia con sistemas operativos, redes, servidores y vir
 | Implement and manage virtual networking | 15–20 % | [Área 4](area-4-redes-virtuales.md) |
 | Monitor and maintain Azure resources | 10–15 % | [Área 5](area-5-monitoreo-mantenimiento.md) |
 
-```mermaid
-flowchart LR
-    I[Identidad y gobierno 20-25%] --> C[Cómputo 20-25%]
-    I --> S[Storage 15-20%]
-    I --> N[Redes 15-20%]
-    N --> C
-    S --> C
-    C --> M[Monitoreo y backup 10-15%]
-    N --> M
-```
-
 ### Qué cambió en la versión del 17 de abril de 2026
 
 Según el *change log* oficial, los cambios fueron **menores** dentro de los grupos de habilidades (sin áreas nuevas). Algunos puntos que conviene notar en el temario actual:
@@ -101,17 +72,17 @@ Según el *change log* oficial, los cambios fueron **menores** dentro de los gru
 - Monitoreo con **Azure Monitor Insights** y **Connection monitor**.
 - En identidades, el foco está en **roles integrados**; los custom roles no se nombran.
 
-### Resumen de servicios en alcance
+### Servicios que más salen
 
 | Área | Servicios y conceptos principales |
 | --- | --- |
-| Identidades y gobierno | Microsoft Entra ID (usuarios, grupos, licencias, invitados B2B, SSPR), Azure RBAC, management groups, subscriptions, resource groups, Azure Policy, resource locks, tags, Cost Management, budgets, Azure Advisor |
-| Storage | Storage accounts, redundancia (LRS/ZRS/GRS/RA-GRS/GZRS/RA-GZRS), SAS, stored access policies, access keys, firewalls, private endpoints, cifrado, Blob Storage (tiers, lifecycle, versioning, soft delete, object replication), Azure Files, AzCopy, Storage Explorer |
-| Cómputo | ARM templates, Bicep, VMs (tamaños, discos, encryption at host, availability sets y zones, mover VMs), VM Scale Sets, Azure Container Registry, Azure Container Instances, Azure Container Apps, App Service (plans, escalado, TLS, dominios, backup, red, deployment slots) |
-| Redes | VNets, subnets, peering, IPs públicas, UDRs, NSGs, ASGs, Azure Bastion, service endpoints, private endpoints, Azure DNS (público y privado), Azure Load Balancer |
-| Monitoreo y mantenimiento | Azure Monitor (métricas, logs, KQL, alertas, action groups, alert processing rules, Insights), Network Watcher, Connection monitor, Azure Backup (Recovery Services vault, Backup vault), Azure Site Recovery |
+| Identidades y gobierno | Entra ID (grupos dinámicos, licencias, B2B, SSPR), RBAC, management groups, Azure Policy, locks, tags, budgets, Advisor |
+| Storage | Redundancia (LRS a RA-GZRS), SAS y stored access policies, private endpoints, Blob (tiers, lifecycle, versioning, soft delete), Azure Files, AzCopy |
+| Cómputo | ARM/Bicep, VMs (discos, encryption at host, availability sets y zones), VMSS, ACR, ACI, Container Apps, App Service (plans, slots) |
+| Redes | VNets, peering, UDRs, NSGs, ASGs, Bastion, service y private endpoints, Azure DNS, Load Balancer |
+| Monitoreo y mantenimiento | Azure Monitor (KQL, alertas, action groups), Network Watcher, Azure Backup, Azure Site Recovery |
 
-Fuera del foco del examen (aunque aparezcan en opciones de respuesta como distractores): AKS, Azure Firewall en detalle, VPN Gateway y ExpressRoute en profundidad, Azure Functions, bases de datos.
+Fuera del foco (aparecen como distractores): AKS, Azure Firewall en detalle, VPN Gateway y ExpressRoute en profundidad, Azure Functions, bases de datos. La lista completa está en el [study guide](https://learn.microsoft.com/en-us/credentials/certifications/resources/study-guides/az-104).
 
 ## Plan de estudio de 6 semanas
 
@@ -132,130 +103,63 @@ Fuera del foco del examen (aunque aparezcan en opciones de respuesta como distra
 | Recurso | Para qué |
 | --- | --- |
 | [Study guide AZ-104](https://learn.microsoft.com/en-us/credentials/certifications/resources/study-guides/az-104) | El temario vigente y el change log |
-| [Página de la certificación](https://learn.microsoft.com/es-es/credentials/certifications/azure-administrator/) | Formato, idiomas, agenda y renovación |
-| Rutas de aprendizaje de Microsoft Learn (curso AZ-104T00) | Módulos gratuitos con ejercicios, enlazados desde la página de la certificación |
+| [Página de la certificación](https://learn.microsoft.com/es-es/credentials/certifications/azure-administrator/) | Formato, idiomas, agenda, renovación y rutas de aprendizaje (curso AZ-104T00) |
 | [Practice Assessment](https://learn.microsoft.com/en-us/credentials/certifications/exams/az-104/practice/assessment?assessment-type=practice&assessmentId=21) | Preguntas de práctica oficiales y gratuitas |
 | [Exam sandbox](https://aka.ms/examdemo) | Probar la interfaz y los tipos de pregunta |
 | [Laboratorios del curso en GitHub](https://github.com/MicrosoftLearning/AZ-104-MicrosoftAzureAdministrator) | Instrucciones de los laboratorios oficiales del curso |
-| [Exam Readiness Zone](https://learn.microsoft.com/en-us/shows/exam-readiness-zone/?terms=az-104) | Videos de preparación por área |
 | [Cuenta gratuita de Azure](https://azure.microsoft.com/es-es/free/) | Crédito inicial y servicios gratuitos para practicar |
-
-## Consejos para el día del examen
-
-- **Gestiona el tiempo**: unos 100 minutos para 40 a 60 preguntas. Marca las dudosas y sigue.
-- **Case studies y series Yes/No**: al terminar una sección de caso de estudio o una serie de "¿esta solución cumple el objetivo?" **no puedes volver** a ella. Revisa antes de pasar.
-- **Pausas**: si tomas un descanso, no puedes volver a las preguntas vistas antes de él.
-- **Lee el requisito exacto**: palabras como *minimize administrative effort* (minimizar el esfuerzo administrativo), *least privilege* (mínimo privilegio), *minimize costs* (minimizar costos) o *without downtime* (sin tiempo de inactividad) deciden entre dos opciones correctas.
-- **Descarta por requisitos técnicos**: tier mínimo (slots desde Standard), SKU (Bastion `/26`, Archive no en ZRS), región (vault de backup en la misma región que la VM), licencia (grupos dinámicos con P1).
-- **Microsoft Learn dentro del examen**: úsalo para comprobar un dato concreto; buscar cada respuesta no cabe en el tiempo.
-- **Online proctored**: escritorio despejado, identificación vigente, prueba técnica del equipo antes del día.
 
 ## Laboratorio práctico
 
-Un recorrido corto que toca las cinco áreas en una subscription de pruebas. Usa **Azure Cloud Shell** (ya trae `az` y PowerShell `Az`) o instala la CLI localmente.
+Un recorrido corto por gobierno, red y diagnóstico en una subscription de pruebas, con **Azure Cloud Shell** (ya trae `az`). Un lab guiado más completo está en [Lab: Azure VNet, NSG y una VM](../../../laboratorios/cloud/azure-vnet-vm.md).
 
 !!! danger "Costos y limpieza"
-    Todo se crea en **un solo resource group** para borrarlo al final. La VM, Bastion (salvo Developer), el load balancer y los vaults generan costos mientras existan. Crea un **budget** con alerta antes de empezar y **borra el resource group** al terminar. Si activaste backup, primero detén la protección y borra los datos (el soft delete puede retener el vault 14 días).
+    Todo se crea en **un solo resource group** para borrarlo al final. Crea un **budget** con alerta antes de empezar. Si activaste backup, primero detén la protección y borra los datos (el soft delete puede retener el vault 14 días). Network Watcher crea `NetworkWatcherRG` en cada región; no cuesta por sí solo, pero los flow logs y connection monitors sí.
 
-```bash title="1. Contexto y resource group"
-az login
-az account show --query "{subscription:name, tenant:tenantId}" -o table
-RG=rg-az104-lab
-LOC=eastus
+```bash title="Gobierno, red y diagnóstico"
+RG=rg-az104-lab; LOC=eastus
 az group create -n $RG -l $LOC --tags env=lab owner=dani
-```
-
-```bash title="2. Gobierno: policy, lock y rol"
 RG_ID=$(az group show -n $RG --query id -o tsv)
-# Policy integrada "Allowed locations"
+# Policy integrada "Allowed locations" y lock de no borrado
 az policy assignment create --name solo-eastus --scope "$RG_ID" \
   --policy e56962a6-4747-49cd-b67b-bf8b01975c4c \
   --params '{"listOfAllowedLocations":{"value":["eastus"]}}'
 az lock create --name no-borrar --resource-group $RG --lock-type CanNotDelete
 az role assignment list --scope "$RG_ID" --include-inherited -o table
-```
-
-```bash title="3. Storage con versioning, soft delete y SAS"
-ST=staz104lab$RANDOM
-az storage account create -n $ST -g $RG -l $LOC --sku Standard_LRS --kind StorageV2 \
-  --min-tls-version TLS1_2 --allow-blob-public-access false
-az storage account blob-service-properties update --account-name $ST -g $RG \
-  --enable-versioning true --enable-delete-retention true --delete-retention-days 7
-az storage container create --account-name $ST -n datos --auth-mode login
-```
-
-```bash title="4. Red: VNet, NSG y VM sin IP pública"
+# VNet con NSG en la subnet y VM sin IP pública
 az network vnet create -g $RG -n vnet-lab --address-prefixes 10.10.0.0/16 \
   --subnet-name snet-app --subnet-prefixes 10.10.1.0/24
 az network nsg create -g $RG -n nsg-app
-az network nsg rule create -g $RG --nsg-name nsg-app -n allow-http --priority 100 \
-  --direction Inbound --access Allow --protocol Tcp --destination-port-ranges 80 \
-  --source-address-prefixes VirtualNetwork
 az network vnet subnet update -g $RG --vnet-name vnet-lab -n snet-app --network-security-group nsg-app
 az vm create -g $RG -n vm-lab --image Ubuntu2404 --size Standard_B2s \
   --vnet-name vnet-lab --subnet snet-app --public-ip-address "" --nsg "" \
   --admin-username azureuser --generate-ssh-keys
-```
-
-```bash title="5. Diagnóstico y monitoreo"
 az network watcher test-ip-flow -g $RG --vm vm-lab --direction Inbound \
   --protocol TCP --local 10.10.1.4:22 --remote 10.10.1.10:50000
-az network nic list-effective-nsg -g $RG -n vm-labVMNic -o table
-az monitor metrics list --resource "$(az vm show -g $RG -n vm-lab --query id -o tsv)" \
-  --metric "Percentage CPU" --interval PT5M -o table
 ```
 
-=== "PowerShell (Az)"
-
-    ```powershell title="Lo mismo, en parte, con el módulo Az"
-    Connect-AzAccount
-    New-AzResourceGroup -Name rg-az104-lab -Location eastus -Tag @{ env = "lab" }
-    New-AzResourceLock -LockName no-borrar -LockLevel CanNotDelete `
-      -ResourceGroupName rg-az104-lab -Force
-    Get-AzRoleAssignment -ResourceGroupName rg-az104-lab | Format-Table DisplayName, RoleDefinitionName, Scope
-    Get-AzVM -ResourceGroupName rg-az104-lab -Status | Format-Table Name, PowerState
-    ```
-
-=== "Limpieza (CLI)"
-
-    ```bash
-    # El lock impide borrar el resource group: quítalo primero
-    az lock delete --name no-borrar --resource-group rg-az104-lab
-    az group delete -n rg-az104-lab --yes --no-wait
-    # Comprobar que ya no existe
-    az group exists -n rg-az104-lab
-    ```
-
-=== "Limpieza (PowerShell)"
-
-    ```powershell
-    Remove-AzResourceLock -LockName no-borrar -ResourceGroupName rg-az104-lab -Force
-    Remove-AzResourceGroup -Name rg-az104-lab -Force
-    ```
-
-!!! note "Recursos que se crean fuera de tu resource group"
-    Network Watcher crea el resource group `NetworkWatcherRG` en cada región que uses. No genera costo por sí solo, pero los flow logs o connection monitors sí. La asignación de policy se borra con el resource group porque está en su scope.
+```bash title="Limpieza"
+# El lock impide borrar el resource group: quítalo primero
+az lock delete --name no-borrar --resource-group rg-az104-lab
+az group delete -n rg-az104-lab --yes --no-wait
+```
 
 ## Para profundizar
 
 | Tema | Nota del cuaderno |
 | --- | --- |
-| Identidad en las tres nubes | [IAM: AWS, Azure y GCP](../../../cloud/identidad-y-seguridad/iam-comparativa.md) |
+| Identidad y RBAC en las tres nubes | [IAM: AWS, Azure y GCP](../../../cloud/fundamentos/iam-comparativa.md) |
 | Gobierno y costos | [Gobernanza](../../../cloud/operacion-y-gobierno/gobernanza.md), [FinOps y costos](../../../cloud/fundamentos/finops-costos.md) |
-| Storage | [Almacenamiento y datos](../../../cloud/redes-y-datos/almacenamiento-datos.md) |
+| Storage y redundancia | [Almacenamiento y datos](../../../cloud/redes-y-datos/almacenamiento-datos.md) |
 | Cómputo y contenedores | [Máquinas virtuales](../../../cloud/computo/maquinas-virtuales.md), [Contenedores gestionados](../../../cloud/computo/contenedores-gestionados.md) |
-| Redes | [Redes en la nube](../../../cloud/redes-y-datos/redes.md) y la sección [Networking](../../../networking/index.md) |
-| IaC | [Infrastructure as Code](../../../devops/iac/infraestructura-como-codigo.md) |
+| Redes | [Redes en la nube](../../../cloud/redes-y-datos/redes.md) |
 | Monitoreo y DR | [Observabilidad nativa](../../../cloud/operacion-y-gobierno/observabilidad-nativa.md), [Resiliencia](../../../cloud/operacion-y-gobierno/resiliencia.md) |
-| Mapa general del cuaderno | [Mapa de relaciones](../../../mapa-de-relaciones.md) |
 
 ## Referencias
 
 - [Study guide del examen AZ-104 (inglés, se actualiza primero)](https://learn.microsoft.com/en-us/credentials/certifications/resources/study-guides/az-104)
 - [Microsoft Certified: Azure Administrator Associate](https://learn.microsoft.com/es-es/credentials/certifications/azure-administrator/)
 - [Duración y experiencia del examen](https://learn.microsoft.com/es-es/credentials/support/exam-duration-exam-experience)
-- [Puntuación de exámenes e informes](https://learn.microsoft.com/es-es/credentials/certifications/exam-scoring-reports)
 - [Renovar la certificación de Microsoft](https://learn.microsoft.com/es-es/credentials/certifications/renew-your-microsoft-certification)
 - [Directiva de repetición de exámenes](https://learn.microsoft.com/es-es/credentials/support/retake-policy)
 - [Documentación de la CLI de Azure](https://learn.microsoft.com/es-es/cli/azure/)
-- [Documentación de Azure PowerShell](https://learn.microsoft.com/es-es/powershell/azure/)

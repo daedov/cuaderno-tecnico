@@ -21,36 +21,16 @@ tags:
 
 ## Jerarquía de recursos
 
-Google Cloud organiza todo en un árbol llamado **resource hierarchy** (jerarquía de recursos):
+**Organization → Folders → Projects → Resources**. El concepto y la herencia de permisos están en [IAM: AWS, Azure y GCP](../../../cloud/fundamentos/iam-comparativa.md#google-cloud-iam) y la comparación con AWS y Azure en [Gobernanza](../../../cloud/operacion-y-gobierno/gobernanza.md). Lo que pregunta el examen:
 
-```mermaid
-flowchart TD
-    O["Organization<br/>ejemplo.com"] --> F1["Folder: Producción"]
-    O --> F2["Folder: Desarrollo"]
-    F1 --> P1["Project: app-prod"]
-    F1 --> P2["Project: datos-prod"]
-    F2 --> P3["Project: app-dev"]
-    P1 --> R1["VMs, buckets, clústeres…"]
-```
+| Nivel | Detalles que pregunta el examen |
+| --- | --- |
+| **Organization** (organización) | Nodo raíz ligado a un dominio de **Cloud Identity** o **Google Workspace**; se crea al verificar el dominio. Roles clave: **Organization Administrator** y **Project Creator** |
+| **Folder** (carpeta) | Agrupa proyectos (área, entorno, equipo), se anidan; heredan IAM y organization policies a muchos proyectos de una vez |
+| **Project** (proyecto) | Habilita APIs, factura, contiene recursos. **Project name** (editable), **project ID** (único global, inmutable) y **project number** (lo asigna Google) |
+| **Resource** (recurso) | Pertenece a un solo proyecto |
 
-| Nivel | Qué es | Detalles que pregunta el examen |
-| --- | --- | --- |
-| **Organization** (organización) | Nodo raíz, ligado a un dominio de **Cloud Identity** o **Google Workspace** | Se crea automáticamente al verificar el dominio. Roles clave: **Organization Administrator** y **Project Creator** |
-| **Folder** (carpeta) | Agrupa proyectos (por área, entorno o equipo); pueden anidarse | Sirve para heredar IAM y organization policies a muchos proyectos de una vez |
-| **Project** (proyecto) | Unidad básica: habilita APIs, factura, contiene recursos | Tiene **project name** (editable), **project ID** (único global, inmutable) y **project number** (lo asigna Google) |
-| **Resource** (recurso) | VM, bucket, dataset, clúster… | Pertenece a un solo proyecto |
-
-!!! note "Herencia"
-    Las **allow policies** de IAM y las **organization policies** se **heredan** de arriba hacia abajo. Un rol dado en un folder aplica a todos sus proyectos. Los permisos heredados **se suman**: no puedes quitar en un proyecto un permiso que se dio en la organización (para eso existen las **IAM deny policies**, que el examen trata poco).
-
-**Standalone organization** (organización independiente): si una empresa no tiene Google Workspace, puede crear una organización registrando su dominio en **Cloud Identity Free** y verificándolo. Sin organización, los proyectos quedan "sin organización" y no hay folders ni organization policies.
-
-```bash
-gcloud organizations list
-gcloud resource-manager folders create --display-name="Produccion" --organization=123456789012
-gcloud projects create app-prod-4821 --name="App prod" --folder=987654321098
-gcloud projects move app-dev-1234 --folder=987654321098
-```
+**Standalone organization**: sin Google Workspace, se registra el dominio en **Cloud Identity Free** y se verifica. Sin organización no hay folders ni organization policies. La herencia de allow policies se ve en la [Sección 4](seccion-4-acceso-seguridad.md#herencia-en-la-jerarquia).
 
 !!! tip "En el examen"
     - "Separar entornos / equipos y aplicar políticas comunes" → **folders**.
@@ -59,7 +39,7 @@ gcloud projects move app-dev-1234 --folder=987654321098
 
 ## Organization policies
 
-El **Organization Policy Service** pone **guardrails** (barreras de protección) sobre **qué configuraciones** se permiten, sin importar los permisos de IAM de cada persona. IAM dice **quién** puede actuar; las organization policies dicen **qué** se puede configurar.
+El **Organization Policy Service** pone **guardrails** (barreras de protección) sobre **qué configuraciones** se permiten, sin importar los permisos de IAM. IAM dice **quién** puede actuar; las organization policies dicen **qué** se puede configurar. Se heredan hacia abajo.
 
 | Constraint (restricción) | Para qué |
 | --- | --- |
@@ -70,43 +50,18 @@ El **Organization Policy Service** pone **guardrails** (barreras de protección)
 | `constraints/compute.requireOsLogin` | Obligar a usar OS Login en las VMs |
 | `constraints/storage.publicAccessPrevention` | Impedir buckets públicos |
 
-Las organizaciones nuevas reciben varias de estas restricciones **activadas por defecto** (*secure by default*). Hay **list constraints** (permitir o denegar valores), **boolean constraints** (activar o no) y **custom constraints** (reglas propias con CEL sobre campos del recurso).
+Las organizaciones nuevas reciben varias **activadas por defecto** (*secure by default*). Tipos: **list** (permitir o denegar valores), **boolean** y **custom constraints** (reglas propias con CEL). La política efectiva de un proyecto se ve con `gcloud org-policies describe <constraint> --effective`.
 
-```bash
-gcloud org-policies describe compute.vmExternalIpAccess --project=app-prod-4821 --effective
-gcloud org-policies set-policy politica.yaml
-```
+## Usuarios y grupos
 
-```yaml title="politica.yaml"
-name: folders/987654321098/policies/gcp.resourceLocations
-spec:
-  rules:
-    - values:
-        allowedValues:
-          - in:southamerica-locations
-          - in:us-locations
-```
+Google Cloud **no tiene usuarios propios**: las personas son cuentas de **Cloud Identity** o **Google Workspace** (o federadas). Lo que premia el examen:
 
-Para quién gestiona estas políticas a escala, ver [Gobernanza](../../../cloud/operacion-y-gobierno/gobernanza.md) (landing zone y guardrails en las tres nubes).
-
-## Usuarios, grupos y roles en el proyecto
-
-Google Cloud **no tiene usuarios propios**: las personas son cuentas de **Cloud Identity** o **Google Workspace** (o cuentas de Google personales, o identidades federadas). Las buenas prácticas que el examen premia:
-
-- Dar roles a **Google groups** (grupos), no a usuarios sueltos: altas y bajas se hacen en el grupo.
-- Automatizar el alta de usuarios con **Google Cloud Directory Sync** (GCDS, sincroniza desde Active Directory o LDAP) o con aprovisionamiento **SCIM** desde un IdP como **Microsoft Entra ID** u Okta.
-- Usar **SSO** (*Single Sign-On*, inicio de sesión único) con el IdP corporativo.
-
-```bash
-gcloud projects add-iam-policy-binding app-prod-4821 \
-  --member="group:devops@ejemplo.com" --role="roles/compute.instanceAdmin.v1"
-```
-
-Los tipos de roles, la herencia y los custom roles se ven a fondo en la [Sección 4](seccion-4-acceso-seguridad.md).
+- Dar roles a **Google groups**, no a usuarios sueltos (tipos de roles y bindings en la [Sección 4](seccion-4-acceso-seguridad.md)).
+- Automatizar altas con **Google Cloud Directory Sync** (GCDS, desde Active Directory o LDAP) o **SCIM** desde un IdP como **Microsoft Entra ID** u Okta, con **SSO** (*Single Sign-On*).
 
 ### Workforce Identity Federation
 
-**Workforce Identity Federation** (federación de identidades de la fuerza laboral) permite que **personas** de un IdP externo (Entra ID, Okta, cualquier IdP OIDC o SAML 2.0) usen la consola y la API de Google Cloud **sin sincronizar sus cuentas** a Cloud Identity. Se crea un **workforce pool** a nivel de **organización** y un **provider** con el mapeo de atributos; después se dan roles a `principalSet://iam.googleapis.com/locations/global/workforcePools/POOL/group/GRUPO`.
+Permite que **personas** de un IdP externo (Entra ID, Okta, cualquier OIDC o SAML 2.0) usen la consola y la API **sin sincronizar sus cuentas** a Cloud Identity. Se crea un **workforce pool** a nivel de **organización** y un **provider** con el mapeo de atributos.
 
 | Necesidad | Solución |
 | --- | --- |
@@ -119,73 +74,26 @@ Los tipos de roles, la herencia y los custom roles se ven a fondo en la [Secció
 
 ## APIs, cuotas y disponibilidad por ubicación
 
-### Habilitar APIs
-
-Cada servicio se habilita **por proyecto**. Si una llamada falla con "API has not been used in project… or it is disabled", falta habilitarla.
-
-```bash
-gcloud services list --available --filter="name:sqladmin"
-gcloud services enable sqladmin.googleapis.com
-gcloud services list --enabled
-```
-
-### Cuotas
-
-Las **quotas** (cuotas) limitan cuánto puedes usar (por ejemplo, vCPUs por región o peticiones por minuto a una API). Se consultan y se pide aumento en **IAM & Admin > Quotas & System Limits** (servicio **Cloud Quotas**). Hay **system limits** que no se pueden aumentar.
-
-```bash
-gcloud compute regions describe us-central1 --format="table(quotas.metric, quotas.limit, quotas.usage)"
-```
+- **APIs**: se habilitan **por proyecto**. El error "API has not been used in project… or it is disabled" se resuelve con `gcloud services enable <api>.googleapis.com`.
+- **Quotas** (cuotas): limitan el uso (vCPUs por región, peticiones por minuto). Se consultan y se pide aumento en **IAM & Admin > Quotas & System Limits** (**Cloud Quotas**). Los **system limits** no se aumentan.
+- **Productos por región y zona**: no todos los machine types, GPUs o servicios existen en todas partes. Compruébalo con `gcloud compute machine-types list` y `gcloud compute accelerator-types list` filtrando por zona. Ver [Modelos de servicio y regiones](../../../cloud/fundamentos/modelos-de-servicio-y-regiones.md).
 
 !!! tip "En el examen"
-    "No se pueden crear más VMs en una región / error `QUOTA_EXCEEDED`" → revisar cuotas y **pedir un aumento**, o usar otra región. No es un problema de IAM.
-
-### Productos por región y zona
-
-No todos los machine types, GPUs o servicios existen en todas las regiones. Verifícalo antes de planificar:
-
-```bash
-gcloud compute regions list
-gcloud compute zones list --filter="region:southamerica-west1"
-gcloud compute machine-types list --zones=us-central1-a --filter="name~^c4"
-gcloud compute accelerator-types list --filter="zone:us-central1-a"
-```
-
-Más sobre regiones y zonas en [Modelos de servicio y regiones](../../../cloud/fundamentos/modelos-de-servicio-y-regiones.md).
+    "No se pueden crear más VMs en una región / error `QUOTA_EXCEEDED`" → revisar cuotas y **pedir un aumento**, o usar otra región. No es un problema de IAM. `PERMISSION_DENIED` sí es de IAM.
 
 ## Observabilidad, red e inventario desde el primer día
 
-- **Google Cloud Observability**: Cloud Monitoring y Cloud Logging se activan con el proyecto, pero hay que planear el **metrics scope** (alcance de métricas): un proyecto "de monitoreo" que ve las métricas de varios proyectos. La guía lo pide porque una Associate Cloud Engineer monitorea **varios proyectos**. Detalle en la [Sección 3](seccion-3-operacion-solucion.md#cloud-monitoring).
-- **Red inicial**: cada proyecto nuevo trae una **default VPC** en **auto mode** (una subnet por región y reglas de firewall permisivas). Para producción se recomienda borrarla (o impedirla con la constraint `compute.skipDefaultNetworkCreation`) y crear una **custom mode VPC**. Ver [Sección 2](seccion-2-planificar-implementar.md#vpc-y-subnets).
-- **Cloud Asset Inventory**: inventario de recursos y políticas de IAM con **historial de 35 días**. Permite buscar, exportar a BigQuery o Cloud Storage y crear **feeds** a Pub/Sub cuando algo cambia. **Gemini Cloud Assist** puede responder en lenguaje natural sobre esos recursos ("¿qué VMs tienen IP pública?").
-
-```bash
-gcloud asset search-all-resources --scope=organizations/123456789012 \
-  --asset-types="compute.googleapis.com/Instance" --query="state:RUNNING"
-gcloud asset search-all-iam-policies --scope=projects/app-prod-4821 \
-  --query="policy:roles/owner"
-```
+- **Metrics scope**: un proyecto "de monitoreo" que ve las métricas de varios ([Sección 3](seccion-3-operacion-solucion.md#cloud-monitoring)).
+- **Red inicial**: cada proyecto trae una **default VPC** en **auto mode** con reglas permisivas. En producción se borra (o se impide con `compute.skipDefaultNetworkCreation`) y se crea una **custom mode VPC** ([Sección 2](seccion-2-planificar-implementar.md#vpc-y-subnets)).
+- **Cloud Asset Inventory**: inventario de recursos y políticas de IAM con **historial de 35 días**. Busca (`gcloud asset search-all-resources`, `search-all-iam-policies`), exporta a BigQuery o Cloud Storage y crea **feeds** a Pub/Sub cuando algo cambia. **Gemini Cloud Assist** responde en lenguaje natural sobre esos recursos.
 
 ## Facturación
 
-```mermaid
-flowchart LR
-    BA["Cloud Billing account"] --> P1["Project A"]
-    BA --> P2["Project B"]
-    BA --> B["Budgets y alertas"]
-    BA --> E["Billing export a BigQuery"]
-    PP["Payments profile"] --> BA
-```
-
 | Pieza | Qué es |
 | --- | --- |
-| **Cloud Billing account** (cuenta de facturación) | Paga los recursos de uno o varios proyectos. Un proyecto se vincula a **una sola** billing account a la vez |
-| **Payments profile** (perfil de pagos) | Datos del pagador (empresa, tarjeta, facturas) en el Google Payments Center |
-| Tipos de cuenta | **Self-serve** (online, tarjeta o débito) e **invoiced** (factura mensual, para empresas que cumplen requisitos) |
-| **Budget** (presupuesto) | Monto mensual, trimestral o anual con **threshold rules** (umbrales) sobre gasto real o pronosticado |
-| **Billing export** | Exporta el detalle a **BigQuery** (standard usage cost, detailed usage cost y pricing) para analizar con SQL o Looker Studio |
-
-Roles de facturación que conviene distinguir:
+| **Cloud Billing account** | Paga uno o varios proyectos. Un proyecto se vincula a **una sola** billing account a la vez. Puede ser **self-serve** (tarjeta) o **invoiced** (factura mensual); los datos del pagador están en el **payments profile** |
+| **Budget** | Monto mensual, trimestral o anual con **threshold rules** sobre gasto real o pronosticado |
+| **Billing export** | Detalle a **BigQuery** (standard usage cost, detailed usage cost y pricing) para SQL o Looker Studio |
 
 | Rol | Puede |
 | --- | --- |
@@ -196,35 +104,27 @@ Roles de facturación que conviene distinguir:
 
 ```bash
 gcloud billing projects link app-prod-4821 --billing-account=0X0X0X-0X0X0X-0X0X0X
-gcloud billing projects describe app-prod-4821
-gcloud billing budgets create --billing-account=0X0X0X-0X0X0X-0X0X0X \
-  --display-name="app-prod mensual" --budget-amount=500USD \
-  --filter-projects=projects/app-prod-4821 \
-  --threshold-rule=percent=0.5 --threshold-rule=percent=0.9 \
-  --threshold-rule=percent=1.0,basis=forecasted-spend
 ```
 
 !!! warning "Un budget no corta el gasto"
-    Los budgets **solo avisan** (correo a los Billing admins o a canales de Cloud Monitoring). Para reaccionar automáticamente, conecta el budget a un **tema de Pub/Sub** y una función que, por ejemplo, desvincule la facturación o apague recursos. Desvincular la facturación detiene los servicios del proyecto.
+    Los budgets **solo avisan** (correo o canales de Cloud Monitoring). Para reaccionar, conéctalo a un **tema de Pub/Sub** y una función que, por ejemplo, desvincule la facturación o apague recursos. Desvincular la facturación detiene los servicios del proyecto.
 
 !!! tip "En el examen"
     - "Analizar costos por label o servicio con SQL / dashboards" → **billing export a BigQuery** (actívalo pronto: no es retroactivo).
-    - "El equipo de finanzas debe ver costos pero no tocar recursos" → **Billing Account Viewer**.
+    - "Finanzas debe ver costos pero no tocar recursos" → **Billing Account Viewer**.
     - "Un desarrollador debe poder vincular su proyecto" → **Billing Account User** en la cuenta + permisos en el proyecto.
-    - "Avisar antes de pasarse" → budget con umbral sobre **forecasted spend** (gasto pronosticado).
-
-Más prácticas de costos en [FinOps y costos](../../../cloud/fundamentos/finops-costos.md).
+    - "Avisar antes de pasarse" → budget con umbral sobre **forecasted spend**.
 
 ## Casos de uso
 
-1. **Una empresa con tres áreas y entornos dev/prod quiere aplicar políticas distintas por entorno.** → Organization con folders por entorno (o por área y luego por entorno) y organization policies en cada folder. Los proyectos heredan sin configurarlos uno por uno.
-2. **Una normativa exige que los datos se queden en Sudamérica.** → Organization policy `gcp.resourceLocations` con `in:southamerica-locations` en la organización o el folder.
-3. **Recursos humanos da de baja empleados en Active Directory y deben perder acceso a Google Cloud.** → GCDS (o SCIM desde Entra ID) + roles asignados a grupos; al salir del grupo, pierde los permisos.
-4. **Una consultora usa Okta y no quiere crear cuentas en Cloud Identity para su personal.** → Workforce Identity Federation con un workforce pool y un provider OIDC/SAML de Okta.
-5. **Un equipo no puede crear más GPUs en `us-central1`.** → Revisar Cloud Quotas y pedir aumento; verificar disponibilidad del tipo de GPU en otras zonas.
-6. **Finanzas quiere un dashboard de costos por equipo.** → Labels `equipo=` en los recursos + billing export a BigQuery + Looker Studio.
-7. **Seguridad necesita saber cada día qué VMs con IP pública existen en toda la organización.** → Cloud Asset Inventory (`search-all-resources`) o un export programado a BigQuery; feed a Pub/Sub para cambios.
-8. **Un proyecto de pruebas no debe pasar de 50 USD al mes.** → Budget con alertas y Pub/Sub + función que desvincule la billing account al llegar al 100%.
+1. **Políticas distintas por entorno en una empresa con varias áreas.** → Folders por entorno (o área y entorno) con organization policies en cada folder.
+2. **Los datos deben quedarse en Sudamérica.** → `gcp.resourceLocations` con `in:southamerica-locations` en la organización o el folder.
+3. **Bajas en Active Directory deben quitar acceso a Google Cloud.** → GCDS (o SCIM desde Entra ID) + roles asignados a grupos.
+4. **Consultora con Okta que no quiere cuentas en Cloud Identity.** → Workforce Identity Federation con provider OIDC/SAML de Okta.
+5. **No se pueden crear más GPUs en `us-central1`.** → Cloud Quotas (pedir aumento) y verificar el tipo de GPU en otras zonas.
+6. **Dashboard de costos por equipo.** → Labels `equipo=` + billing export a BigQuery + Looker Studio.
+7. **Saber cada día qué VMs con IP pública hay en la organización.** → Cloud Asset Inventory (`search-all-resources` o export a BigQuery) y feed a Pub/Sub.
+8. **Un proyecto de pruebas no debe pasar de 50 USD al mes.** → Budget + Pub/Sub + función que desvincule la billing account al 100%.
 
 ## Preguntas de práctica
 
@@ -291,21 +191,16 @@ Más prácticas de costos en [FinOps y costos](../../../cloud/fundamentos/finops
 ## Para profundizar
 
 - [Gobernanza](../../../cloud/operacion-y-gobierno/gobernanza.md): landing zone, jerarquía y guardrails comparados con AWS Organizations y Azure management groups.
-- [IAM: AWS, Azure y GCP](../../../cloud/identidad-y-seguridad/iam-comparativa.md): principals, roles y allow policies.
+- [IAM: AWS, Azure y GCP](../../../cloud/fundamentos/iam-comparativa.md): principals, roles y allow policies.
 - [FinOps y costos](../../../cloud/fundamentos/finops-costos.md): labels, showback y optimización.
 - [Modelos de servicio y regiones](../../../cloud/fundamentos/modelos-de-servicio-y-regiones.md): regiones, zonas y cómo elegir.
-- [TI y negocio](../../../negocio/ti-y-negocio.md): CapEx vs OpEx y presupuesto.
 - [Comandos de gcloud](../../../recursos/comandos/google-cli.md).
 
 ## Referencias
 
 - [Resource hierarchy](https://cloud.google.com/resource-manager/docs/cloud-platform-resource-hierarchy)
 - [Organization Policy Service](https://cloud.google.com/resource-manager/docs/organization-policy/overview)
-- [Creating and managing organizations](https://cloud.google.com/resource-manager/docs/creating-managing-organization)
 - [Workforce Identity Federation](https://cloud.google.com/iam/docs/workforce-identity-federation)
-- [Google Cloud Directory Sync](https://support.google.com/a/answer/106368)
-- [Cloud Quotas overview](https://cloud.google.com/docs/quotas/overview)
 - [Cloud Asset Inventory](https://cloud.google.com/asset-inventory/docs/overview)
 - [Cloud Billing: create budgets](https://cloud.google.com/billing/docs/how-to/budgets)
 - [Export Cloud Billing data to BigQuery](https://cloud.google.com/billing/docs/how-to/export-data-bigquery)
-- [Associate Cloud Engineer exam guide](https://services.google.com/fh/files/misc/associate_cloud_engineer_exam_guide_english.pdf)

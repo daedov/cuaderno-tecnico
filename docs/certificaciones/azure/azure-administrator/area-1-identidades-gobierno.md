@@ -22,80 +22,38 @@ tags:
 
 ## Microsoft Entra ID: usuarios y grupos
 
-**Microsoft Entra ID** (antes Azure Active Directory) es el directorio de identidades en la nube de Microsoft. Cada organización tiene un **tenant** (inquilino): una instancia de Entra ID con su propio dominio inicial `<nombre>.onmicrosoft.com`. Todas las subscriptions de Azure confían en **un solo** tenant. La visión comparativa con AWS y Google Cloud está en [IAM: AWS, Azure y GCP](../../../cloud/identidad-y-seguridad/iam-comparativa.md).
+Qué es Entra ID, el tenant, los service principals y las managed identities está en [IAM: AWS, Azure y GCP](../../../cloud/fundamentos/iam-comparativa.md#azure-microsoft-entra-id-azure-rbac). Para el examen:
 
-### Tipos de usuario
-
-| Tipo | Qué es | Cómo se crea |
-| --- | --- | --- |
-| **Member** (miembro) | Persona de la organización | Se crea en el portal, con CLI/PowerShell, en bloque con CSV (*bulk create*) o se sincroniza desde Active Directory |
-| **Guest** (invitado) | Persona externa que entra con su propia identidad | Invitación B2B (*Invite external user*) |
-| Usuario sincronizado | Viene de un Active Directory local | **Microsoft Entra Connect Sync** o **Microsoft Entra Cloud Sync** |
-
-Propiedades que conviene saber gestionar: *display name*, *user principal name* (UPN, el nombre de inicio de sesión), *job title*, *department*, *usage location* (necesaria para asignar licencias), *manager* y si la cuenta está habilitada (*account enabled*). Los usuarios sincronizados se editan **en el origen** (el AD local), no en Entra ID.
-
-```bash title="Crear un usuario y un grupo con Azure CLI"
-az ad user create \
-  --display-name "Ana Torres" \
-  --user-principal-name ana.torres@contoso.onmicrosoft.com \
-  --password "<contraseña-temporal>" \
-  --force-change-password-next-sign-in true
-
-az ad group create --display-name "grp-soporte" --mail-nickname "grp-soporte"
-az ad group member add --group "grp-soporte" \
-  --member-id "$(az ad user show --id ana.torres@contoso.onmicrosoft.com --query id -o tsv)"
-```
-
-### Tipos de grupo y de membresía
-
-| Group type | Para qué |
+| Tipo de usuario | Cómo se crea |
 | --- | --- |
-| **Security** | Dar acceso a recursos (roles de Azure, apps, licencias) |
-| **Microsoft 365** | Colaboración: buzón compartido, calendario, SharePoint, Teams |
+| **Member** (miembro) | Portal, CLI/PowerShell o en bloque con CSV (*bulk create*) |
+| **Guest** (invitado) | Invitación B2B (*Invite external user*) |
+| Usuario sincronizado | **Microsoft Entra Connect Sync** o **Cloud Sync** desde el AD local; se edita **en el origen**, no en Entra ID |
 
 | Membership type | Cómo entran los miembros | Requisito |
 | --- | --- | --- |
 | **Assigned** (asignada) | Alguien los agrega a mano | Ninguno |
-| **Dynamic user** (usuario dinámico) | Una regla sobre atributos del usuario | Licencia Microsoft Entra ID P1 |
-| **Dynamic device** (dispositivo dinámico) | Una regla sobre atributos del dispositivo (solo security groups) | Licencia Microsoft Entra ID P1 |
+| **Dynamic user** | Regla sobre atributos del usuario, p. ej. `(user.department -eq "Ventas")` | Licencia Entra ID P1 |
+| **Dynamic device** | Regla sobre atributos del dispositivo (solo security groups) | Licencia Entra ID P1 |
 
-```text title="Regla de membresía dinámica"
-(user.department -eq "Ventas") -and (user.country -eq "Chile")
-```
+Los grupos **Security** dan acceso a recursos, apps y licencias; los **Microsoft 365** son para colaboración (buzón, SharePoint, Teams).
 
 !!! tip "En el examen"
     - "Que los usuarios entren y salgan del grupo **automáticamente** según su departamento" → **dynamic membership** (requiere P1).
     - Un grupo dinámico **no** admite agregar miembros a mano. Si te piden ambas cosas, la respuesta no es un grupo dinámico.
     - Los grupos de dispositivos dinámicos solo pueden ser **Security**, no Microsoft 365.
 
-### Licencias
+**Licencias**: mejor con **group-based licensing** (la licencia se asigna al grupo; requiere al menos P1). El usuario necesita **usage location** o la asignación falla. Puedes desactivar *service plans* concretos.
 
-Las licencias (Microsoft Entra ID P1/P2, Microsoft 365, etc.) se asignan a usuarios o, mejor, con **group-based licensing** (licenciamiento por grupo): asignas la licencia al grupo y todos sus miembros la heredan. Puntos clave:
-
-- El usuario necesita **usage location** antes de recibir una licencia; si falta, la asignación falla.
-- El licenciamiento por grupo requiere al menos P1 (o un plan que lo incluya, como Microsoft 365 E3).
-- Puedes desactivar *service plans* (planes de servicio) concretos dentro de una licencia.
-
-### Usuarios externos
-
-**Microsoft Entra B2B collaboration** (colaboración B2B) permite invitar a personas de otras organizaciones como **guest users**: entran con su identidad (otra cuenta de Entra, cuenta Microsoft, Google, o código de un solo uso por correo) y tú les das acceso como a cualquier usuario. Se gobierna en **External collaboration settings**: quién puede invitar (solo admins, miembros, también invitados) y a qué dominios se permite o bloquea invitar. **Microsoft Entra External ID** es el nombre de la plataforma que agrupa B2B y los escenarios de identidades de clientes (*customer identity*).
-
-```powershell title="Invitar a un usuario externo (Microsoft Graph PowerShell)"
-New-MgInvitation -InvitedUserEmailAddress "proveedor@fabrikam.com" `
-  -InviteRedirectUrl "https://myapps.microsoft.com" -SendInvitationMessage
-```
+**Usuarios externos**: **Microsoft Entra B2B collaboration** invita **guest users** que entran con su propia identidad (Entra, cuenta Microsoft, Google o código por correo). Quién puede invitar y a qué dominios se controla en **External collaboration settings**. **Microsoft Entra External ID** agrupa B2B y la identidad de clientes.
 
 ### Self-service password reset (SSPR)
 
-SSPR permite que una persona restablezca su contraseña o desbloquee su cuenta sin llamar a soporte.
-
 | Configuración | Opciones |
 | --- | --- |
-| Alcance (*Self service password reset enabled*) | **None**, **Selected** (un grupo) o **All** |
-| Métodos de autenticación | App Microsoft Authenticator (notificación o código), correo, teléfono móvil, teléfono de oficina, preguntas de seguridad |
-| Número de métodos requeridos | 1 o 2 |
-| Registro | Pedir a los usuarios que registren sus métodos al iniciar sesión y cada cuántos días reconfirmarlos |
-| Notificaciones | Avisar al usuario y a los admins cuando se restablece una contraseña |
+| Alcance | **None**, **Selected** (un grupo) o **All** |
+| Métodos | Authenticator, correo, móvil, teléfono de oficina, preguntas de seguridad; se exigen 1 o 2 |
+| Registro y notificaciones | Pedir registro al iniciar sesión; avisar al usuario y a los admins |
 | *Password writeback* | Escribir la nueva contraseña en el AD local (usuarios sincronizados) |
 
 !!! warning "Licencias y matices de SSPR"
@@ -108,13 +66,7 @@ SSPR permite que una persona restablezca su contraseña o desbloquee su cuenta s
 
 ## Acceso a recursos con Azure RBAC
 
-**Azure RBAC** (*role-based access control*, control de acceso basado en roles) controla qué se puede hacer con los recursos de Azure. Un permiso es una **role assignment** (asignación de rol):
-
-```text
-security principal (quién) + role definition (qué) + scope (dónde)
-```
-
-### Roles integrados
+El modelo (*principal + role + scope*), la herencia hacia abajo y la diferencia entre roles de Entra y roles de Azure están en [IAM: AWS, Azure y GCP](../../../cloud/fundamentos/iam-comparativa.md#azure-microsoft-entra-id-azure-rbac). Lo que añade el examen:
 
 | Built-in role | Qué permite |
 | --- | --- |
@@ -125,53 +77,16 @@ security principal (quién) + role definition (qué) + scope (dónde)
 | **Role Based Access Control Administrator** | Asignar roles, y se puede limitar con condiciones qué roles y a quién |
 | Roles por servicio | P. ej. **Virtual Machine Contributor**, **Network Contributor**, **Storage Account Contributor**, **Storage Blob Data Reader** |
 
+- Scopes: root management group → management group → subscription → resource group → resource. Lo asignado se **hereda** hacia abajo.
+- Los permisos son **aditivos**: Reader en la subscription + Contributor en un resource group = Contributor en ese resource group.
+- Los **deny assignments** bloquean aunque un rol permita; no los creas tú, los crean servicios como Azure Blueprints o *deployment stacks*.
+- En **Access control (IAM)**: **Check access** (roles de alguien en ese scope, con heredados), **Role assignments** (columna *Scope*: "This resource" o "(Inherited)") y **Roles** (`Actions`, `NotActions`, `DataActions`, `NotDataActions`).
+- **Custom roles**: JSON con esas cuatro listas y `AssignableScopes`. El study guide actual se centra en roles integrados.
+
 !!! warning "Control plane vs data plane"
     Roles como **Contributor** o **Storage Account Contributor** gestionan el recurso (*control plane*, plano de control). Leer blobs con identidad de Entra necesita un rol de *data plane* (plano de datos) como **Storage Blob Data Reader**. Un Owner de la storage account puede leer los blobs porque puede obtener las *access keys*, no porque tenga un rol de datos.
 
-### Scopes y herencia
-
-```mermaid
-flowchart TD
-    R[Root management group] --> MG[Management group]
-    MG --> S[Subscription]
-    S --> RG[Resource group]
-    RG --> RES[Resource]
-```
-
-- Lo que asignas en un scope se **hereda** hacia abajo.
-- Los permisos son **aditivos**: si tienes Reader en la subscription y Contributor en un resource group, en ese resource group eres Contributor.
-- Los **deny assignments** (asignaciones de denegación) bloquean acciones aunque un rol las permita; no los creas tú directamente, los crean servicios como Azure Blueprints o *deployment stacks*.
-
-### Interpretar asignaciones
-
-En cada recurso, **Access control (IAM)** muestra:
-
-- **Check access**: qué roles tiene una persona, grupo o identidad concreta en ese scope (incluye los heredados).
-- **Role assignments**: la lista con la columna *Scope* (por ejemplo "This resource" o "Subscription (Inherited)").
-- **Roles**: el detalle de `Actions`, `NotActions`, `DataActions` y `NotDataActions` de cada rol.
-
-```bash title="Asignar y revisar roles"
-RG_ID=$(az group show -n rg-app --query id -o tsv)
-GRP_ID=$(az ad group show --group grp-soporte --query id -o tsv)
-az role assignment create --assignee-object-id "$GRP_ID" --assignee-principal-type Group \
-  --role "Virtual Machine Contributor" --scope "$RG_ID"
-
-az role assignment list --resource-group rg-app --include-inherited -o table
-az role definition list --name "Contributor" --query "[].permissions[].notActions"
-```
-
-!!! info "Custom roles"
-    Si ningún rol integrado encaja, se crea un **custom role** (rol personalizado) en JSON con `Actions`, `NotActions`, `DataActions`, `NotDataActions` y `AssignableScopes`. El *study guide* actual pone el foco en roles integrados, pero conviene saber leer esa estructura.
-
-### Roles de Azure vs roles de Microsoft Entra
-
-| | Azure roles (RBAC) | Microsoft Entra roles |
-| --- | --- | --- |
-| Gestionan | Recursos de Azure (VMs, redes, storage) | El directorio: usuarios, grupos, apps, licencias |
-| Ejemplos | Owner, Contributor, Reader | Global Administrator, User Administrator, Groups Administrator |
-| Scope | Management group, subscription, resource group, recurso | Tenant o *administrative unit* |
-
-Un **Global Administrator** no tiene acceso a las subscriptions por defecto, pero puede activar *Access management for Azure resources* para darse **User Access Administrator** en el root management group (uso excepcional).
+Un **Global Administrator** (rol de Entra, scope tenant o *administrative unit*) no ve las subscriptions por defecto, pero puede activar *Access management for Azure resources* para darse **User Access Administrator** en el root management group (uso excepcional).
 
 !!! tip "En el examen"
     - "Que pueda crear VMs pero no dar permisos a nadie" → **Contributor** (o Virtual Machine Contributor si solo son VMs).
@@ -180,42 +95,32 @@ Un **Global Administrator** no tiene acceso a las subscriptions por defecto, per
 
 ## Subscriptions, resource groups y management groups
 
-| Nivel | Qué es | Detalles que se preguntan |
-| --- | --- | --- |
-| **Management group** | Contenedor de subscriptions para aplicar policies y RBAC en bloque | Hasta 6 niveles de profundidad (sin contar el root ni las subscriptions); una subscription tiene un solo padre |
-| **Subscription** | Límite de facturación, de cuotas y de acceso | Confía en un tenant; puedes moverla de management group o transferir su facturación |
-| **Resource group** | Contenedor lógico de recursos con el mismo ciclo de vida | Cada recurso está en **un solo** resource group; borrar el resource group borra todo lo que contiene |
-| **Resource** | El recurso concreto | Puede estar en otra región distinta a la del resource group |
+| Nivel | Detalles que se preguntan |
+| --- | --- |
+| **Management group** | Agrupa subscriptions para aplicar policies y RBAC en bloque. Hasta 6 niveles (sin contar root ni subscriptions); una subscription tiene un solo padre |
+| **Subscription** | Límite de facturación, cuotas y acceso. Confía en **un** tenant; se puede mover de management group o transferir su facturación |
+| **Resource group** | Cada recurso está en **uno solo**; borrarlo borra todo. Su ubicación solo indica dónde van los metadatos; los recursos pueden estar en otra región |
 
-Al **mover recursos** entre resource groups o subscriptions, el *resource ID* cambia, ambos resource groups quedan bloqueados para escritura durante la operación y no todos los recursos admiten moverse (consulta la tabla de soporte). La ubicación del resource group solo indica dónde se guardan sus metadatos.
-
-```bash title="Jerarquía con Azure CLI"
-az account management-group create --name mg-produccion --display-name "Producción"
-az account management-group subscription add --name mg-produccion --subscription "<subscription-id>"
-az resource move --destination-group rg-destino --ids "<resource-id>"
-```
-
-Una visión agnóstica de landing zones y estrategia multi-suscripción está en [Gobernanza](../../../cloud/operacion-y-gobierno/gobernanza.md).
+Al **mover recursos** entre resource groups o subscriptions, el *resource ID* cambia, ambos resource groups quedan bloqueados para escritura durante la operación y no todos los recursos admiten moverse. Landing zones y estrategia multi-suscripción: [Gobernanza](../../../cloud/operacion-y-gobierno/gobernanza.md).
 
 ## Azure Policy
 
-**Azure Policy** evalúa la **configuración** de los recursos contra reglas. No da ni quita permisos: RBAC dice **quién** puede actuar; Policy dice **cómo** deben quedar los recursos.
+**Azure Policy** evalúa la **configuración** de los recursos. RBAC dice **quién** puede actuar; Policy dice **cómo** deben quedar los recursos.
 
 | Concepto | Qué es |
 | --- | --- |
 | **Policy definition** | Una regla en JSON (condición + efecto) |
-| **Initiative** (*policy set definition*) | Un conjunto de definitions que se asignan juntas (p. ej. un benchmark de seguridad) |
+| **Initiative** (*policy set definition*) | Varias definitions que se asignan juntas |
 | **Assignment** | Aplicar una definition o initiative a un scope, con parámetros y exclusiones |
-| **Exemption** | Excepción temporal o permanente para un recurso o scope |
-| **Remediation task** | Corrige recursos existentes que no cumplen (para `Modify` y `DeployIfNotExists`) |
+| **Exemption** | Excepción temporal o permanente |
+| **Remediation task** | Corrige recursos existentes (para `Modify` y `DeployIfNotExists`) |
 
 | Effect | Qué hace |
 | --- | --- |
 | **Deny** | Bloquea la creación o el cambio |
-| **Audit** | Permite, pero marca el recurso como *non-compliant* |
+| **Audit** | Permite, pero marca *non-compliant* |
 | **Append** / **Modify** | Agrega o cambia propiedades o tags |
-| **DeployIfNotExists** | Despliega un recurso complementario si falta (p. ej. una extensión o una diagnostic setting) |
-| **AuditIfNotExists** | Marca si falta el recurso complementario |
+| **DeployIfNotExists** / **AuditIfNotExists** | Despliega / marca si falta un recurso complementario (extensión, diagnostic setting) |
 | **DenyAction** | Bloquea acciones concretas, como borrar |
 | **Disabled** | Desactiva la regla sin quitar la asignación |
 
@@ -225,7 +130,7 @@ Una visión agnóstica de landing zones y estrategia multi-suscripción está en
     - `Modify` y `DeployIfNotExists` necesitan una **managed identity** en la asignación para poder corregir.
     - Una policy con `Deny` **no** borra ni cambia los recursos existentes: solo los reporta como no conformes.
 
-## Resource locks
+## Resource locks y tags
 
 | Lock | Efecto |
 | --- | --- |
@@ -236,26 +141,14 @@ Una visión agnóstica de landing zones y estrategia multi-suscripción está en
 - Solo afectan al *control plane*. Un ReadOnly en una storage account no impide escribir blobs con una SAS, pero **sí** impide listar las *access keys* (es una operación POST), lo que rompe al portal y a herramientas que dependen de ellas.
 - Para crear o quitar locks hace falta `Microsoft.Authorization/locks/*`: **Owner** o **User Access Administrator** lo tienen; **Contributor** no.
 
-```bash title="Lock de no borrado"
-az lock create --name no-borrar --resource-group rg-app --lock-type CanNotDelete
-az lock list --resource-group rg-app -o table
-```
-
-## Tags
-
-Los **tags** (etiquetas) son pares nombre-valor para clasificar recursos por costo, entorno o dueño. **No se heredan** del resource group ni de la subscription por defecto: para eso usas Azure Policy. Cada recurso, resource group o subscription admite hasta 50 tags, y no todos los tipos de recurso los aceptan. La estrategia de tagging está en [FinOps y costos](../../../cloud/fundamentos/finops-costos.md).
-
-```bash title="Tags con CLI"
-az group update -n rg-app --tags env=prod owner=dani costCenter=cc-104
-az resource tag --ids "<resource-id>" --tags env=prod --is-incremental
-```
+Los **tags** **no se heredan** del resource group ni de la subscription: para eso usas Azure Policy. Hasta 50 por recurso, resource group o subscription, y no todos los tipos de recurso los aceptan. Estrategia de tagging: [FinOps y costos](../../../cloud/fundamentos/finops-costos.md).
 
 ## Costos: budgets, alertas y Azure Advisor
 
 | Herramienta | Para qué |
 | --- | --- |
-| **Cost analysis** (en Microsoft Cost Management) | Ver el gasto por servicio, resource group, tag, región |
-| **Budgets** (presupuestos) | Monto por periodo con alertas al llegar a umbrales del gasto **real** o **pronosticado** (*forecasted*) |
+| **Cost analysis** (Microsoft Cost Management) | Gasto por servicio, resource group, tag, región |
+| **Budgets** | Monto por periodo con alertas sobre el gasto **real** o **pronosticado** (*forecasted*) |
 | **Cost alerts** | Alertas de budget, de anomalías y de crédito |
 | **Azure Advisor** | Recomendaciones en cinco categorías: Cost, Security, Reliability, Operational Excellence y Performance |
 | **Pricing calculator** / **TCO calculator** | Estimar costos antes de desplegar / comparar con on-premises |
@@ -263,17 +156,17 @@ az resource tag --ids "<resource-id>" --tags env=prod --is-incremental
 !!! warning "Un budget no apaga nada"
     Un budget **solo avisa**. Si quieres reaccionar (apagar VMs, por ejemplo) lo conectas a un **action group** que dispare un runbook de Azure Automation, una Logic App o una Function.
 
-Ahorros que aparecen en Advisor y en el examen: **Reservations** (reservas de 1 o 3 años), **Azure savings plan for compute**, **Azure Hybrid Benefit** (reutilizar licencias de Windows Server y SQL Server) y **Spot VMs**.
+Ahorros que aparecen en Advisor y en el examen: **Reservations** (1 o 3 años), **Azure savings plan for compute**, **Azure Hybrid Benefit** (licencias de Windows Server y SQL Server) y **Spot VMs**.
 
 ## Casos de uso
 
-1. **Una empresa quiere que los nuevos empleados de Ventas reciban automáticamente acceso a la app de CRM y una licencia de Microsoft 365.** → Grupo de seguridad con **dynamic membership** (`user.department -eq "Ventas"`), licencia asignada al grupo y app asignada al grupo. Requiere P1.
-2. **Un auditor externo necesita ver la configuración de una subscription durante un mes.** → Invitarlo como **guest** (B2B) y asignarle **Reader** en la subscription; eliminar la asignación (o revisar con *access reviews*) al terminar.
-3. **Producción no puede tener recursos fuera de dos regiones.** → Initiative o policy **Allowed locations** con `Deny`, asignada al **management group** de producción para cubrir todas sus subscriptions.
-4. **Nadie debe poder borrar por error la VNet compartida.** → Lock **CanNotDelete** en el resource group de red.
-5. **Finanzas quiere un correo cuando el gasto previsto supere el 90 % del presupuesto mensual.** → **Budget** con alerta sobre el costo **forecasted** al 90 %.
-6. **El equipo de soporte debe reiniciar VMs, pero no crear redes ni dar permisos.** → **Virtual Machine Contributor** (o un custom role con `Microsoft.Compute/virtualMachines/restart/action`) asignado al grupo en el resource group de las VMs.
-7. **La mesa de ayuda recibe demasiadas llamadas por contraseñas olvidadas.** → **SSPR** con alcance All y dos métodos; *password writeback* si los usuarios vienen del AD local.
+1. Nuevos empleados de Ventas con acceso al CRM y licencia automáticos → grupo de seguridad **dinámico** con licencia y app asignadas al grupo (P1).
+2. Auditor externo que ve una subscription durante un mes → **guest** B2B con **Reader** en la subscription; quitarlo al terminar (o *access reviews*).
+3. Producción no puede tener recursos fuera de dos regiones → **Allowed locations** con `Deny` en el **management group** de producción.
+4. Nadie debe borrar por error la VNet compartida → lock **CanNotDelete** en el resource group de red.
+5. Correo cuando el gasto previsto supere el 90 % → **budget** con alerta sobre el costo **forecasted**.
+6. Soporte reinicia VMs pero no crea redes ni da permisos → **Virtual Machine Contributor** (o custom role con `Microsoft.Compute/virtualMachines/restart/action`) al grupo en el resource group.
+7. Demasiadas llamadas por contraseñas olvidadas → **SSPR** con alcance All y dos métodos; *password writeback* si vienen del AD local.
 
 ## Preguntas de práctica
 
@@ -351,29 +244,18 @@ Ahorros que aparecen en Advisor y en el examen: **Reservations** (reservas de 1 
 
 | Tema | Nota del cuaderno |
 | --- | --- |
-| Entra ID, RBAC y equivalencias con AWS y Google Cloud | [IAM: AWS, Azure y GCP](../../../cloud/identidad-y-seguridad/iam-comparativa.md) |
+| Entra ID, RBAC y equivalencias con AWS y Google Cloud | [IAM: AWS, Azure y GCP](../../../cloud/fundamentos/iam-comparativa.md) |
 | Landing zones, guardrails, tagging, jerarquía | [Gobernanza](../../../cloud/operacion-y-gobierno/gobernanza.md) |
 | Budgets, reservas, savings plans, showback | [FinOps y costos](../../../cloud/fundamentos/finops-costos.md) |
 | Policy as code y escaneo de configuraciones | [Seguridad de IaC](../../../devsecops/infraestructura-y-contenedores/seguridad-iac.md), [CSPM](../../../devsecops/escaneos/cspm.md) |
 | Identidades de workloads y OIDC desde el pipeline | [Secretos e identidades](../../../devsecops/identidades-y-pipeline/secretos-identidades.md) |
-| Riesgo y gobierno de TI | [Gobierno y riesgo de TI](../../../negocio/gobierno-riesgo-ti.md) |
-
-!!! example "Practica en el laboratorio"
-    - [Lab 19: Azure: VNet
-    - NSG y una VM con Azure CLI](../../../laboratorios/cloud/azure-vnet-vm.md)
+| Práctica guiada | [Lab: Azure VNet, NSG y una VM con Azure CLI](../../../laboratorios/cloud/azure-vnet-vm.md) |
 
 ## Referencias
 
 - [Study guide del examen AZ-104](https://learn.microsoft.com/en-us/credentials/certifications/resources/study-guides/az-104)
-- [Documentación de Microsoft Entra ID](https://learn.microsoft.com/es-es/entra/identity/)
 - [Reglas de pertenencia dinámica a grupos](https://learn.microsoft.com/es-es/entra/identity/users/groups-dynamic-membership)
-- [Licencias basadas en grupos](https://learn.microsoft.com/es-es/entra/identity/users/licensing-groups-assign)
-- [Colaboración B2B en Microsoft Entra External ID](https://learn.microsoft.com/es-es/entra/external-id/what-is-b2b)
 - [Cómo funciona SSPR](https://learn.microsoft.com/es-es/entra/identity/authentication/concept-sspr-howitworks)
 - [Roles integrados de Azure](https://learn.microsoft.com/es-es/azure/role-based-access-control/built-in-roles)
-- [Roles de Azure, roles de Microsoft Entra y roles de administrador clásicos](https://learn.microsoft.com/es-es/azure/role-based-access-control/rbac-and-directory-admin-roles)
 - [Estructura de definición de Azure Policy: efectos](https://learn.microsoft.com/es-es/azure/governance/policy/concepts/effect-basics)
 - [Bloqueo de recursos](https://learn.microsoft.com/es-es/azure/azure-resource-manager/management/lock-resources)
-- [Grupos de administración](https://learn.microsoft.com/es-es/azure/governance/management-groups/overview)
-- [Tutorial: crear y administrar presupuestos](https://learn.microsoft.com/es-es/azure/cost-management-billing/costs/tutorial-acm-create-budgets)
-- [Azure Advisor](https://learn.microsoft.com/es-es/azure/advisor/advisor-overview)

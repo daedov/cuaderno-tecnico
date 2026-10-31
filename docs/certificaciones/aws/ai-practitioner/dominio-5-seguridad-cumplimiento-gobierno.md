@@ -18,37 +18,29 @@ tags:
 
     Volver al [resumen del examen](resumen-examen.md).
 
+Lo general de seguridad en AWS (IAM, cifrado, CloudTrail, Config, Artifact, Inspector, Macie) se explica en [Cloud Practitioner, Dominio 2](../cloud-practitioner/dominio-2-seguridad-cumplimiento.md). Aquí solo va lo específico de IA. Los controles equivalentes en Azure y Google Cloud están en [Seguridad de servicios de IA generativa](../../../cloud/seguridad/seguridad-servicios-ia.md).
+
 ## Responsabilidad compartida en IA
 
-El [Shared Responsibility Model](../../../cloud/fundamentos/responsabilidad-compartida.md) también aplica a la IA: AWS protege la infraestructura y los servicios gestionados ("seguridad **de** la nube"); tú proteges lo que pones y configuras ("seguridad **en** la nube").
-
-| Responsabilidad | AWS | Tú |
-| --- | --- | --- |
-| Infraestructura física, hipervisor, red global | Sí | — |
-| Operar y parchear Bedrock y los servicios de IA gestionados | Sí | — |
-| Quién puede invocar modelos y acceder a datos (IAM) | — | Sí |
-| Cifrado y gestión de llaves propias (KMS) | Ofrece el servicio | Configurarlo |
-| Datos de entrenamiento, documentos de RAG y su clasificación | — | Sí |
-| Prompts, guardrails, validación de salidas | — | Sí |
-| Instancias y contenedores que gestionas (EC2, endpoints de SageMaker AI) | Hardware | Sistema operativo, imágenes, dependencias |
+El modelo general está en [Shared Responsibility Model (CLF)](../cloud-practitioner/dominio-2-seguridad-cumplimiento.md#shared-responsibility-model). En IA: AWS opera la infraestructura, Bedrock y los servicios de IA gestionados; **tú** respondes de quién invoca modelos y accede a datos (IAM), la configuración del cifrado (KMS), los datos de entrenamiento y de RAG, los prompts, los guardrails y la validación de salidas. En instancias o endpoints que gestionas (EC2, endpoints de SageMaker AI), además el sistema operativo, las imágenes y las dependencias.
 
 Cuanto más gestionado es el servicio (Bedrock frente a un modelo propio en EC2), menos responsabilidad operativa tienes, pero **datos, identidades y configuración siempre son tuyos**.
 
 ## Servicios para asegurar sistemas de IA
 
+Para qué sirve cada servicio de seguridad general: ver [Servicios que hay que distinguir (CLF)](../cloud-practitioner/dominio-2-seguridad-cumplimiento.md#servicios-que-hay-que-distinguir). Lo que aportan a un sistema de IA:
+
 | Servicio o función | Qué aporta a la seguridad de IA |
 | --- | --- |
-| **AWS IAM** | Roles con permisos mínimos para invocar modelos (`bedrock:InvokeModel` sobre modelos concretos), acceder a buckets de datos y gestionar endpoints. Roles de servicio para Knowledge Bases, agentes y trabajos de entrenamiento |
-| **AWS KMS** | Cifrado en reposo con llaves gestionadas por el cliente (*customer managed keys*) para datos de entrenamiento, modelos personalizados, Knowledge Bases y logs |
-| **TLS** | Cifrado en tránsito en todas las APIs de AWS |
-| **Amazon Macie** | Descubre y clasifica **datos sensibles (PII) en S3** con ML, antes de usarlos para entrenar o para RAG |
-| **AWS PrivateLink** (VPC interface endpoints) | Llamar a Bedrock o SageMaker AI **desde tu VPC sin pasar por internet** |
-| **Amazon VPC** | Aislar trabajos de entrenamiento y endpoints en subredes privadas |
-| **AWS Secrets Manager** | Guardar credenciales de bases vectoriales externas o APIs que usan los agentes |
-| **Amazon Bedrock Guardrails** | Filtrar contenido dañino, ataques de prompt, PII y respuestas no fundamentadas |
-| **Bedrock AgentCore Identity** | Identidad propia de cada agente y gestión de credenciales para que actúe en otros servicios **en nombre del usuario**, compatible con proveedores de identidad existentes (Cognito, Okta, Microsoft Entra ID…) |
-| **Policy in AgentCore** | Reglas **deterministas** sobre qué herramientas puede usar un agente y con qué condiciones; se evalúan en AgentCore Gateway antes de ejecutar cada llamada (lenguaje compatible con Cedar) |
-| **Amazon Inspector** | Escaneo de vulnerabilidades en instancias EC2, imágenes de contenedor y funciones Lambda que forman parte de la solución |
+| **AWS IAM** | Permisos mínimos para invocar modelos (`bedrock:InvokeModel` sobre modelos concretos), acceder a buckets de datos y gestionar endpoints. Roles de servicio para Knowledge Bases, agentes y entrenamiento |
+| **AWS KMS** | *Customer managed keys* para datos de entrenamiento, modelos personalizados, Knowledge Bases y logs (TLS cifra en tránsito) |
+| **Amazon Macie** | Descubre **PII en S3** antes de usar los datos para entrenar o para RAG |
+| **AWS PrivateLink** (VPC interface endpoints) | Llamar a Bedrock o SageMaker AI **desde tu VPC sin pasar por internet**; entrenamiento y endpoints en subredes privadas de **Amazon VPC** |
+| **AWS Secrets Manager** | Credenciales de bases vectoriales externas o APIs que usan los agentes |
+| **Amazon Bedrock Guardrails** | Contenido dañino, ataques de prompt, PII y respuestas no fundamentadas (ver [Dominio 4](dominio-4-ia-responsable.md#amazon-bedrock-guardrails)) |
+| **Bedrock AgentCore Identity** | Identidad propia de cada agente y gestión de credenciales para actuar **en nombre del usuario**, compatible con proveedores existentes (Cognito, Okta, Microsoft Entra ID…) |
+| **Policy in AgentCore** | Reglas **deterministas** sobre qué herramientas puede usar un agente y con qué condiciones; se evalúan en AgentCore Gateway antes de cada llamada (lenguaje compatible con Cedar) |
+| **Amazon Inspector** | Vulnerabilidades en EC2, imágenes de contenedor y Lambda de la solución |
 
 !!! tip "En el examen"
     - "Encontrar PII en los datos de entrenamiento en S3" → **Macie**.
@@ -57,90 +49,68 @@ Cuanto más gestionado es el servicio (Bedrock frente a un modelo propio en EC2)
     - "Limitar qué herramientas puede ejecutar un agente" → **Policy in AgentCore** (y permisos mínimos de IAM).
     - **GuardDuty, Security Hub, WAF y Shield están fuera de alcance** de este examen; no suelen ser la respuesta.
 
-Para el detalle de IAM, cifrado y secretos en AWS, ver [IAM: AWS, Azure y GCP](../../../cloud/identidad-y-seguridad/iam-comparativa.md) y [Seguridad base](../../../cloud/identidad-y-seguridad/seguridad-base.md).
+## Origen de los datos e ingeniería de datos segura
 
-## Origen de los datos y citación de fuentes
-
-- **Source citation** (citación de fuentes): que la respuesta indique de qué documento sale. Bedrock Knowledge Bases devuelve **citas** con la referencia al chunk y al documento de origen.
-- **Data lineage** (linaje de datos): registrar de dónde viene cada dato, qué transformaciones sufrió y qué modelos lo usaron. Permite auditar y responder "¿con qué se entrenó este modelo?".
-- **Data cataloging** (catalogación): inventario de datasets con su esquema, dueño y clasificación (**AWS Glue Data Catalog**, Amazon SageMaker Catalog).
-- **SageMaker Model Cards**: documentan datos de entrenamiento, uso previsto y evaluación de cada modelo.
-
-## Ingeniería de datos segura
+- **Source citation**: Bedrock Knowledge Bases devuelve **citas** con la referencia al chunk y al documento de origen.
+- **Data lineage** (linaje): de dónde viene cada dato, qué transformaciones sufrió y qué modelos lo usaron ("¿con qué se entrenó este modelo?"). **Data cataloging**: **AWS Glue Data Catalog**, Amazon SageMaker Catalog. **SageMaker Model Cards** documentan datos, uso previsto y evaluación.
 
 | Práctica | En qué consiste |
 | --- | --- |
-| **Assessing data quality** (evaluar calidad) | Validar completitud, exactitud y consistencia antes de entrenar (AWS Glue DataBrew, Data Wrangler) |
-| **Privacy-enhancing technologies** (tecnologías de mejora de la privacidad, PETs) | **Anonymization** (anonimización), **pseudonymization** (seudonimización), **masking** (enmascaramiento), **tokenization**, **differential privacy** (privacidad diferencial: añadir ruido estadístico para no identificar personas) |
+| **Assessing data quality** | Completitud, exactitud y consistencia antes de entrenar (Glue DataBrew, Data Wrangler) |
+| **Privacy-enhancing technologies** (PETs) | **Anonymization**, **pseudonymization** (seudonimización), **masking**, **tokenization**, **differential privacy** (ruido estadístico para no identificar personas) |
 | **Data access control** | Permisos mínimos; control fino por tabla, columna o fila con **AWS Lake Formation** |
-| **Data integrity** (integridad) | Evitar modificaciones no autorizadas: versionado de S3, checksums, registro de cambios; protege contra *data poisoning* |
+| **Data integrity** | Versionado de S3, checksums, registro de cambios; protege contra *data poisoning* |
 
 ## Consideraciones de seguridad y privacidad
 
-Los sistemas de GenAI heredan los riesgos de cualquier aplicación (seguridad de aplicación, gestión de vulnerabilidades, protección de infraestructura, detección de amenazas) y suman riesgos propios. La referencia del sector es el **OWASP Top 10 for LLM Applications**.
+Los sistemas de GenAI heredan los riesgos de cualquier aplicación y suman los propios; la referencia es el **OWASP Top 10 for LLM Applications** (detalle y ejemplos en [Riesgos típicos](../../../cloud/seguridad/seguridad-servicios-ia.md#riesgos-tipicos)).
 
-| Riesgo | Qué es | Controles en AWS |
-| --- | --- | --- |
-| **Prompt injection** (directa o indirecta) | Instrucciones maliciosas en la entrada del usuario o en documentos/webs que procesa el modelo | Guardrails (filtro *prompt attack*), separar instrucciones de datos, permisos mínimos para herramientas, revisión humana de acciones sensibles |
-| **Data leakage** (fuga de datos) | El modelo revela datos de otros usuarios, del system prompt o de la base de conocimiento | Filtros de información sensible, control de acceso por documento (filtros de metadatos en RAG), no poner secretos en prompts, Macie en los datos de origen |
-| **Output filtering and validation** | Tratar la salida del modelo como **entrada no confiable**: validar formato, rango y contenido antes de usarla o ejecutarla | Guardrails sobre la salida, validación en el código (esquemas JSON), nunca ejecutar código o SQL generado sin control |
-| **Toxicity** (toxicidad) | Contenido ofensivo, de odio o violento | Content filters de Guardrails, evaluación de toxicidad antes de elegir el modelo |
-| **Audit trail and logging** (registro de auditoría) | Saber quién invocó qué modelo, con qué prompt y qué respondió | **CloudTrail** (llamadas a la API de Bedrock), **model invocation logging** de Bedrock (prompts y respuestas a CloudWatch Logs o S3), trazas de AgentCore Observability |
-| **Encryption at rest and in transit** | Datos y modelos cifrados | KMS y TLS |
-| **Vulnerability management** | Dependencias y sistemas operativos con fallos conocidos | Amazon Inspector |
+| Riesgo | Controles en AWS |
+| --- | --- |
+| **Prompt injection** (directa o indirecta) | Guardrails (filtro *prompt attack*), separar instrucciones de datos, permisos mínimos para herramientas, revisión humana de acciones sensibles |
+| **Data leakage** (fuga de datos) | Filtros de información sensible, filtros de metadatos por documento en RAG, sin secretos en prompts, Macie en los datos de origen |
+| **Output filtering and validation** | Tratar la salida como **entrada no confiable**: Guardrails sobre la salida, esquemas JSON, nunca ejecutar código o SQL generado sin control |
+| **Toxicity** | Content filters de Guardrails, evaluación de toxicidad antes de elegir modelo |
+| **Audit trail and logging** | **CloudTrail** (llamadas a la API de Bedrock), **model invocation logging** (prompts y respuestas a CloudWatch Logs o S3), trazas de AgentCore Observability |
+| **Encryption** y **vulnerability management** | KMS y TLS; Amazon Inspector |
 
 !!! warning "Los logs de prompts también son datos sensibles"
     Si activas el *model invocation logging*, los prompts y respuestas quedan guardados: pueden contener PII. Cifra esos logs con KMS, restringe quién puede leerlos y define su retención.
 
 ## Alucinaciones: detección y grounding
 
-Una **hallucination** (alucinación) es una respuesta plausible pero falsa o no respaldada. No se elimina del todo, pero se reduce y se detecta:
+Una **hallucination** es una respuesta plausible pero falsa o no respaldada. No se elimina del todo, pero se reduce y se detecta:
 
-| Técnica | Cómo ayuda |
-| --- | --- |
-| **RAG grounding** | La respuesta se basa en documentos recuperados, no solo en la memoria del modelo |
-| **Contextual grounding check** (Guardrails) | Puntúa si la respuesta está respaldada por la fuente y es relevante para la pregunta; bloquea o marca las que no |
-| **Automated Reasoning checks** (Guardrails) | Verifica la respuesta contra reglas lógicas formales (por ejemplo, una política de RR. HH.) |
-| **Output validation** | Comprobar datos contra sistemas de registro (precio real en la base de datos), esquemas y reglas de negocio |
-| **Confidence scoring** (puntuación de confianza) | Usar puntuaciones de relevancia o de grounding para decidir si responder, pedir aclaración o derivar a una persona |
-| **Citas** | El usuario puede verificar la fuente |
-| **Prompt engineering** | Pedir "responde solo con el contexto dado; si no está, di que no lo sabes" |
-| **Temperatura baja** | Respuestas más conservadoras (ayuda, pero no basta) |
+- **RAG grounding** y **citas**: la respuesta se basa en documentos recuperados y el usuario puede verificar la fuente.
+- **Contextual grounding check** y **Automated Reasoning checks** de Guardrails (ver [Dominio 4](dominio-4-ia-responsable.md#amazon-bedrock-guardrails)).
+- **Output validation** contra sistemas de registro, esquemas y reglas de negocio; **confidence scoring** para responder, pedir aclaración o derivar a una persona.
+- **Prompt engineering** ("si no está en el contexto, di que no lo sabes") y **temperatura baja** (ayuda, pero no basta).
 
 ## Servicios de gobierno y cumplimiento
 
-| Servicio | Qué hace | Ejemplo en IA |
-| --- | --- | --- |
-| **AWS CloudTrail** | Registra **quién hizo qué llamada a la API**, cuándo y desde dónde | Auditar quién creó un modelo personalizado o invocó un modelo |
-| **AWS Config** | Registra la **configuración** de los recursos y evalúa reglas de cumplimiento | Detectar un endpoint de SageMaker AI sin cifrado o un bucket de datos público |
-| **Amazon Inspector** | Escaneo continuo de **vulnerabilidades** | CVEs en contenedores de inferencia |
-| **AWS Artifact** | Portal de **informes de cumplimiento de AWS** (SOC, ISO, PCI) y acuerdos | Entregar al auditor el informe SOC 2 de AWS |
-| **AWS Trusted Advisor** | Recomendaciones de buenas prácticas (costo, seguridad, rendimiento, límites) | Detectar permisos o recursos expuestos |
-| **Amazon CloudWatch** | Métricas, logs y alarmas | Invocaciones, latencia, errores y tokens de Bedrock |
-| **AWS Well-Architected Tool** | Revisar una carga contra el marco Well-Architected (incluye lentes de ML y GenAI) | Revisión de arquitectura de una app de GenAI |
+| Servicio | Ejemplo en IA |
+| --- | --- |
+| **AWS CloudTrail** | Auditar quién creó un modelo personalizado o invocó un modelo |
+| **AWS Config** | Detectar un endpoint de SageMaker AI sin cifrado o un bucket de datos público |
+| **Amazon Inspector** | CVEs en contenedores de inferencia |
+| **AWS Artifact** | Entregar al auditor el informe SOC 2 de AWS |
+| **AWS Trusted Advisor** | Detectar permisos o recursos expuestos |
+| **Amazon CloudWatch** | Invocaciones, latencia, errores y tokens de Bedrock |
+| **AWS Well-Architected Tool** | Revisión de una app de GenAI (incluye lentes de ML y GenAI) |
 
 !!! tip "En el examen: no confundas"
     **CloudTrail** = quién llamó a la API. **Config** = cómo está configurado el recurso y si cumple reglas. **Artifact** = descargar informes de cumplimiento **de AWS**. **Inspector** = vulnerabilidades. **Trusted Advisor** = recomendaciones generales.
 
-Para el detalle de auditoría continua y CSPM, ver [Cumplimiento y gobierno](../../../devsecops/gobierno-y-respuesta/cumplimiento.md) y [Gobernanza en la nube](../../../cloud/operacion-y-gobierno/gobernanza.md).
-
 ## Gobierno de datos
 
-| Estrategia | Qué decide | En AWS |
-| --- | --- | --- |
-| **Data lifecycle** (ciclo de vida) | Desde la creación hasta el borrado: clasificar, usar, archivar, eliminar | S3 Lifecycle, S3 Glacier |
-| **Logging** | Qué se registra (acceso, invocaciones, cambios) | CloudTrail, model invocation logging, CloudWatch Logs |
-| **Residency** (residencia) | En qué país o región pueden estar y procesarse los datos | Elegir región; cuidado con *cross-Region inference* |
-| **Monitoring** y **observation** | Vigilar uso, calidad, drift y abusos | CloudWatch, Model Monitor, AgentCore Observability |
-| **Retention** (retención) | Cuánto tiempo se guardan datos y logs (requisito legal vs costo y riesgo) | Políticas de retención de CloudWatch Logs y S3 |
+**Data lifecycle** (S3 Lifecycle, S3 Glacier), **logging** (CloudTrail, model invocation logging, CloudWatch Logs), **residency** (elegir región; cuidado con *cross-Region inference*), **monitoring** (CloudWatch, Model Monitor, AgentCore Observability) y **retention** (políticas de retención de CloudWatch Logs y S3: requisito legal frente a costo y riesgo).
 
 ## Procesos y marcos de gobierno
 
-- **Policies** (políticas): uso aceptable de IA, qué datos pueden usarse, qué modelos están aprobados.
-- **Review cadence** (frecuencia de revisión) y **review strategies**: revisar modelos, prompts y guardrails periódicamente y ante cambios (nuevo modelo, nueva fuente de datos); revisiones técnicas, legales y éticas.
-- **Transparency standards**: documentar con Model Cards, avisar a los usuarios de que interactúan con una IA.
-- **Team training requirements** (formación): que quien construye y usa IA conozca sus riesgos y las políticas.
-- **Marcos de referencia**: además de los de seguridad generales (ISO 27001, SOC 2, NIST CSF), existen marcos de IA como **ISO/IEC 42001** (sistema de gestión de IA), el **NIST AI Risk Management Framework** y regulaciones como el **EU AI Act**.
+- **Policies**: uso aceptable de IA, datos permitidos, modelos aprobados.
+- **Review cadence** y **review strategies**: revisar modelos, prompts y guardrails periódicamente y ante cambios; revisiones técnicas, legales y éticas.
+- **Transparency standards** (Model Cards, avisar de que es una IA) y **team training requirements**.
+- **Marcos**: además de ISO 27001, SOC 2 y NIST CSF, existen **ISO/IEC 42001** (sistema de gestión de IA), el **NIST AI Risk Management Framework** y el **EU AI Act**.
 
 ### Generative AI Security Scoping Matrix
 
@@ -150,7 +120,7 @@ Marco de AWS que clasifica una solución de GenAI en **cinco alcances** según c
 | --- | --- | --- | --- |
 | **1. Consumer app** | Usar una app pública de GenAI | Un chatbot público de terceros | Política de uso: qué datos pueden introducir los empleados |
 | **2. Enterprise app** | App empresarial de terceros con GenAI integrada | Un SaaS con funciones de IA, Amazon Quick | Contrato, términos de uso de datos, configuración de acceso |
-| **3. Pre-trained models** | Construir tu app sobre un FM existente sin modificarlo | App propia sobre Bedrock con RAG | Seguridad de la app, prompts, datos de RAG, guardrails |
+| **3. Pre-trained models** | Tu app sobre un FM existente sin modificarlo | App propia sobre Bedrock con RAG | Seguridad de la app, prompts, datos de RAG, guardrails |
 | **4. Fine-tuned models** | Ajustar un FM con tus datos | Modelo personalizado en Bedrock o SageMaker AI | Lo anterior + datos de entrenamiento y acceso al modelo resultante |
 | **5. Self-trained models** | Entrenar un modelo desde cero | Modelo propio en SageMaker AI | Todo: datos, entrenamiento, modelo e infraestructura |
 
@@ -159,14 +129,14 @@ Marco de AWS que clasifica una solución de GenAI en **cinco alcances** según c
 
 ## Casos de uso
 
-1. **Antes de crear una Knowledge Base con miles de documentos en S3, la empresa necesita saber si contienen datos personales.** → **Amazon Macie**.
-2. **Una entidad financiera exige que el tráfico hacia Bedrock no salga a internet.** → **Interface VPC endpoint (AWS PrivateLink)** para Bedrock.
-3. **El auditor pide los informes SOC 2 e ISO 27001 de AWS.** → **AWS Artifact**.
-4. **Seguridad quiere saber quién creó un trabajo de fine-tuning el viernes por la noche.** → **AWS CloudTrail**.
-5. **Hay que detectar automáticamente endpoints de SageMaker AI sin cifrado con KMS.** → Reglas de **AWS Config**.
-6. **Un agente de soporte debe poder consultar pedidos pero nunca emitir reembolsos de más de 100 USD.** → **Policy in AgentCore** (más permisos mínimos en IAM y aprobación humana para excepciones).
-7. **Un asistente de RAG a veces inventa condiciones contractuales.** → **Contextual grounding check** de Guardrails, citas y validación de salidas.
-8. **Compliance necesita conservar registro de los prompts y respuestas del chatbot durante un año.** → **Model invocation logging** de Bedrock a S3 o CloudWatch Logs, cifrado con KMS y con retención configurada.
+1. Saber si miles de documentos en S3 tienen datos personales antes de crear una Knowledge Base → **Amazon Macie**.
+2. Tráfico hacia Bedrock que no debe salir a internet → **interface VPC endpoint (PrivateLink)**.
+3. El auditor pide los informes SOC 2 e ISO 27001 de AWS → **AWS Artifact**.
+4. Quién creó un trabajo de fine-tuning el viernes por la noche → **AWS CloudTrail**.
+5. Detectar endpoints de SageMaker AI sin cifrado con KMS → reglas de **AWS Config**.
+6. Un agente que consulta pedidos pero nunca emite reembolsos de más de 100 USD → **Policy in AgentCore** + permisos mínimos y aprobación humana para excepciones.
+7. Un asistente de RAG que inventa condiciones contractuales → **contextual grounding check**, citas y validación de salidas.
+8. Conservar un año los prompts y respuestas del chatbot → **model invocation logging** a S3 o CloudWatch Logs, con KMS y retención configurada.
 
 ## Preguntas de práctica
 
@@ -245,14 +215,11 @@ Marco de AWS que clasifica una solución de GenAI en **cinco alcances** según c
 
 | Tema | Nota del cuaderno |
 | --- | --- |
-| Responsabilidad compartida | [Shared Responsibility Model](../../../cloud/fundamentos/responsabilidad-compartida.md) |
-| Identidades, roles y permisos mínimos | [IAM: AWS, Azure y GCP](../../../cloud/identidad-y-seguridad/iam-comparativa.md), [Secretos e identidades](../../../devsecops/identidades-y-pipeline/secretos-identidades.md) |
-| Cifrado, KMS, logs de auditoría y registro de configuración | [Seguridad base](../../../cloud/identidad-y-seguridad/seguridad-base.md) |
+| Seguridad general de AWS para el examen | [Cloud Practitioner, Dominio 2](../cloud-practitioner/dominio-2-seguridad-cumplimiento.md) |
+| Controles de IA en AWS, Azure y GCP | [Seguridad de servicios de IA generativa](../../../cloud/seguridad/seguridad-servicios-ia.md) |
+| Identidades, cifrado y logs de auditoría | [IAM: AWS, Azure y GCP](../../../cloud/fundamentos/iam-comparativa.md), [Seguridad de cifrado y secretos](../../../cloud/seguridad/seguridad-cifrado-secretos.md), [Seguridad de logging y detección](../../../cloud/seguridad/seguridad-logging-deteccion.md) |
 | Conectividad privada | [Redes en la nube](../../../cloud/redes-y-datos/redes.md) |
-| Logs, métricas y alarmas | [Observabilidad nativa](../../../cloud/operacion-y-gobierno/observabilidad-nativa.md) |
-| Marcos de cumplimiento y CSPM | [Cumplimiento y gobierno](../../../devsecops/gobierno-y-respuesta/cumplimiento.md), [CSPM](../../../devsecops/escaneos/cspm.md) |
-| Gobierno, riesgo y proveedores | [Gobierno y riesgo de TI](../../../negocio/gobierno-riesgo-ti.md), [Gobernanza en la nube](../../../cloud/operacion-y-gobierno/gobernanza.md) |
-| OWASP y threat modeling | [Fundamentos DevSecOps](../../../devsecops/fundamentos-devsecops.md) |
+| Marcos de cumplimiento y gobierno | [Cumplimiento y gobierno](../../../devsecops/gobierno-y-respuesta/cumplimiento.md), [Gobernanza en la nube](../../../cloud/operacion-y-gobierno/gobernanza.md) |
 | Dominio anterior | [Dominio 4](dominio-4-ia-responsable.md) · [Resumen del examen](resumen-examen.md) |
 
 ## Referencias
@@ -261,8 +228,5 @@ Marco de AWS que clasifica una solución de GenAI en **cinco alcances** según c
 - [Seguridad en Amazon Bedrock](https://docs.aws.amazon.com/bedrock/latest/userguide/security.html)
 - [Model invocation logging en Bedrock](https://docs.aws.amazon.com/bedrock/latest/userguide/model-invocation-logging.html)
 - [Bedrock con interface VPC endpoints (PrivateLink)](https://docs.aws.amazon.com/bedrock/latest/userguide/vpc-interface-endpoints.html)
-- [Amazon Bedrock AgentCore](https://docs.aws.amazon.com/bedrock-agentcore/latest/devguide/what-is-bedrock-agentcore.html)
 - [Generative AI Security Scoping Matrix](https://aws.amazon.com/ai/generative-ai/security/scoping-matrix/)
-- [Amazon Macie](https://docs.aws.amazon.com/macie/latest/user/what-is-macie.html)
-- [AWS Artifact](https://docs.aws.amazon.com/artifact/latest/ug/what-is-aws-artifact.html)
 - [OWASP Top 10 for LLM Applications](https://genai.owasp.org/llm-top-10/)

@@ -12,43 +12,29 @@ tags:
 > Arquitecturas que escalan y no se caen: desacoplar con colas y eventos, escalar horizontalmente con Auto Scaling y load balancers, replicar datos entre AZ y regiones, y elegir la estrategia de disaster recovery que cumpla el RTO y el RPO.
 
 !!! info "Qué evalúa este dominio"
-    - **Task 2.1 – Design scalable and loosely coupled architectures**: API Gateway, colas y pub/sub, arquitecturas event-driven, microservicios stateless, escalado horizontal y vertical, caché y CDN, load balancing, contenedores (ECS, EKS) y serverless (Lambda, Fargate), Step Functions, read replicas, servicios gestionados con propósito específico.
-    - **Task 2.2 – Design highly available and/or fault-tolerant architectures**: regiones, AZ y Route 53; estrategias de DR (backup and restore, pilot light, warm standby, active-active) con RTO/RPO; failover; infraestructura inmutable; RDS Proxy; service quotas en el entorno de standby; X-Ray; mejorar la fiabilidad de aplicaciones legacy sin cambiar código.
+    - **Task 2.1 – Design scalable and loosely coupled architectures**: colas, pub/sub y eventos, microservicios stateless, escalado horizontal, load balancing, contenedores y serverless, Step Functions, read replicas.
+    - **Task 2.2 – Design highly available and/or fault-tolerant architectures**: AZ, regiones y Route 53; estrategias de DR con RTO/RPO; failover; RDS Proxy; service quotas en standby; mejorar apps legacy sin cambiar código.
 
     Formato y resto de dominios en el [resumen del examen](resumen-examen.md).
 
-## Acoplamiento débil: por qué y cómo
-
-En una arquitectura **tightly coupled** (fuertemente acoplada), si el componente B se cae o va lento, A también falla. En una **loosely coupled** (débilmente acoplada), A deja el trabajo en un intermediario (cola, tópico, bus de eventos) y B lo procesa a su ritmo. Esto permite escalar cada parte por separado y absorber picos. La teoría está en [Integración y APIs](../../../cloud/arquitectura/integracion-apis.md#colas-pubsub-y-streaming) y [Estilos de arquitectura](../../../cloud/arquitectura/estilos-arquitectura.md).
-
-```mermaid
-flowchart LR
-    U[Usuarios] --> ALB[Application Load Balancer]
-    ALB --> W[Web tier en Auto Scaling group]
-    W -->|SendMessage| Q[(Amazon SQS)]
-    Q --> Wk[Workers en Auto Scaling group<br/>escalan según mensajes en cola]
-    Wk --> DB[(Aurora Multi-AZ)]
-    Q -.mensajes fallidos.-> DLQ[(Dead-letter queue)]
-```
-
 ## Mensajería y eventos: SQS, SNS, EventBridge, Kinesis
+
+Desacoplar (*loosely coupled*) significa que A deja el trabajo en un intermediario y B lo procesa a su ritmo; la teoría está en [Integración y APIs](../../../cloud/arquitectura/integracion-apis.md#colas-pubsub-y-streaming). Patrón típico: ALB → web tier → **SQS** → workers en Auto Scaling según mensajes en cola → base Multi-AZ, con una DLQ para los fallidos.
 
 | Servicio | Modelo | Entrega y orden | Retención | Úsalo cuando |
 | --- | --- | --- | --- | --- |
-| **SQS Standard** | Cola, un consumidor procesa cada mensaje (pull) | **At-least-once** (al menos una vez); orden *best effort*; throughput casi ilimitado | 1 minuto a 14 días (4 por defecto) | Desacoplar productor y consumidor, absorber picos (*queue-based load leveling*) |
-| **SQS FIFO** | Cola | **Exactly-once processing** y orden estricto por *message group ID* | Igual | El orden importa (transacciones, pedidos); throughput más limitado (modo high throughput para más) |
-| **Amazon SNS** | **Pub/sub** (publicación/suscripción), push a muchos suscriptores | At-least-once; SNS FIFO para orden | No retiene (entrega y listo) | **Fan-out** (abanico): un evento a varias colas, Lambdas, emails, SMS, HTTP |
-| **Amazon EventBridge** | **Event bus** con reglas de enrutamiento por contenido | At-least-once | Archivo y replay opcionales | Event-driven entre servicios de AWS, apps SaaS y tus microservicios; programación de tareas (EventBridge Scheduler) |
-| **Kinesis Data Streams** | **Streaming** con shards; varios consumidores leen el mismo flujo | Orden por partition key dentro del shard | 24 h por defecto, ampliable hasta 365 días | Telemetría, clickstream, logs en tiempo real; reprocesar datos; varios consumidores |
-| **Amazon MQ** | Broker gestionado ActiveMQ o RabbitMQ | Según protocolo | Según broker | Migrar apps que ya usan JMS, AMQP, MQTT o STOMP **sin reescribir** |
+| **SQS Standard** | Cola, un consumidor por mensaje (pull) | **At-least-once**; orden *best effort*; throughput casi ilimitado | 1 minuto a 14 días (4 por defecto) | Desacoplar y absorber picos (*queue-based load leveling*) |
+| **SQS FIFO** | Cola | **Exactly-once processing** y orden por *message group ID* | Igual | El orden importa; throughput más limitado |
+| **Amazon SNS** | **Pub/sub**, push a muchos suscriptores | At-least-once; SNS FIFO para orden | No retiene | **Fan-out**: un evento a varias colas, Lambdas, email, HTTP |
+| **Amazon EventBridge** | **Event bus** con reglas por contenido | At-least-once | Archivo y replay opcionales | Eventos de AWS, SaaS y microservicios; EventBridge Scheduler |
+| **Kinesis Data Streams** | **Streaming** con shards; varios consumidores leen el mismo flujo | Orden por partition key en el shard | 24 h por defecto, hasta 365 días | Tiempo real, reprocesar, varios consumidores |
+| **Amazon MQ** | Broker ActiveMQ o RabbitMQ | Según protocolo | Según broker | Migrar apps con JMS, AMQP, MQTT o STOMP **sin reescribir** |
 
 Detalles de SQS que se preguntan:
 
-- **Visibility timeout** (tiempo de invisibilidad): mientras un consumidor procesa un mensaje, nadie más lo ve. Si tarda más que el timeout, el mensaje reaparece y se procesa dos veces: ajústalo al tiempo real de procesamiento.
-- **Dead-letter queue (DLQ)**: después de N intentos fallidos (`maxReceiveCount`) el mensaje va a otra cola para análisis.
-- **Long polling** (hasta 20 s): reduce respuestas vacías y costo.
-- **Delay queue**: retrasa la entrega hasta 15 minutos.
-- Tamaño máximo de mensaje: **1 MiB** desde agosto de 2025 (antes 256 KiB). Para más, guarda el payload en S3 y envía la referencia (Extended Client Library).
+- **Visibility timeout**: si el procesamiento tarda más, el mensaje reaparece y se procesa dos veces; ajústalo al tiempo real.
+- **Dead-letter queue (DLQ)**: tras `maxReceiveCount` intentos fallidos. **Long polling** (hasta 20 s) reduce respuestas vacías y costo. **Delay queue**: hasta 15 minutos.
+- Mensaje máximo de **1 MiB** desde agosto de 2025 (antes 256 KiB); para más, payload en S3 y referencia en el mensaje (Extended Client Library).
 
 !!! tip "En el examen"
     - "Un pedido debe procesarse una sola vez y en orden" → **SQS FIFO**.
@@ -59,121 +45,92 @@ Detalles de SQS que se preguntan:
 
 ### Orquestación y APIs
 
-- **AWS Step Functions**: orquesta pasos (Lambdas, ECS, llamadas a servicios) como máquina de estados, con reintentos, ramas, esperas y aprobación humana. **Standard workflows** (hasta 1 año, exactly-once, auditables) vs **Express workflows** (hasta 5 minutos, alto volumen, más baratos). Es la respuesta cuando ves "coordinar varios pasos con manejo de errores sin escribir lógica de orquestación".
-- **Amazon API Gateway**: puerta de entrada para APIs. **REST API** (más funciones: caché, API keys y usage plans, validación, WAF, endpoints privados), **HTTP API** (más simple, barato y de menor latencia, autorizadores JWT) y **WebSocket API** (comunicación bidireccional). Aplica **throttling** (límite de peticiones) para proteger el backend. Ver [Serverless](../../../cloud/computo/serverless.md#api-gateway-delante-de-las-funciones).
+- **AWS Step Functions**: máquina de estados con reintentos, ramas, esperas y aprobación humana. **Standard** (hasta 1 año, exactly-once) vs **Express** (hasta 5 minutos, alto volumen, más barato).
+- **Amazon API Gateway**: **REST API** (caché, API keys y usage plans, WAF, endpoints privados), **HTTP API** (más simple y barata, JWT) y **WebSocket API**. El **throttling** protege el backend. Ver [Serverless](../../../cloud/computo/serverless.md#api-gateway-delante-de-las-funciones).
 
-## Cómputo escalable: stateless, contenedores y serverless
+## Cómputo escalable
 
-Para escalar horizontalmente, las instancias deben ser **stateless** (sin estado): la sesión del usuario va a **ElastiCache** o **DynamoDB**, los archivos a **S3** o **EFS**, no al disco local.
+Para escalar horizontalmente, las instancias deben ser **stateless**: sesión en **ElastiCache** o **DynamoDB**, archivos en **S3** o **EFS**. Qué es cada servicio de cómputo en [Contenedores gestionados](../../../cloud/computo/contenedores-gestionados.md) y [Serverless](../../../cloud/computo/serverless.md); para decidir:
 
-| Opción | Escala | Gestión | Cuándo |
-| --- | --- | --- | --- |
-| EC2 + Auto Scaling group | Por instancia, en minutos | Tú gestionas el SO | Control total, software legacy, licencias |
-| **ECS** o **EKS** sobre EC2 | Por tarea/pod y por nodo | Tú gestionas los nodos | Contenedores con necesidad de GPU, instancias específicas o Spot |
-| ECS o EKS con **Fargate** | Por tarea/pod | Sin servidores que gestionar | Contenedores sin administrar nodos |
-| **AWS Lambda** | Por invocación, en milisegundos | Ninguna | Eventos cortos (máximo 15 minutos), tráfico irregular |
-| **Elastic Beanstalk** | Auto Scaling incluido | AWS crea ELB, ASG y despliegues | Subir código web rápido sin diseñar la infraestructura |
+| Opción | Cuándo |
+| --- | --- |
+| EC2 + Auto Scaling group | Control del SO, software legacy, licencias |
+| **ECS** o **EKS** sobre EC2 | Contenedores con GPU, instancias específicas o Spot |
+| ECS o EKS con **Fargate** | Contenedores sin administrar nodos ("menos gestión = Fargate") |
+| **AWS Lambda** | Eventos cortos (máximo 15 minutos), tráfico irregular |
+| **Elastic Beanstalk** | Subir código web rápido; AWS crea ELB, ASG y despliegues |
 
-- **ECS vs EKS**: ECS es el orquestador propio de AWS (más simple); EKS es Kubernetes gestionado (portabilidad, ecosistema, equipo que ya sabe Kubernetes). Ver [Contenedores gestionados](../../../cloud/computo/contenedores-gestionados.md).
-- **Migrar a contenedores**: aplicaciones .NET/Java existentes se pueden contenerizar y llevar a ECS/Fargate; la regla general es "menos gestión = Fargate".
+**ECS vs EKS**: ECS es el orquestador propio de AWS (más simple); EKS es Kubernetes gestionado (portabilidad, equipo que ya sabe Kubernetes).
 
 ## Load balancing y Auto Scaling
 
-**Elastic Load Balancing** reparte tráfico entre targets sanos en varias AZ y quita los que fallan el **health check** (comprobación de estado). La comparación ALB vs NLB vs GWLB está en el [Dominio 3](dominio-3-arquitecturas-alto-rendimiento.md#load-balancers-alb-vs-nlb-vs-gwlb).
+El ELB quita los targets que fallan el **health check**; ALB vs NLB vs GWLB en el [Dominio 3](dominio-3-arquitecturas-alto-rendimiento.md#load-balancers-alb-vs-nlb-vs-gwlb).
 
-### Políticas de Auto Scaling
+| Política de Auto Scaling | Cuándo |
+| --- | --- |
+| **Target tracking** | Por defecto: mantener una métrica (CPU 50%, `ALBRequestCountPerTarget`, mensajes por instancia) |
+| **Step scaling** | Escalones según cuánto se supera la alarma (**simple scaling** es su versión legacy) |
+| **Scheduled** | Picos conocidos: lunes 8:00, cierre de mes |
+| **Predictive** | ML sobre el historial: escala **antes** de picos cíclicos |
 
-| Política | Cómo funciona | Cuándo |
-| --- | --- | --- |
-| **Target tracking** (seguimiento de objetivo) | Mantiene una métrica en un valor (CPU 50%, `ALBRequestCountPerTarget`, mensajes en cola por instancia) | La opción por defecto recomendada |
-| **Step scaling** (por pasos) | Alarmas de CloudWatch con escalones según cuánto se supera el umbral | Reacciones distintas según la magnitud del pico |
-| **Simple scaling** | Una alarma, un ajuste, espera el cooldown | Legacy; mejor step o target tracking |
-| **Scheduled** (programado) | Cambia la capacidad a una hora fija | Picos conocidos: lunes 8:00, cierre de mes |
-| **Predictive** (predictivo) | ML sobre el historial para escalar **antes** del pico | Patrones cíclicos diarios o semanales |
-
-- **Health check type**: por defecto el ASG usa el estado de EC2; activa el health check de **ELB** para reemplazar instancias cuya aplicación no responde.
-- **Launch template**: define AMI, tipo de instancia, security groups (los launch configurations están obsoletos).
-- **Lifecycle hooks**: ejecutar acciones al lanzar o terminar una instancia (descargar logs, registrar en un sistema).
-- **Warm pools**: instancias preinicializadas para escalar más rápido apps con arranque lento.
-- **Escalar workers con SQS**: target tracking sobre "mensajes visibles por instancia" (backlog per instance).
+- **Health check de ELB** en el ASG para reemplazar instancias cuya aplicación no responde (por defecto solo mira el estado de EC2).
+- **Launch template** (los launch configurations están obsoletos); **lifecycle hooks** para acciones al lanzar o terminar; **warm pools** para apps de arranque lento.
+- **Workers con SQS**: target tracking sobre mensajes visibles por instancia (*backlog per instance*).
 
 !!! tip "En el examen"
     "Tráfico alto todos los lunes a las 9:00" → **scheduled**. "La app tarda 10 minutos en arrancar y el pico es diario y predecible" → **predictive** (o warm pools). "Mantener la CPU cerca del 60%" → **target tracking**. "Las instancias fallan pero el ASG no las reemplaza" → activar **health check de ELB**.
 
 ## Alta disponibilidad de bases de datos
 
-| Opción | Qué resuelve | Replicación | ¿Se puede leer la réplica? | Failover |
+| Opción | Qué resuelve | Replicación | ¿Se lee la réplica? | Failover |
 | --- | --- | --- | --- | --- |
-| **RDS Multi-AZ (instancia)** | **Disponibilidad** ante fallo de AZ | Síncrona a un standby en otra AZ | **No** | Automático, mismo endpoint DNS (1–2 minutos aprox.) |
-| **RDS Multi-AZ DB cluster** | Disponibilidad + algo de lectura | Semisíncrona a **dos** standbys en otras AZ (MySQL, PostgreSQL) | Sí | Más rápido que Multi-AZ instancia |
-| **RDS read replicas** | **Escalar lecturas** | **Asíncrona**, misma región o cross-region | Sí | Manual: se **promueve** la réplica (puede usarse para DR) |
-| **Aurora** | HA y rendimiento | Almacenamiento con 6 copias en 3 AZ; hasta 15 Aurora Replicas que comparten ese almacenamiento | Sí (reader endpoint) | Automático a una réplica, normalmente en menos de un minuto |
-| **Aurora Global Database** | DR entre regiones y lecturas globales de baja latencia | Asíncrona a nivel de almacenamiento, lag típico menor a 1 s | Sí en regiones secundarias | Promoción de región secundaria: RPO de segundos, RTO de minutos |
-| **DynamoDB global tables** | Multi-región **activo-activo** | Asíncrona multi-activa (por defecto); opción de consistencia fuerte multi-región | Sí, y también escribir en cada región | No hay failover: todas las regiones aceptan escrituras |
+| **RDS Multi-AZ (instancia)** | **Disponibilidad** ante fallo de AZ | Síncrona a un standby | **No** | Automático, mismo endpoint (1–2 min aprox.) |
+| **RDS Multi-AZ DB cluster** | Disponibilidad + algo de lectura | Semisíncrona a **dos** standbys (MySQL, PostgreSQL) | Sí | Más rápido |
+| **RDS read replicas** | **Escalar lecturas** | **Asíncrona**, misma región o cross-region | Sí | Manual: se **promueve** |
+| **Aurora** | HA y rendimiento | 6 copias en 3 AZ; hasta 15 réplicas con almacenamiento compartido | Sí (reader endpoint) | Automático, normalmente menos de un minuto |
+| **Aurora Global Database** | DR entre regiones y lecturas globales | Asíncrona, lag típico menor a 1 s | Sí en secundarias | RPO de segundos, RTO de minutos |
+| **DynamoDB global tables** | Multi-región **activo-activo** | Asíncrona multi-activa (opción de consistencia fuerte multi-región) | Sí, y se escribe en cada región | No hay failover |
 
-- **RDS Proxy**: pool de conexiones gestionado delante de RDS/Aurora. Evita agotar conexiones cuando muchas Lambdas abren conexiones, y reduce el tiempo de failover **sin cambiar el código** (solo el endpoint).
-- **ElastiCache** con réplicas Multi-AZ (Valkey/Redis OSS) para que la caché no sea un single point of failure (punto único de falla).
+- **RDS Proxy**: pool de conexiones delante de RDS/Aurora; evita agotar conexiones con muchas Lambdas y acelera el failover **sin cambiar el código** (solo el endpoint).
+- **ElastiCache** con réplicas Multi-AZ (Valkey/Redis OSS) para que la caché no sea un punto único de falla.
 
 !!! tip "En el examen"
     Multi-AZ = **disponibilidad** (no escala lecturas). Read replica = **rendimiento de lectura** (no da failover automático). Si piden ambos, son dos funciones distintas. "Reportes pesados ralentizan la base de producción" → **read replica** y apuntar los reportes ahí. "RPO de 1 segundo y RTO de 1 minuto entre regiones para una base relacional" → **Aurora Global Database**.
 
 ## Route 53 y failover
 
-| Routing policy | Cómo decide | Caso típico |
-| --- | --- | --- |
-| **Simple** | Un registro, uno o varios valores al azar, sin health checks | Un solo recurso |
-| **Weighted** (ponderado) | Porcentaje por registro | Canary, A/B testing, migración gradual |
-| **Latency** (latencia) | Región con menor latencia para el usuario | App desplegada en varias regiones |
-| **Failover** | Primario mientras su health check esté sano; si no, secundario | DR activo-pasivo |
-| **Geolocation** | País o continente del usuario | Contenido localizado, restricciones legales |
-| **Geoproximity** | Distancia geográfica con un **bias** para ampliar o reducir zonas | Mover tráfico entre regiones ajustando el sesgo |
-| **Multivalue answer** | Hasta 8 registros sanos al azar | Balanceo simple del lado del cliente con health checks |
-| **IP-based** | Rango CIDR de origen del usuario | Enrutar según el ISP o la red del cliente |
+Routing policies: **Simple** (un recurso, sin health checks), **Weighted** (canary, A/B, migración gradual), **Latency** (región de menor latencia), **Failover** (DR activo-pasivo con health check), **Geolocation** (por país: contenido localizado o restricciones legales), **Geoproximity** (por distancia, con **bias** para mover tráfico), **Multivalue answer** (hasta 8 registros sanos al azar) e **IP-based** (por CIDR de origen).
 
-- **Alias record**: apunta a recursos de AWS (ALB, CloudFront, S3 website, API Gateway) y **funciona en el zone apex** (`ejemplo.com`), a diferencia de un CNAME; las consultas a alias de recursos AWS no tienen costo.
-- Más sobre DNS en [Servicios de red](../../../networking/intermedio/servicios-red.md).
+**Alias record**: apunta a ALB, CloudFront, S3 website o API Gateway, **funciona en el zone apex** (`ejemplo.com`), a diferencia de un CNAME, y sus consultas a recursos AWS no tienen costo.
 
 ## Estrategias de disaster recovery
 
-La teoría de RTO/RPO está en [Resiliencia](../../../cloud/operacion-y-gobierno/resiliencia.md#rto-y-rpo) y en [Continuidad de negocio](../../../negocio/continuidad-negocio.md).
+Teoría de RTO/RPO en [Resiliencia](../../../cloud/operacion-y-gobierno/resiliencia.md#rto-y-rpo).
 
 | Estrategia | Qué hay en la región de DR | RPO / RTO típicos | Costo |
 | --- | --- | --- | --- |
 | **Backup and restore** | Solo backups (AWS Backup, snapshots copiados, S3 CRR) | Horas / horas | El más bajo |
-| **Pilot light** (piloto encendido) | Datos replicados en vivo; cómputo apagado o inexistente (AMIs, IaC listos) | Minutos / decenas de minutos | Bajo |
-| **Warm standby** (en espera activa) | Copia completa **funcionando a escala reducida** | Segundos a minutos / minutos | Medio |
-| **Multi-site active-active** | Producción completa en dos o más regiones recibiendo tráfico | Casi cero / casi cero | El más alto |
+| **Pilot light** | Datos replicados en vivo; cómputo apagado (AMIs, IaC listos) | Minutos / decenas de minutos | Bajo |
+| **Warm standby** | Copia completa **a escala reducida** | Segundos a minutos / minutos | Medio |
+| **Multi-site active-active** | Producción completa en dos o más regiones | Casi cero / casi cero | El más alto |
 
-```mermaid
-flowchart LR
-    BR[Backup and restore] --> PL[Pilot light] --> WS[Warm standby] --> AA[Multi-site active-active]
-    BR -.->|menos costo<br/>más RTO/RPO| AA
-```
-
-- **AWS Elastic Disaster Recovery (DRS)**: replicación continua a nivel de bloque de servidores (on-premises o EC2) hacia una región de AWS, con recuperación en minutos. Útil para aplicaciones legacy **sin cambiar código**.
-- **AWS Backup**: políticas de backup centralizadas para EBS, RDS, Aurora, DynamoDB, EFS, FSx, S3 y más, con copia entre regiones y cuentas.
-- **Service quotas** (cuotas de servicio): en pilot light y warm standby, verifica que la región de DR tiene cuotas suficientes (instancias, IPs) **antes** del desastre; si no, el failover falla al escalar.
-- **Infraestructura inmutable**: no parchear servidores en vivo; reemplazarlos desde una AMI o imagen nueva (CloudFormation, launch templates). Garantiza que el entorno de DR sea idéntico.
+- **AWS Elastic Disaster Recovery (DRS)**: replicación continua a nivel de bloque de servidores (on-premises o EC2), recuperación en minutos; para legacy **sin cambiar código**.
+- **Service quotas**: en pilot light y warm standby, verifica **antes** que la región de DR tiene cuotas para escalar.
+- **Infraestructura inmutable**: reemplazar desde una AMI o plantilla, no parchear en vivo; así DR es idéntico a producción.
+- **Observabilidad**: CloudWatch dispara Auto Scaling y alarmas; **X-Ray** (*distributed tracing*) muestra qué microservicio causa latencia o errores. Ver [Observabilidad nativa](../../../cloud/operacion-y-gobierno/observabilidad-nativa.md).
 
 !!! tip "En el examen"
     Lee los números: "RPO de 24 horas, mínimo costo" → backup and restore. "RTO de minutos, costo moderado" → warm standby. "La base de datos debe estar siempre replicada pero el cómputo puede arrancar en 30 minutos" → pilot light. "Cero tiempo de caída" → active-active.
 
-## Observabilidad para la resiliencia
-
-- **Amazon CloudWatch**: métricas, alarmas y logs que disparan Auto Scaling y notificaciones. Ver [Observabilidad nativa](../../../cloud/operacion-y-gobierno/observabilidad-nativa.md).
-- **AWS X-Ray**: **distributed tracing** (trazas distribuidas) para ver qué microservicio provoca la latencia o los errores.
-- **AWS Health Dashboard**: eventos de AWS que afectan a tus recursos.
-
 ## Casos de uso
 
-1. **Una tienda online pierde pedidos en Black Friday porque el backend de pagos no da abasto.** → SQS entre el frontend y los workers de pagos; workers en Auto Scaling según mensajes en cola. Si importa el orden por cliente, SQS FIFO con `MessageGroupId` = cliente.
-2. **Cuando se sube una imagen a S3, hay que generar miniatura, analizarla con Rekognition y notificar al usuario, cada cosa por separado.** → Evento de S3 a SNS (o EventBridge) con fan-out a tres colas SQS/Lambdas.
-3. **Una app legacy en EC2 guarda las sesiones en memoria y los usuarios pierden la sesión al escalar.** → Externalizar la sesión a ElastiCache o DynamoDB (o, como parche rápido, sticky sessions en el ALB).
-4. **Cientos de Lambdas agotan las conexiones de una base RDS PostgreSQL.** → **RDS Proxy**.
-5. **Una empresa necesita que su app siga funcionando si cae una región, con RTO de 15 minutos y presupuesto moderado.** → Warm standby: Aurora Global Database + ASG mínimo en la segunda región + Route 53 failover.
-6. **Un proceso de aprobación de préstamos tiene 6 pasos con reintentos y una espera de aprobación humana de hasta 3 días.** → **Step Functions Standard**.
-7. **Un servidor Windows on-premises crítico necesita DR en AWS sin modificar la aplicación.** → **AWS Elastic Disaster Recovery**.
-8. **Una app global debe responder desde la región más cercana y retirar automáticamente la región que falle.** → Route 53 latency routing con health checks (o Global Accelerator si se requieren IPs estáticas y failover más rápido).
+1. **Pagos que no dan abasto en Black Friday** → SQS + workers en Auto Scaling por mensajes en cola; FIFO con `MessageGroupId` = cliente si importa el orden.
+2. **Usuarios pierden la sesión al escalar** → sesión en ElastiCache o DynamoDB (sticky sessions como parche).
+3. **Cientos de Lambdas agotan conexiones de RDS** → **RDS Proxy**.
+4. **Seguir si cae una región, RTO 15 min, presupuesto moderado** → warm standby: Aurora Global Database + ASG mínimo + Route 53 failover.
+5. **Proceso de 6 pasos con reintentos y espera humana de días** → **Step Functions Standard**.
+6. **Servidor Windows on-premises crítico necesita DR sin cambios** → **Elastic Disaster Recovery**.
+7. **App global que responda desde la región más cercana y retire la que falla** → Route 53 latency + health checks (Global Accelerator si piden IPs fijas y failover más rápido).
 
 ## Preguntas de práctica
 
@@ -240,30 +197,17 @@ flowchart LR
 ## Para profundizar
 
 - [Resiliencia](../../../cloud/operacion-y-gobierno/resiliencia.md): HA, autoscaling, health checks y DR comparados entre nubes.
-- [Integración y APIs](../../../cloud/arquitectura/integracion-apis.md): síncrono vs asíncrono, colas, pub/sub, streaming, saga y outbox.
-- [Arquitectura en la nube](../../../cloud/arquitectura/arquitectura-cloud.md): patrones como retry con backoff, circuit breaker y queue-based load leveling.
-- [Arquitecturas de referencia](../../../cloud/arquitectura/arquitecturas-referencia.md): web de tres capas y multi-región activo-pasivo con diagramas.
-- [Balanceo y alta disponibilidad de red](../../../networking/avanzado/balanceo-alta-disponibilidad.md).
+- [Integración y APIs](../../../cloud/arquitectura/integracion-apis.md) y [Estilos de arquitectura](../../../cloud/arquitectura/estilos-arquitectura.md): colas, pub/sub, streaming, saga y outbox.
+- [Arquitecturas de referencia](../../../cloud/arquitectura/arquitecturas-referencia.md): web de tres capas y multi-región activo-pasivo.
+- [Balanceo y alta disponibilidad de red](../../../networking/avanzado/balanceo-alta-disponibilidad.md) y [Servicios de red](../../../networking/intermedio/servicios-red.md) (DNS).
+- [Continuidad de negocio](../../../negocio/continuidad-negocio.md) y [Niveles de servicio](../../../negocio/niveles-de-servicio.md): de dónde salen RTO, RPO y SLA.
 - [Despliegue continuo](../../../devops/ci-cd/despliegue-continuo.md): blue/green y canary con weighted routing.
-
-## Relación con otras secciones
-
-| Enfoque | Qué se mira desde ahí | Nota |
-| --- | --- | --- |
-| Cloud (el control) | Multi-AZ, multi-región, DR | [Resiliencia](../../../cloud/operacion-y-gobierno/resiliencia.md), [Serverless](../../../cloud/computo/serverless.md) |
-| DevOps (la automatización) | Infraestructura inmutable, despliegues seguros, SLOs | [Despliegue continuo](../../../devops/ci-cd/despliegue-continuo.md), [Operación y SRE](../../../devops/operacion/operacion-sre.md) |
-| Negocio TI (el porqué) | RTO, RPO y SLA los fija el negocio | [Continuidad de negocio](../../../negocio/continuidad-negocio.md), [Niveles de servicio](../../../negocio/niveles-de-servicio.md) |
-| Networking (la base) | Balanceo, DNS failover, anycast | [Balanceo y alta disponibilidad](../../../networking/avanzado/balanceo-alta-disponibilidad.md) |
 
 ## Referencias
 
 - [Exam guide SAA-C03: Domain 2](https://docs.aws.amazon.com/aws-certification/latest/solutions-architect-associate-03/solutions-architect-associate-03-domain2.html)
 - [Disaster Recovery of Workloads on AWS (whitepaper)](https://docs.aws.amazon.com/whitepapers/latest/disaster-recovery-workloads-on-aws/disaster-recovery-workloads-on-aws.html)
-- [Amazon SQS FIFO queues](https://docs.aws.amazon.com/AWSSimpleQueueService/latest/SQSDeveloperGuide/FIFO-queues.html)
 - [Amazon SQS aumenta el tamaño máximo de mensaje a 1 MiB](https://aws.amazon.com/about-aws/whats-new/2025/08/amazon-sqs-max-payload-size-1mib/)
-- [Dynamic scaling for Amazon EC2 Auto Scaling](https://docs.aws.amazon.com/autoscaling/ec2/userguide/as-scale-based-on-demand.html)
 - [Multi-AZ deployments for Amazon RDS](https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/Concepts.MultiAZ.html)
-- [Aurora Global Database](https://docs.aws.amazon.com/AmazonRDS/latest/AuroraUserGuide/aurora-global-database.html)
-- [DynamoDB global tables](https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/GlobalTables.html)
 - [Route 53 routing policies](https://docs.aws.amazon.com/Route53/latest/DeveloperGuide/routing-policy.html)
 - [AWS Well-Architected: Reliability Pillar](https://docs.aws.amazon.com/wellarchitected/latest/reliability-pillar/welcome.html)

@@ -19,86 +19,60 @@ tags:
 
 ## ¿Qué es la IA responsable?
 
-La **responsible AI** (IA responsable) es el conjunto de prácticas para que un sistema de IA sea útil **sin causar daño**: que trate a las personas de forma justa, que sea seguro, que diga la verdad, que se pueda explicar y que alguien responda por él. No es un paso al final: se aplica en todo el ciclo (datos, entrenamiento, evaluación, despliegue, monitoreo).
-
-AWS describe la IA responsable en estas **dimensiones**:
+La **responsible AI** (IA responsable) son las prácticas para que un sistema de IA sea útil **sin causar daño**, aplicadas en todo el ciclo (datos, entrenamiento, evaluación, despliegue, monitoreo). Dimensiones según AWS:
 
 | Dimensión | Qué significa | Ejemplo de fallo |
 | --- | --- | --- |
-| **Fairness** (equidad) | Resultados equitativos entre grupos de personas | Un modelo de crédito rechaza más a un grupo por su código postal |
-| **Explainability** (explicabilidad) | Poder entender y explicar por qué el modelo produjo un resultado | Nadie sabe justificar un rechazo ante el regulador |
-| **Privacy and security** (privacidad y seguridad) | Proteger los datos y el modelo | El chatbot revela datos de otro cliente |
-| **Safety** (seguridad, de no causar daño) | Evitar contenido o acciones dañinas | El asistente da instrucciones peligrosas |
-| **Controllability** (controlabilidad) | Poder supervisar y dirigir el comportamiento del sistema | Un agente ejecuta acciones sin posibilidad de detenerlo |
-| **Veracity and robustness** (veracidad y robustez) | Resultados correctos y estables, incluso con entradas inesperadas o adversarias | Alucinaciones; un cambio mínimo en la entrada cambia la decisión |
-| **Governance** (gobierno) | Procesos, roles y responsables definidos | Nadie aprobó poner el modelo en producción |
-| **Transparency** (transparencia) | Comunicar qué hace el sistema, sus límites y que es una IA | El usuario no sabe que habla con un bot |
+| **Fairness** (equidad) | Resultados equitativos entre grupos | Un modelo de crédito rechaza más a un grupo por su código postal |
+| **Explainability** (explicabilidad) | Entender y explicar por qué produjo un resultado | Nadie sabe justificar un rechazo ante el regulador |
+| **Privacy and security** | Proteger los datos y el modelo | El chatbot revela datos de otro cliente |
+| **Safety** (no causar daño) | Evitar contenido o acciones dañinas | El asistente da instrucciones peligrosas |
+| **Controllability** | Supervisar y dirigir el comportamiento | Un agente actúa sin posibilidad de detenerlo |
+| **Veracity and robustness** | Resultados correctos y estables, incluso con entradas adversarias | Alucinaciones; un cambio mínimo en la entrada cambia la decisión |
+| **Governance** | Procesos, roles y responsables definidos | Nadie aprobó poner el modelo en producción |
+| **Transparency** | Comunicar qué hace, sus límites y que es una IA | El usuario no sabe que habla con un bot |
 
-La guía añade **inclusivity** (inclusividad): que el sistema funcione para personas diversas (idiomas, acentos, capacidades).
+La guía añade **inclusivity** (inclusividad): que funcione para personas diversas (idiomas, acentos, capacidades).
 
 ## Sesgo y varianza
-
-### De dónde viene el sesgo
 
 El **bias** (sesgo) casi siempre entra por los **datos** o por cómo se define el problema:
 
 | Tipo | Qué ocurre | Ejemplo |
 | --- | --- | --- |
-| **Sampling bias** (sesgo de muestreo) | Los datos no representan a toda la población | Reconocimiento de voz entrenado casi solo con un acento |
-| **Historical bias** (sesgo histórico) | Los datos reflejan decisiones injustas del pasado | Historial de contrataciones que favorecía a un género |
-| **Measurement / label bias** (de medición o etiquetado) | Las etiquetas son inconsistentes o subjetivas | Etiquetadores que califican distinto el mismo comentario |
-| **Confirmation bias** (de confirmación) | Se buscan o seleccionan datos que confirman lo esperado | Elegir solo métricas que favorecen al modelo |
-| **Automation bias** (de automatización) | Las personas confían en exceso en lo que dice el sistema | Aprobar sin revisar lo que propone la IA |
+| **Sampling bias** (de muestreo) | Los datos no representan a toda la población | Voz entrenada casi solo con un acento |
+| **Historical bias** (histórico) | Los datos reflejan decisiones injustas del pasado | Contrataciones que favorecían a un género |
+| **Measurement / label bias** | Etiquetas inconsistentes o subjetivas | Etiquetadores que califican distinto el mismo comentario |
+| **Confirmation bias** | Se eligen datos que confirman lo esperado | Solo métricas que favorecen al modelo |
+| **Automation bias** | Las personas confían en exceso en el sistema | Aprobar sin revisar lo que propone la IA |
 
-### Efectos del sesgo y la varianza
+**Efectos**: un modelo puede tener buena accuracy global y fallar mucho más en un subgrupo (por eso se hace **subgroup analysis**); el **overfitting** (alta varianza) memoriza también los patrones sesgados, y el **underfitting** (alto sesgo estadístico) falla para todos, a menudo más para los grupos minoritarios. Ver [overfitting y underfitting en el Dominio 1](dominio-1-fundamentos-ia-ml.md#overfitting-y-underfitting).
 
-- **Efecto en grupos demográficos**: un modelo puede tener buena accuracy global y fallar mucho más en un subgrupo. Por eso se hace **subgroup analysis** (análisis por subgrupos).
-- **Inaccuracy**: decisiones erróneas que afectan a personas y al negocio.
-- **Overfitting** (alta varianza): el modelo memoriza patrones del entrenamiento, incluidos los sesgados, y generaliza mal.
-- **Underfitting** (alto sesgo estadístico): el modelo es demasiado simple y falla para todos, a menudo más para los grupos minoritarios.
-
-Ver [overfitting y underfitting en el Dominio 1](dominio-1-fundamentos-ia-ml.md#overfitting-y-underfitting).
-
-### Características de un buen dataset
-
-- **Inclusivity** y **diversity**: representa a todos los grupos y situaciones del uso real.
-- **Curated data sources** (fuentes curadas): origen conocido, limpio y con permisos de uso.
-- **Balanced datasets** (balanceados): proporciones razonables entre clases y grupos, o técnicas para compensar el desbalanceo.
+**Un buen dataset** es **inclusivo y diverso** (representa todos los grupos y situaciones reales), viene de **curated data sources** (origen conocido, limpio y con permisos) y está **balanceado** (o se compensa el desbalanceo).
 
 ## Herramientas para detectar y controlar
 
 ### Amazon Bedrock Guardrails
 
-Aplica **salvaguardas configurables** a las entradas del usuario y a las respuestas del modelo, de forma consistente entre modelos. Se puede usar al invocar un modelo de Bedrock (indicando el ID y la versión del guardrail) o de forma independiente con la API **`ApplyGuardrail`**, incluso para modelos fuera de Bedrock.
+Aplica **salvaguardas configurables** a las entradas y respuestas, de forma consistente entre modelos. Se usa al invocar un modelo de Bedrock (indicando ID y versión del guardrail) o de forma independiente con la API **`ApplyGuardrail`**, incluso para modelos fuera de Bedrock. Puedes definir el **mensaje** que ve el usuario cuando se bloquea algo.
 
 | Filtro | Qué hace | Ejemplo |
 | --- | --- | --- |
-| **Content filters** | Detecta contenido dañino por categorías (Hate, Insults, Sexual, Violence, Misconduct, Prompt Attack) con intensidad configurable, en texto e imágenes | Bloquear insultos en un chat |
-| **Denied topics** (temas denegados) | Bloquea temas que defines en lenguaje natural | Un banco que no quiere dar consejos de inversión |
-| **Word filters** | Bloquea palabras o frases exactas (incluye lista de groserías) | Nombres de la competencia |
-| **Sensitive information filters** | Detecta y **bloquea o enmascara PII** (y patrones propios con regex) | Ocultar números de tarjeta en transcripciones |
-| **Contextual grounding checks** | Detecta respuestas no fundamentadas en la fuente o irrelevantes para la pregunta | Bloquear alucinaciones en un RAG |
-| **Automated Reasoning checks** | Valida la respuesta contra reglas lógicas formales y señala errores o supuestos | Verificar que una respuesta cumple la política de reembolsos |
-
-Además puedes definir el **mensaje** que ve el usuario cuando se bloquea algo.
+| **Content filters** | Contenido dañino por categorías (Hate, Insults, Sexual, Violence, Misconduct, Prompt Attack) con intensidad configurable, en texto e imágenes | Bloquear insultos en un chat |
+| **Denied topics** | Bloquea temas que defines en lenguaje natural | Un banco que no da consejos de inversión |
+| **Word filters** | Palabras o frases exactas (incluye lista de groserías) | Nombres de la competencia |
+| **Sensitive information filters** | Detecta y **bloquea o enmascara PII** (y regex propios) | Ocultar números de tarjeta |
+| **Contextual grounding checks** | Respuestas no fundamentadas en la fuente o irrelevantes | Bloquear alucinaciones en un RAG |
+| **Automated Reasoning checks** | Valida la respuesta contra reglas lógicas formales | Verificar que cumple la política de reembolsos |
 
 ### Amazon SageMaker Clarify
 
-Ayuda a **detectar sesgo** y a **explicar predicciones** en modelos de ML:
+- **Pre-training bias**: métricas sobre los datos antes de entrenar (*class imbalance*, diferencia en proporciones de etiquetas positivas).
+- **Post-training bias**: métricas sobre las predicciones por grupo.
+- **Explainability**: importancia de cada *feature* con valores **SHAP**, global y por predicción.
+- **Evaluación de FMs**: exactitud, toxicidad, robustez, estereotipos.
 
-- **Pre-training bias**: métricas sobre los datos antes de entrenar (por ejemplo, *class imbalance*, desbalanceo entre grupos; diferencia en proporciones de etiquetas positivas).
-- **Post-training bias**: métricas sobre las predicciones del modelo por grupo.
-- **Explainability**: atribución de importancia de cada *feature* con valores **SHAP** (por qué el modelo decidió esto), a nivel global y por predicción.
-- **Evaluación de FMs**: también puede evaluar modelos generativos (exactitud, toxicidad, robustez, estereotipos).
-
-Combinado con **SageMaker Model Monitor**, vigila en producción el **bias drift** (deriva del sesgo) y el **feature attribution drift** (cambios en qué variables pesan).
-
-### Otras prácticas y herramientas
-
-- **Analizar la calidad de las etiquetas** (*label quality*): revisar consistencia entre etiquetadores, por ejemplo con **SageMaker Ground Truth**.
-- **Human audits** (auditorías humanas) y **revisión humana** de predicciones de baja confianza con **Amazon Augmented AI (A2I)**.
-- **Subgroup analysis**: métricas separadas por grupo.
-- **Amazon Bedrock Evaluations**: evaluar modelos en robustez, toxicidad y exactitud antes de elegir uno.
+Con **SageMaker Model Monitor** vigila en producción el **bias drift** y el **feature attribution drift**. Otras prácticas: revisar **label quality** (consistencia entre etiquetadores, con **SageMaker Ground Truth**), **human audits** y revisión humana de predicciones de baja confianza con **Amazon Augmented AI (A2I)**, **subgroup analysis** y **Bedrock Evaluations** (robustez, toxicidad y exactitud antes de elegir modelo).
 
 !!! tip "En el examen"
     - "Bloquear temas", "filtrar contenido dañino", "enmascarar PII en prompts y respuestas" → **Bedrock Guardrails**.
@@ -108,69 +82,49 @@ Combinado con **SageMaker Model Monitor**, vigila en producción el **bias drift
 
 ## Selección responsable de un modelo
 
-Además de calidad y costo, la guía pide considerar:
-
-- **Environmental considerations / sustainability** (sostenibilidad): entrenar y servir modelos grandes consume mucha energía. Elige el modelo más pequeño que cumpla, reutiliza FMs en vez de entrenar desde cero, usa distillation, inferencia batch cuando sea posible y hardware eficiente (AWS Trainium e Inferentia, instancias Graviton para tareas no aceleradas). Ver el pilar de sostenibilidad en [Well-Architected](../../../cloud/fundamentos/well-architected.md).
-- **Licencias** y origen de los datos de entrenamiento del modelo.
-- **AWS AI Service Cards**: documentos de AWS que explican usos previstos, limitaciones y prácticas de diseño responsable de sus servicios y modelos (por ejemplo, Amazon Nova).
+- **Sustainability** (sostenibilidad): el modelo más pequeño que cumpla, reutilizar FMs en vez de entrenar desde cero, distillation, inferencia batch y hardware eficiente (Trainium, Inferentia, Graviton). Ver el pilar de sostenibilidad en [Well-Architected](../../../cloud/fundamentos/well-architected.md).
+- **Licencias** y origen de los datos de entrenamiento.
+- **AWS AI Service Cards**: documentos de AWS con usos previstos, limitaciones y prácticas de diseño responsable de sus servicios y modelos (por ejemplo, Amazon Nova).
 
 ## Riesgos legales de la IA generativa
 
 | Riesgo | Qué puede pasar | Mitigación |
 | --- | --- | --- |
-| **Intellectual property infringement** (infracción de propiedad intelectual) | El contenido generado reproduce material protegido; reclamaciones de autores | Revisar licencias del modelo y de los datos, filtros, revisión humana; algunos proveedores ofrecen indemnización (revisa condiciones) |
-| **Biased model outputs** (resultados sesgados) | Discriminación, sanciones regulatorias | Evaluar por subgrupos, Clarify, Guardrails |
-| **Loss of customer trust** (pérdida de confianza) | Daño reputacional por respuestas ofensivas o erróneas | Guardrails, transparencia, canales de reporte |
-| **End user risk** (riesgo para el usuario final) | Consejos dañinos (médicos, financieros) | Temas denegados, avisos, derivar a una persona |
-| **Hallucinations** | Información falsa con consecuencias legales o contractuales | RAG, grounding checks, citas, revisión humana |
+| **Intellectual property infringement** | El contenido reproduce material protegido | Revisar licencias, filtros, revisión humana; algunos proveedores ofrecen indemnización (revisa condiciones) |
+| **Biased model outputs** | Discriminación, sanciones | Evaluar por subgrupos, Clarify, Guardrails |
+| **Loss of customer trust** | Daño reputacional | Guardrails, transparencia, canales de reporte |
+| **End user risk** | Consejos dañinos (médicos, financieros) | Temas denegados, avisos, derivar a una persona |
+| **Hallucinations** | Información falsa con consecuencias legales | RAG, grounding checks, citas, revisión humana |
 
-Ver cómo se registran y gestionan estos riesgos en [Gobierno y riesgo de TI](../../../negocio/gobierno-riesgo-ti.md).
+Gestión de estos riesgos: [Gobierno y riesgo de TI](../../../negocio/gobierno-riesgo-ti.md).
 
 ## Transparencia y explicabilidad
 
-### Modelos transparentes vs opacos
-
 | | Transparentes / interpretables | Opacos (*black box*) |
 | --- | --- | --- |
-| Ejemplos | Regresión lineal y logística, árboles de decisión pequeños | Redes neuronales profundas, LLMs, *ensembles* grandes |
-| Cómo se explican | Se lee directamente (coeficientes, reglas) | Con técnicas *post hoc*: SHAP, PDP (*partial dependence plots*), ejemplos contrafactuales |
-| Rendimiento | Suelen rendir menos en problemas complejos | Suelen rendir más |
+| Ejemplos | Regresión lineal y logística, árboles pequeños | Redes neuronales profundas, LLMs, *ensembles* grandes |
+| Cómo se explican | Se leen directamente (coeficientes, reglas) | Técnicas *post hoc*: SHAP, PDP, contrafactuales |
+| Rendimiento | Menor en problemas complejos | Mayor |
 | Uso típico | Decisiones reguladas | Visión, lenguaje, generación |
 
-- **Interpretability** (interpretabilidad): entender el **mecanismo interno** del modelo.
-- **Explainability** (explicabilidad): poder explicar **un resultado** en términos que una persona entienda, aunque el modelo sea opaco.
+**Interpretability** es entender el **mecanismo interno**; **explainability** es explicar **un resultado** en términos que una persona entienda, aunque el modelo sea opaco.
 
-### Herramientas para la transparencia
+**Herramientas**: **SageMaker Model Cards** (uso previsto, datos, métricas, riesgos y consideraciones éticas; para auditoría y gobierno), **SageMaker Clarify** (SHAP e informes de sesgo), **Bedrock Evaluations** (resultados comparables) y **modelos, datos y licencias abiertos** (permiten inspeccionar pesos y licencia).
 
-- **Amazon SageMaker Model Cards**: documento estandarizado de cada modelo: uso previsto, datos de entrenamiento, métricas de evaluación, riesgos y consideraciones éticas. Sirve para auditoría y gobierno.
-- **SageMaker Clarify**: explicaciones con SHAP e informes de sesgo.
-- **Amazon Bedrock Evaluations**: resultados de evaluación comparables entre modelos.
-- **Open source models, data y licensing**: los modelos abiertos permiten inspeccionar pesos, a veces datos y la licencia; aumentan la transparencia frente a modelos cerrados.
+**Trade-offs**: un modelo más interpretable puede rendir menos (*interpretability* vs *performance*); publicar todos los detalles (datos, pesos, filtros) aumenta la transparencia pero puede facilitar ataques o *jailbreaks*. Se busca un equilibrio documentado según el riesgo del caso.
 
-### Trade-offs entre seguridad y transparencia
-
-- Un modelo **más interpretable** puede rendir menos; uno **más potente** suele ser menos explicable. Hay que medir ambos (*interpretability* vs *performance*) y decidir según el riesgo del caso.
-- Publicar **todos** los detalles de un modelo (datos, pesos, filtros) aumenta la transparencia pero puede facilitar ataques o *jailbreaks*; ocultarlo todo reduce la confianza. Se busca un equilibrio documentado.
-
-### Diseño centrado en las personas
-
-El **human-centered design** (diseño centrado en las personas) para IA explicable incluye:
-
-- **AI decision transparency**: avisar de que interviene una IA y explicar en lenguaje claro por qué decidió algo.
-- **User-feedback mechanisms** (mecanismos de retroalimentación): pulgar arriba/abajo, reportar errores, apelar una decisión.
-- Supervisión humana en decisiones de alto impacto (*human-in-the-loop*).
-- Explicaciones adaptadas a la audiencia: no es lo mismo un científico de datos que un cliente.
+**Human-centered design** (diseño centrado en las personas): avisar de que interviene una IA y explicar en lenguaje claro (*AI decision transparency*), **user-feedback mechanisms** (pulgar arriba/abajo, reportar, apelar), supervisión humana en decisiones de alto impacto y explicaciones adaptadas a la audiencia.
 
 ## Casos de uso
 
-1. **Un banco usa un chatbot de GenAI y no quiere que hable de recomendaciones de inversión ni que muestre números de cuenta.** → **Bedrock Guardrails** con un *denied topic* y un filtro de información sensible.
-2. **Una empresa de RR. HH. sospecha que su modelo de selección de CVs favorece a un grupo.** → **SageMaker Clarify** para métricas de sesgo pre y post entrenamiento y análisis por subgrupos.
-3. **Un regulador pide documentación de cada modelo en producción: uso previsto, datos y métricas.** → **SageMaker Model Cards**.
-4. **Una aseguradora debe explicar a cada cliente por qué su prima subió.** → Explicaciones por predicción con **SHAP** (Clarify) o un modelo interpretable.
-5. **Un modelo de crédito empezó a rechazar más a un grupo seis meses después del despliegue.** → **Model Monitor** con *bias drift* de Clarify, y reentrenar con datos revisados.
-6. **Un equipo debe elegir un FM y quiere minimizar su huella de carbono.** → El modelo más pequeño que cumpla, distillation e inferencia en hardware eficiente.
-7. **Un asistente de RAG a veces da información que no está en los documentos.** → **Contextual grounding check** de Guardrails.
-8. **Una app de reconocimiento de voz falla más con ciertos acentos.** → Problema de **dataset no inclusivo**: ampliar datos con diversidad de hablantes y evaluar por subgrupo.
+1. Chatbot de banco que no debe recomendar inversiones ni mostrar números de cuenta → **Guardrails**: *denied topic* + filtro de información sensible.
+2. Modelo de selección de CVs que parece favorecer a un grupo → **SageMaker Clarify** (sesgo pre y post entrenamiento, subgrupos).
+3. Regulador que pide documentación de cada modelo → **SageMaker Model Cards**.
+4. Explicar a cada cliente por qué subió su prima → **SHAP** (Clarify) o un modelo interpretable.
+5. Modelo de crédito que rechaza más a un grupo seis meses después → **Model Monitor** con *bias drift* y reentrenar.
+6. Elegir un FM minimizando la huella de carbono → modelo más pequeño, distillation, hardware eficiente.
+7. Asistente de RAG que da información que no está en los documentos → **contextual grounding check**.
+8. Reconocimiento de voz que falla con ciertos acentos → **dataset no inclusivo**: ampliar diversidad y evaluar por subgrupo.
 
 ## Preguntas de práctica
 
@@ -252,7 +206,7 @@ El **human-centered design** (diseño centrado en las personas) para IA explicab
 | Sostenibilidad y pilares de diseño | [Well-Architected Framework](../../../cloud/fundamentos/well-architected.md) |
 | Gestión de riesgo, proveedores y licencias | [Gobierno y riesgo de TI](../../../negocio/gobierno-riesgo-ti.md) |
 | Marcos de cumplimiento | [Cumplimiento y gobierno](../../../devsecops/gobierno-y-respuesta/cumplimiento.md) |
-| Riesgo y threat modeling | [Fundamentos DevSecOps](../../../devsecops/fundamentos-devsecops.md) |
+| Guardrails y filtros en AWS, Azure y GCP | [Seguridad de servicios de IA generativa](../../../cloud/seguridad/seguridad-servicios-ia.md) |
 | Dominio anterior y siguiente | [Dominio 3](dominio-3-aplicaciones-modelos-fundacionales.md) · [Dominio 5](dominio-5-seguridad-cumplimiento-gobierno.md) |
 
 ## Referencias
@@ -263,4 +217,3 @@ El **human-centered design** (diseño centrado en las personas) para IA explicab
 - [Amazon SageMaker Clarify](https://docs.aws.amazon.com/sagemaker/latest/dg/clarify-configure-processing-jobs.html)
 - [Amazon SageMaker Model Cards](https://docs.aws.amazon.com/sagemaker/latest/dg/model-cards.html)
 - [AWS AI Service Cards](https://aws.amazon.com/ai/responsible-ai/resources/)
-- [Amazon Augmented AI (A2I)](https://docs.aws.amazon.com/sagemaker/latest/dg/a2i-use-augmented-ai-a2i-human-review-loops.html)

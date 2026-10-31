@@ -9,7 +9,7 @@ tags:
 
 # Objetivo 3: Core Terraform workflow
 
-> El ciclo Write → Plan → Apply y los comandos que lo implementan: `init`, `validate`, `plan`, `apply`, `destroy` y `fmt`, con sus opciones más preguntadas y salidas reales.
+> El ciclo Write → Plan → Apply y los comandos que lo implementan: `init`, `validate`, `plan`, `apply`, `destroy` y `fmt`, con sus opciones más preguntadas.
 
 !!! info "Qué evalúa este objetivo"
     Sub-objetivos oficiales de la versión 004:
@@ -26,25 +26,7 @@ tags:
 
 ## 3a. El workflow: Write, Plan, Apply
 
-HashiCorp llama **core workflow** (flujo de trabajo principal) a tres pasos:
-
-| Paso | Qué haces | Comandos |
-| --- | --- | --- |
-| **Write** (escribir) | Editas los `.tf` como cualquier código, en una rama de Git | editor, `terraform fmt`, `terraform validate` |
-| **Plan** (planificar) | Previsualizas los cambios y los revisas (tú o tu equipo en un pull request) | `terraform plan` |
-| **Apply** (aplicar) | Ejecutas los cambios revisados | `terraform apply` |
-
-`terraform init` va **antes** de todo, una vez por directorio (y otra vez cuando cambian providers, módulos o backend).
-
-```mermaid
-flowchart LR
-    I[init] --> W[Write<br/>fmt, validate]
-    W --> P[Plan]
-    P -->|revisión| A[Apply]
-    A -->|siguiente cambio| W
-```
-
-El flujo es el mismo en tres contextos, lo que cambia es quién revisa y dónde corre:
+El **core workflow** es **Write** (editar `.tf`, `fmt`, `validate`) → **Plan** (revisar los cambios) → **Apply** (ejecutarlos). `terraform init` va **antes** de todo, una vez por directorio y otra vez cuando cambian providers, módulos o backend. Diagrama y lectura del plan en [Workflow (ciclo de trabajo)](../../../devops/iac/terraform-basico.md#workflow-ciclo-de-trabajo).
 
 | Contexto | Write | Plan | Apply |
 | --- | --- | --- | --- |
@@ -54,30 +36,7 @@ El flujo es el mismo en tres contextos, lo que cambia es quién revisa y dónde 
 
 ## 3b. terraform init
 
-Prepara el **working directory** (directorio de trabajo). Es **seguro ejecutarlo varias veces**.
-
-| Qué hace | Detalle |
-| --- | --- |
-| Inicializa el **backend** | Configura dónde vive el state (`local` por defecto) |
-| Descarga **módulos** | En `.terraform/modules/` |
-| Instala **providers** | En `.terraform/providers/`, respetando el lock file |
-| Crea o actualiza `.terraform.lock.hcl` | Con las versiones elegidas y sus hashes |
-
-Salida real (Terraform 1.12.2):
-
-```console
-$ terraform init
-Initializing the backend...
-Initializing modules...
-- etiquetas in modules\etiquetas
-Initializing provider plugins...
-- Finding hashicorp/random versions matching "~> 3.7"...
-- Installed hashicorp/random v3.9.1 (signed by HashiCorp)
-Terraform has created a lock file .terraform.lock.hcl to record the provider
-selections it made above. Include this file in your version control repository
-...
-Terraform has been successfully initialized!
-```
+Prepara el **working directory**: inicializa el **backend** (`local` por defecto), descarga **módulos** (`.terraform/modules/`), instala **providers** respetando el lock file y crea o actualiza `.terraform.lock.hcl`. Es **seguro ejecutarlo varias veces**.
 
 | Opción | Para qué |
 | --- | --- |
@@ -95,48 +54,17 @@ Terraform has been successfully initialized!
 
 ## 3c. terraform validate
 
-Comprueba que la configuración es **sintácticamente válida y coherente**: tipos de argumentos, referencias a variables o recursos que existen, atributos obligatorios.
+Comprueba que la configuración es **sintácticamente válida y coherente**: tipos de argumentos, referencias que existen, atributos obligatorios.
 
-```console
-$ terraform validate
-Success! The configuration is valid.
-```
-
-- **No** accede a APIs remotas, **no** lee el state ni valida valores reales de la nube (si un tipo de instancia no existe, `validate` no lo sabe).
-- Requiere que el directorio esté inicializado (necesita los esquemas de los providers). En CI puedes usar `terraform init -backend=false` y luego `validate`.
-- `-json` produce salida legible por máquinas (para editores y pipelines).
+- **No** accede a APIs remotas, **no** lee el state ni valida valores reales de la nube.
+- Requiere el directorio inicializado (necesita los esquemas de los providers). En CI: `terraform init -backend=false` y luego `validate`. `-json` da salida para editores y pipelines.
 
 !!! tip "En el examen"
     `validate` detecta **errores de sintaxis y de referencias**; no detecta errores que solo la API conoce (nombre de bucket repetido, cuota agotada). Esos aparecen en `apply`.
 
 ## 3d. terraform plan
 
-Genera un **execution plan** (plan de ejecución):
-
-1. Lee el state actual y hace **refresh** de los objetos reales.
-2. Compara la configuración con ese estado.
-3. Construye el **resource graph** (grafo de recursos) para ordenar las acciones y paralelizar lo independiente.
-4. Muestra las acciones propuestas **sin ejecutarlas**.
-
-Salida real del laboratorio (recortada):
-
-```console
-$ terraform plan -out=lab.tfplan
-Terraform used the selected providers to generate the following execution
-plan. Resource actions are indicated with the following symbols:
-  + create
- <= read (data resources)
-
-  # local_file.saludo will be created
-  # random_pet.nombre will be created
-
-Plan: 2 to add, 0 to change, 0 to destroy.
-
-Saved the plan to: lab.tfplan
-
-To perform exactly these actions, run the following command to apply:
-    terraform apply "lab.tfplan"
-```
+Lee el state y hace **refresh** de los objetos reales, compara con la configuración, construye el **resource graph** (grafo de recursos, que `terraform graph` muestra en formato DOT) para ordenar y paralelizar, y muestra las acciones **sin ejecutarlas**.
 
 | Símbolo | Acción |
 | --- | --- |
@@ -158,18 +86,6 @@ To perform exactly these actions, run the following command to apply:
 | `-target=DIRECCIÓN` | Limita el plan a un recurso y sus dependencias. Solo para casos excepcionales |
 | `-detailed-exitcode` | Exit code 0 = sin cambios, 1 = error, 2 = hay cambios (detectar drift en CI) |
 
-Ver el grafo que usa el plan (salida real de `terraform graph`, formato DOT):
-
-```console
-$ terraform graph
-digraph G {
-  rankdir = "RL";
-  ...
-  "data.archive_file.paquete" -> "local_file.config";
-  "local_file.config" -> "random_pet.proyecto";
-}
-```
-
 !!! tip "En el examen"
     - `plan` **no modifica** la infraestructura ni el state guardado.
     - Si aplicas un plan guardado y el state cambió desde que se generó, Terraform lo rechaza (*stale plan*, plan obsoleto).
@@ -178,20 +94,6 @@ digraph G {
 ## 3e. terraform apply
 
 Sin argumentos, `apply` **genera un plan nuevo**, lo muestra y pide confirmación (`yes`). Con un archivo de plan, aplica ese plan **sin preguntar**.
-
-```console
-$ terraform apply lab.tfplan
-random_pet.nombre: Creating...
-random_pet.nombre: Creation complete after 0s [id=dev-patient-gazelle]
-local_file.saludo: Creating...
-local_file.saludo: Creation complete after 0s [id=4b4fbf7b3f6de9d207daea53d7e21f338900eb19]
-
-Apply complete! Resources: 2 added, 0 changed, 0 destroyed.
-
-Outputs:
-
-nombre = "dev-patient-gazelle"
-```
 
 | Opción | Para qué |
 | --- | --- |
@@ -206,66 +108,34 @@ nombre = "dev-patient-gazelle"
 
 ## 3f. terraform destroy
 
-Destruye **todos** los recursos gestionados por la configuración en el workspace actual, en orden inverso de dependencias. Es un alias de `terraform apply -destroy`.
+Destruye **todos** los recursos gestionados por la configuración en el workspace actual, en orden inverso de dependencias. Es un alias de `terraform apply -destroy` (y `terraform plan -destroy` lo previsualiza).
 
-```console
-$ terraform plan -destroy
-Plan: 0 to add, 0 to change, 5 to destroy.
-$ terraform destroy -auto-approve
-random_pet.proyecto: Destroying... [id=lab-dev-massive-koala]
-random_pet.proyecto: Destruction complete after 0s
-Destroy complete! Resources: 5 destroyed.
-```
-
-- No toca recursos que no están en el state (creados a mano, o sacados con `state rm` o `removed`).
-- Los archivos que generan **data sources** (como el `.zip` de `archive_file` del laboratorio) **no** se borran: no son recursos gestionados. En la nube pasa lo mismo con todo lo que no crea Terraform.
+- No toca recursos que no están en el state (creados a mano, o sacados con `state rm` o `removed`), ni archivos que generan **data sources** (como el `.zip` de `archive_file`).
 - Para destruir **solo** un recurso: quítalo del código y aplica, o en emergencias `terraform destroy -target=DIRECCIÓN`.
 - `lifecycle { prevent_destroy = true }` hace fallar cualquier plan que destruya ese recurso.
 
 ## 3g. terraform fmt
 
-Reescribe los archivos al **estilo canónico** de HCL: indentación de 2 espacios, alineación de los `=`, espacios. No cambia el significado.
-
-Salida real con un archivo desalineado:
-
-```console
-$ terraform fmt -check -recursive
-main.tf
-variables.tf
-$ echo $?
-3
-$ terraform fmt -diff
---- old/variables.tf
-+++ new/variables.tf
-@@ -12,8 +12,8 @@
-   type = map(object({
--    puerto   = number
--    publico  = optional(bool, false)
-+    puerto  = number
-+    publico = optional(bool, false)
-   }))
-```
+Reescribe los archivos al **estilo canónico** de HCL (2 espacios, `=` alineados). No cambia el significado.
 
 | Opción | Para qué |
 | --- | --- |
 | (sin opciones) | Formatea los `.tf` del directorio actual y lista los archivos modificados |
 | `-recursive` | Incluye subdirectorios (módulos) |
-| `-check` | No modifica: sale con código distinto de 0 si algo necesita formato (ideal en CI) |
+| `-check` | No modifica: sale con código distinto de 0 si algo necesita formato (ideal en CI; en la prueba real devolvió 3) |
 | `-diff` | Muestra las diferencias (además de aplicarlas, salvo con `-check`) |
 
 Convenciones de estilo que el examen puede mencionar: 2 espacios, alinear `=` de argumentos consecutivos, argumentos simples antes que bloques anidados, meta-argumentos (`count`, `for_each`) al principio del bloque y `lifecycle` al final; nombres de recursos en `snake_case`.
 
 ## Casos de uso
 
-1. **El pipeline debe fallar si alguien sube código sin formatear.** `terraform fmt -check -recursive` como primer paso del job.
-2. **Validar en CI sin credenciales de la nube.** `terraform init -backend=false` y `terraform validate`.
-3. **Aplicar exactamente lo que se aprobó en el pull request.** `terraform plan -out=tfplan` en el job de plan, guardar el archivo como artifact protegido y `terraform apply tfplan` en el job de apply.
-4. **Un servidor quedó en mal estado y hay que recrearlo sin cambiar código.** `terraform apply -replace=aws_instance.web`.
-5. **El entorno de pruebas debe borrarse cada noche.** Job programado con `terraform destroy -auto-approve` en ese directorio/workspace, con alerta si falla.
-6. **Detectar si alguien cambió la infraestructura a mano.** `terraform plan -detailed-exitcode` programado; exit code 2 significa cambios pendientes.
-7. **Añadiste un módulo nuevo y `plan` da error de "Module not installed".** Ejecuta `terraform init` de nuevo.
-
-Más sobre cómo encaja en un pipeline en [Pipeline CI/CD con GitHub Actions](../../../devops/ci-cd/ci-cd-github-actions.md) e [Infrastructure as Code: panorama y herramientas](../../../devops/iac/infraestructura-como-codigo.md#flujo-en-cicd).
+1. **El pipeline debe fallar con código sin formatear** → `terraform fmt -check -recursive` como primer paso.
+2. **Validar en CI sin credenciales de la nube** → `terraform init -backend=false` y `terraform validate`.
+3. **Aplicar exactamente lo aprobado en el PR** → `plan -out=tfplan`, guardarlo como artifact protegido y `apply tfplan`.
+4. **Recrear un servidor en mal estado sin cambiar código** → `terraform apply -replace=aws_instance.web`.
+5. **Borrar el entorno de pruebas cada noche** → job programado con `terraform destroy -auto-approve`.
+6. **Detectar cambios manuales** → `terraform plan -detailed-exitcode` programado; exit code 2 = cambios.
+7. **`plan` da "Module not installed" tras añadir un módulo** → `terraform init` de nuevo.
 
 ## Preguntas de práctica
 
@@ -337,7 +207,7 @@ Más sobre cómo encaja en un pipeline en [Pipeline CI/CD con GitHub Actions](..
 ## Para profundizar
 
 - [Infrastructure as Code con Terraform](../../../devops/iac/terraform-basico.md#workflow-ciclo-de-trabajo): workflow, lectura del plan y guardar el plan.
-- [Pipeline CI/CD con GitHub Actions](../../../devops/ci-cd/ci-cd-github-actions.md) y [Seguridad del pipeline](../../../devsecops/identidades-y-pipeline/seguridad-pipeline.md): plan en el PR, aprobaciones, permisos del runner.
+- [Infrastructure as Code: panorama y herramientas](../../../devops/iac/infraestructura-como-codigo.md#flujo-en-cicd) y [Pipeline CI/CD con GitHub Actions](../../../devops/ci-cd/ci-cd-github-actions.md): plan en el PR y aprobaciones.
 - [Seguridad de IaC](../../../devsecops/infraestructura-y-contenedores/seguridad-iac.md#drift-detection): `-detailed-exitcode` para drift.
 - [Guía de comandos de Terraform](../../../recursos/comandos/terraform.md).
 - Siguiente: [Objetivo 4: Terraform configuration](objetivo-4-configuracion.md).
@@ -346,10 +216,7 @@ Más sobre cómo encaja en un pipeline en [Pipeline CI/CD con GitHub Actions](..
 
 - [The core Terraform workflow](https://developer.hashicorp.com/terraform/intro/core-workflow)
 - [Command: init](https://developer.hashicorp.com/terraform/cli/commands/init)
-- [Command: validate](https://developer.hashicorp.com/terraform/cli/commands/validate)
 - [Command: plan](https://developer.hashicorp.com/terraform/cli/commands/plan)
 - [Command: apply](https://developer.hashicorp.com/terraform/cli/commands/apply)
-- [Command: destroy](https://developer.hashicorp.com/terraform/cli/commands/destroy)
 - [Command: fmt](https://developer.hashicorp.com/terraform/cli/commands/fmt)
 - [Style guide](https://developer.hashicorp.com/terraform/language/style)
-- [Resource graph](https://developer.hashicorp.com/terraform/internals/graph)

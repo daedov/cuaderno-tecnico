@@ -13,23 +13,14 @@ tags:
 
 > Mapa de las certificaciones más pedidas en cloud, DevOps, Kubernetes, seguridad, redes y gestión: para qué rol sirve cada una, qué demuestra, qué pide antes, cuánto cuesta y cuáles se retiraron o cambian pronto.
 
-## ¿Qué es esta nota?
-
-El cuaderno tiene guías completas para seis certificaciones (ver [Certificaciones](index.md)). Esta nota es el **mapa del resto**: no explica temarios, sino que te ayuda a decidir **cuál conviene después** según el rol al que apuntas (ver [Roles profesionales](roles-profesionales.md)).
-
-Cómo leer las tablas:
-
-- **Formato**: *multiple choice* (opción múltiple, teórico) o **performance-based** (práctico en vivo: resuelves tareas reales en una terminal o un entorno de laboratorio). Los prácticos pesan más ante un empleador porque cuesta más aprobarlos sin saber hacer.
-- **Objetivo profesional**: resumen del perfil de candidato oficial (*target candidate* / *audience profile*): para qué rol está pensada y qué demuestra.
-- **Costo**: precio del examen en USD en Estados Unidos, sin impuestos. Varía por país, por promociones y con el tiempo.
-- **Validez**: cuánto dura antes de renovar.
+Es el **mapa del resto** de certificaciones (las seis con guía completa están en [Certificaciones](index.md)): no explica temarios, ayuda a decidir **cuál conviene después** según el rol (ver [Roles profesionales](roles-profesionales.md)). **Formato** práctico (*performance-based*, tareas reales en una terminal) pesa más ante un empleador que el teórico (*multiple choice*). **Costo**: precio en USD en Estados Unidos, sin impuestos; varía por país y con el tiempo.
 
 !!! warning "Datos verificados en octubre de 2026"
-    Códigos, precios, nombres y fechas de retiro se revisaron en las páginas oficiales en **octubre de 2026**. Cambian a menudo (este año hubo muchos retiros y renombres): **antes de pagar, abre el enlace oficial**. Lo marcado como "verificar" no se pudo confirmar en una fuente oficial.
+    Códigos, precios, nombres y fechas de retiro se revisaron en las páginas oficiales en **octubre de 2026** y cambian a menudo: **antes de pagar, abre el enlace oficial**. Lo marcado como "verificar" no se pudo confirmar en una fuente oficial.
 
 ## Kubernetes y cloud native (CNCF / Linux Foundation)
 
-Las emite la **Linux Foundation** junto con la **Cloud Native Computing Foundation (CNCF)**. Son **agnósticas al proveedor**: sirven igual si trabajas con EKS, AKS o GKE. Las tres "CK" (CKA, CKAD, CKS) son **prácticas en vivo** de 2 horas en una terminal con clústeres reales, y por eso son de las más valoradas en ofertas de DevOps y Platform Engineering. Todas se presentan en línea con supervisión e incluyen **un reintento**; tienes 12 meses desde la compra para presentar.
+Emitidas por la **Linux Foundation** con la **CNCF**, **agnósticas al proveedor** (EKS, AKS o GKE). CKA, CKAD y CKS son **prácticas en vivo** de 2 horas con clústeres reales, de las más valoradas en DevOps y Platform. En línea con supervisión, con **un reintento** y 12 meses para presentar desde la compra.
 
 | Certificación | Nivel | Formato | Objetivo profesional | Prerrequisitos recomendados | Costo aprox. | Validez |
 | --- | --- | --- | --- | --- | --- | --- |
@@ -39,7 +30,7 @@ Las emite la **Linux Foundation** junto con la **Cloud Native Computing Foundati
 | [CKA – Certified Kubernetes Administrator](https://training.linuxfoundation.org/certification/certified-kubernetes-administrator-cka/) | Intermediate | **Práctico en vivo**, 2 h | Administradores de clústeres: instalación y upgrade, networking, storage, troubleshooting de nodos y pods, RBAC. La más pedida en ofertas de DevOps/SRE/Platform | Linux sólido, redes, experiencia con `kubectl` | 445 USD | 2 años |
 | [CKS – Certified Kubernetes Security Specialist](https://training.linuxfoundation.org/certification/certified-kubernetes-security-specialist/) | Intermediate (la más difícil de las tres) | **Práctico en vivo**, 2 h | Seguridad de clústeres y cargas: hardening, network policies, admission control, escaneo de imágenes, runtime security con Falco ([Seguridad de Kubernetes](../devsecops/infraestructura-y-contenedores/seguridad-kubernetes.md)) | **Haber aprobado la CKA** (obligatorio) | 445 USD | 2 años |
 
-Otras certificaciones CNCF de nivel asociado (teóricas, **250 USD**, vigentes en el [catálogo oficial](https://training.linuxfoundation.org/certification-catalog/)):
+Otras de nivel asociado (teóricas, **250 USD**, vigentes en el [catálogo oficial](https://training.linuxfoundation.org/certification-catalog/)):
 
 | Certificación | Qué demuestra | Para quién |
 | --- | --- | --- |
@@ -49,11 +40,11 @@ Otras certificaciones CNCF de nivel asociado (teóricas, **250 USD**, vigentes e
 | CCA (Cilium), CAPA (Argo), CBA (Backstage), ICA (Istio) | Una herramienta concreta del ecosistema | Solo si tu equipo usa esa herramienta. Formato de ICA: **verificar** |
 
 !!! info "Kubestronaut y Golden Kubestronaut"
-    No son exámenes, son **reconocimientos** del [programa Kubestronaut](https://training.linuxfoundation.org/resources/kubestronaut-program/): **Kubestronaut** exige tener **las cinco** (KCNA, KCSA, CKA, CKAD y CKS) **vigentes a la vez**; **Golden Kubestronaut** exige todas las certificaciones CNCF más la LFCS (la lista crece cuando sale una certificación nueva; revísala en la página oficial). Útil como meta personal; para un empleador pesan más CKA, CKAD y CKS por separado.
+    Reconocimientos, no exámenes, del [programa Kubestronaut](https://training.linuxfoundation.org/resources/kubestronaut-program/): **Kubestronaut** exige KCNA, KCSA, CKA, CKAD y CKS **vigentes a la vez**; **Golden Kubestronaut**, todas las CNCF más la LFCS. Para un empleador pesan más CKA, CKAD y CKS por separado.
 
 ## AWS: el resto del catálogo
 
-Además de las tres con guía en el cuaderno ([Cloud Practitioner](aws/cloud-practitioner/resumen-examen.md), [AI Practitioner](aws/ai-practitioner/resumen-examen.md) y [Solutions Architect – Associate](aws/solutions-architect-associate/resumen-examen.md)), AWS tiene niveles **Associate**, **Professional** y **Specialty**. Todas son **teóricas** (opción múltiple y respuesta múltiple), se presentan en Pearson VUE o en línea y valen **3 años**. Ninguna tiene prerrequisitos obligatorios. 2026 trae **varias versiones nuevas**: revisa el código vigente al agendar.
+Además de las tres con guía ([Cloud Practitioner](aws/cloud-practitioner/resumen-examen.md), [AI Practitioner](aws/ai-practitioner/resumen-examen.md) y [Solutions Architect – Associate](aws/solutions-architect-associate/resumen-examen.md)), AWS tiene niveles **Associate**, **Professional** y **Specialty**. Todas teóricas, sin prerrequisitos obligatorios, válidas **3 años**. 2026 trae varias versiones nuevas: revisa el código al agendar.
 
 | Certificación | Código | Formato | Objetivo profesional | Experiencia recomendada | Costo aprox. |
 | --- | --- | --- | --- | --- | --- |
@@ -72,14 +63,12 @@ Además de las tres con guía en el cuaderno ([Cloud Practitioner](aws/cloud-pra
     - **Machine Learning – Specialty (MLS-C01)**: retirada; último día fue el **31 de marzo de 2026**. AWS orienta a Machine Learning Engineer – Associate.
     - **SysOps Administrator – Associate (SOA-C02)**: retirada el 29 de septiembre de 2025; la sustituye CloudOps Engineer – Associate (SOA-C03).
     - **Data Analytics – Specialty**, **Database – Specialty** y **SAP on AWS – Specialty**: retiradas en abril de 2024.
-    - Quien ya tiene una certificación retirada la conserva hasta su fecha de vencimiento.
 
-!!! note "Microcredentials"
-    AWS lanzó también **microcredentials**: evaluaciones prácticas cortas en un entorno real de AWS (serverless, agentic AI, redes de aplicaciones, respuesta a incidentes). No son certificaciones, pero sí son prácticas: pueden complementar una Associate.
+AWS también ofrece **microcredentials**: evaluaciones prácticas cortas en un entorno real (serverless, agentic AI, redes de aplicaciones, respuesta a incidentes). No son certificaciones, pero complementan una Associate.
 
 ## Microsoft Azure
 
-Microsoft agrupa por niveles **Fundamentals**, **Associate** y **Expert**. Las *Fundamentals* **no vencen**; las *Associate* y *Expert* se renuevan **cada 12 meses gratis** con un *renewal assessment* en Microsoft Learn. Los exámenes pueden incluir laboratorios interactivos y el precio depende del país (en EE. UU., unos **99 USD** las Fundamentals y **165 USD** las Associate/Expert). 2026 fue un año de **muchos retiros**: Microsoft está reorientando el catálogo hacia IA.
+Niveles **Fundamentals** (no vencen), **Associate** y **Expert** (se renuevan **cada 12 meses gratis** con un *renewal assessment* en Microsoft Learn). Pueden incluir laboratorios interactivos. En EE. UU., unos **99 USD** las Fundamentals y **165 USD** las Associate/Expert. 2026 fue un año de **muchos retiros** hacia un catálogo centrado en IA.
 
 | Certificación | Examen | Nivel | Objetivo profesional (según el *audience profile*) | Prerrequisitos | Estado |
 | --- | --- | --- | --- | --- | --- |
@@ -97,11 +86,10 @@ Microsoft agrupa por niveles **Fundamentals**, **Associate** y **Expert**. Las *
     - **AZ-204 / Azure Developer Associate**: retirada (julio de 2026), incluida la renovación. Reemplazo: **AI-200**.
     - **AZ-500 / Azure Security Engineer Associate**: retirada el **31 de agosto de 2026**, incluida la renovación. Reemplazo: **SC-500**.
     - **AI-900**: el examen se retiró; la certificación Azure AI Fundamentals sigue, ahora con **AI-901**.
-    - Si estudias con cursos de 2024–2025, revisa que el código no esté retirado.
 
 ## Google Cloud
 
-Google tiene niveles **Foundational**, **Associate** y **Professional**. Todas son teóricas (opción múltiple y selección múltiple), de 50–60 preguntas, en línea o en centro de pruebas, sin prerrequisitos formales. Las **Foundational** valen **3 años** y las **Professional**, **2 años**; se renuevan con un *renewal exam* más corto o con cursos y *skill badges* en Google Skills. La guía del [Associate Cloud Engineer](google-cloud/associate-cloud-engineer/resumen-examen.md) está en el cuaderno.
+Niveles **Foundational**, **Associate** y **Professional**, todas teóricas (50–60 preguntas), sin prerrequisitos formales. Foundational vale **3 años** y Professional **2 años**; se renuevan con un *renewal exam* corto o con cursos y *skill badges*. La guía del [Associate Cloud Engineer](google-cloud/associate-cloud-engineer/resumen-examen.md) está en el cuaderno.
 
 | Certificación | Nivel | Duración | Objetivo profesional | Experiencia recomendada | Costo aprox. |
 | --- | --- | --- | --- | --- | --- |
@@ -112,12 +100,11 @@ Google tiene niveles **Foundational**, **Associate** y **Professional**. Todas s
 | [Professional Cloud Security Engineer](https://cloud.google.com/learn/certification/cloud-security-engineer) | Professional | 2 h | Diseñar e implementar cargas e infraestructura seguras: acceso, perímetros, protección de datos, operaciones y cumplimiento | 3+ años, 1+ en Google Cloud | 200 USD |
 | [Professional Cloud Network Engineer](https://cloud.google.com/learn/certification/cloud-network-engineer) | Professional | 2 h | VPC, routing, load balancing, Cloud NAT, Cloud DNS, conectividad híbrida y multicloud, seguridad de red | 3+ años, 1+ en Google Cloud | 200 USD |
 
-!!! note "Idiomas"
-    Las Professional suelen estar solo en **inglés y japonés**; las Foundational y la Associate también en español. Revísalo en la página antes de agendar.
+Las Professional suelen estar solo en **inglés y japonés**; las Foundational y la Associate también en español.
 
 ## HashiCorp
 
-HashiCorp (ahora parte de IBM) reorganizó sus certificaciones en tres niveles: **Associate** (teórico), **Professional** (teórico, nuevo) y **Advanced** (laboratorio práctico intenso). Las credenciales valen **2 años**. La guía de [Terraform Associate (004)](hashicorp/terraform-associate/resumen-examen.md) está en el cuaderno.
+HashiCorp (ahora parte de IBM) tiene tres niveles: **Associate** (teórico), **Professional** (teórico, nuevo) y **Advanced** (laboratorio práctico). Valen **2 años**.
 
 | Certificación | Formato | Objetivo profesional | Prerrequisitos recomendados | Costo aprox. |
 | --- | --- | --- | --- | --- |
@@ -132,7 +119,7 @@ HashiCorp (ahora parte de IBM) reorganizó sus certificaciones en tres niveles: 
 
 ## Seguridad
 
-Certificaciones de seguridad **no atadas a una nube**. Las de entrada (Security+, CC) dan vocabulario común; CISSP y CCSP son de **experiencia** (piden años de trabajo comprobables) y suelen aparecer en ofertas senior o de gestión.
+**No atadas a una nube.** Security+ y CC dan vocabulario común; CISSP y CCSP piden años de experiencia y aparecen en ofertas senior o de gestión.
 
 | Certificación | Emisor | Formato | Objetivo profesional | Prerrequisitos | Costo aprox. | Validez |
 | --- | --- | --- | --- | --- | --- | --- |
@@ -147,7 +134,7 @@ Certificaciones de seguridad **no atadas a una nube**. Las de entrada (Security+
 
 ## Redes y sistemas
 
-La base de todo lo demás: si no entiendes redes y Linux, cloud y Kubernetes se vuelven memorizar. Estas certificaciones ordenan esos fundamentos (ver [Networking](../networking/index.md) y [Linux, redes y scripting](../devops/fundamentos/linux-redes-scripting.md)).
+Los fundamentos de todo lo demás (ver [Networking](../networking/index.md) y [Linux, redes y scripting](../devops/fundamentos/linux-redes-scripting.md)).
 
 | Certificación | Emisor | Formato | Objetivo profesional | Prerrequisitos | Costo aprox. | Validez |
 | --- | --- | --- | --- | --- | --- | --- |
@@ -160,7 +147,7 @@ La base de todo lo demás: si no entiendes redes y Linux, cloud y Kubernetes se 
 
 ## Gestión, procesos y costos
 
-No son técnicas, pero aparecen en ofertas de operaciones, soporte, FinOps y liderazgo. Conectan con [Negocio TI](../negocio/index.md).
+No técnicas, pero aparecen en ofertas de operaciones, soporte, FinOps y liderazgo (ver [Negocio TI](../negocio/index.md)).
 
 | Certificación | Emisor | Objetivo profesional | Formato y prerrequisitos | Costo aprox. | Validez |
 | --- | --- | --- | --- | --- | --- |
@@ -171,7 +158,7 @@ No son técnicas, pero aparecen en ofertas de operaciones, soporte, FinOps y lid
 
 ## Plataformas DevOps
 
-Certificaciones de la herramienta donde vive el código y el pipeline. Son baratas y rápidas, y demuestran algo concreto si la oferta usa esa plataforma ([CI con GitHub Actions](../devops/ci-cd/ci-cd-github-actions.md), [Integración continua](../devops/ci-cd/integracion-continua.md)).
+Baratas y rápidas; demuestran algo concreto si la oferta usa esa plataforma (ver [CI con GitHub Actions](../devops/ci-cd/ci-cd-github-actions.md)).
 
 | Certificación | Emisor y examen | Objetivo profesional | Formato | Costo aprox. | Validez |
 | --- | --- | --- | --- | --- | --- |
@@ -184,11 +171,11 @@ Certificaciones de la herramienta donde vive el código y el pipeline. Son barat
 | [Docker Certified Associate (DCA)](https://training.mirantis.com/certification/dca-certification-exam/) | Mirantis | Docker y orquestación básica | Teórico, 90 min | 199 USD | 2 años |
 
 !!! note "GitHub y GitLab"
-    GitHub está pasando sus certificaciones al **proceso de renovación de Microsoft** (sin repetir el examen completo); revisa el aviso en cada página. GitLab tiene más certificaciones (Git Associate, Security Specialist, Project Management Associate…); consulta la lista vigente en su página. La **DCA** sigue en la página de Mirantis, pero su temario ha cambiado poco y en ofertas pesa menos que CKAD o CKA.
+    GitHub está pasando sus certificaciones al **proceso de renovación de Microsoft** (sin repetir el examen completo). GitLab tiene más certificaciones (Git Associate, Security Specialist…). La **DCA** sigue vigente, pero en ofertas pesa menos que CKAD o CKA.
 
 ## Rutas sugeridas por rol
 
-Órdenes razonables para alguien que empieza en cada rol. No hace falta hacerlas todas: con **una de entrada y una o dos intermedias** del stack de tu objetivo suele bastar para pasar filtros de CV. Las fichas de cada rol están en [Roles profesionales](roles-profesionales.md).
+Órdenes razonables para empezar en cada rol (lo que hace cada uno está en [Roles profesionales](roles-profesionales.md)). Con **una de entrada y una o dos intermedias** del stack de tus ofertas suele bastar para pasar filtros de CV.
 
 | Rol | Orden recomendado |
 | --- | --- |
@@ -202,58 +189,18 @@ Certificaciones de la herramienta donde vive el código y el pipeline. Son barat
 | [Infrastructure Engineer / SysAdmin](roles-profesionales.md#infrastructure-engineer-sysadmin-moderno) | Linux+ o LFCS → RHCSA → CloudOps Engineer – Associate o AZ-104 → RHCE o Terraform Associate |
 | [Network / Cloud Network Engineer](roles-profesionales.md#network-engineer-y-cloud-network-engineer) | Network+ o CCNA → una Associate cloud → AZ-700 o Professional Cloud Network Engineer |
 | [FinOps Practitioner](roles-profesionales.md#finops-practitioner-analyst) | Cloud Practitioner o Cloud Digital Leader → FinOps Certified Practitioner |
-| [MLOps / AI Platform Engineer](roles-profesionales.md#mlops-ai-platform-engineer) | [AI Practitioner](aws/ai-practitioner/resumen-examen.md) o AI-901 → Machine Learning Engineer – Associate o AI-200 → CKA |
+| [MLOps / AI Platform Engineer](roles-profesionales.md#mlops-ai-platform-engineer) | [AI Practitioner](aws/ai-practitioner/resumen-examen.md) o AI-901 → Machine Learning Engineer – Associate, Google Professional Machine Learning Engineer o AI-200 → CKA |
 | [Support / Cloud Operations](roles-profesionales.md#support-cloud-operations) | Cloud Practitioner o AZ-900 → ITIL Foundation → CloudOps Engineer – Associate o AZ-104 |
 
-```mermaid
-flowchart LR
-    E["Entrada<br/>CLF, AZ-900, KCNA,<br/>Security+, Network+"] --> A["Intermedia<br/>SAA, AZ-104, ACE,<br/>Terraform, CKA/CKAD"]
-    A --> P["Avanzada<br/>Professional, Expert,<br/>CKS, Specialty"]
-    L["Laboratorios y<br/>proyectos propios"] -.-> E
-    L -.-> A
-    L -.-> P
-```
+## Elegir y verificar vigencia
 
-## Cómo elegir sin coleccionar certificaciones
-
-- **Empieza por las ofertas, no por el catálogo.** Busca 15–20 ofertas del puesto que quieres en tu país, anota qué nube y herramientas piden y elige las certificaciones de ese stack. Una nube bien sabida vale más que tres Foundational.
-- **No colecciones.** Muchas certificaciones de entrada sin experiencia práctica dan una señal débil. Mejor una Associate y un proyecto en GitHub que cinco Fundamentals.
-- **Prioriza lo práctico.** CKA, CKAD, CKS, LFCS, RHCSA y los exámenes Advanced de HashiCorp demuestran que *sabes hacer*. Para las teóricas, compénsalo con práctica: usa los [Laboratorios](../laboratorios/index.md) del cuaderno y publica el resultado en tu portafolio.
-- **Cuenta el costo total.** Precio del examen, curso o material, simulacros, reintento y **renovación** (cuota anual en ISC2, CPE, exámenes cada 2–3 años). Pregunta si tu empresa paga exámenes o tiene vouchers.
-- **Una a la vez, con fecha.** Agenda el examen con 4–8 semanas de margen; una fecha fija ordena el estudio.
-
-!!! tip "Qué responde un empleador cuando ve una certificación"
-    Una certificación abre la puerta del filtro de CV; la entrevista técnica y el portafolio deciden. Prepara para cada certificación un ejemplo concreto de algo que construiste con esos conocimientos.
-
-## Cómo verificar la vigencia
-
-1. **Página oficial de la certificación**: es la fuente de verdad para código, precio, idiomas y fecha de retiro. Los blogs y cursos de terceros suelen ir atrasados (o inventar versiones que no existen).
-2. **Anuncios de retiro y versiones nuevas**: AWS los publica en la página del examen y en el [blog de Training and Certification](https://aws.amazon.com/blogs/training-and-certification/); Microsoft, con avisos en cada página de Microsoft Learn y en el *change log* del study guide; Google, en la página de cada certificación; la Linux Foundation, en su [catálogo](https://training.linuxfoundation.org/certification-catalog/).
-3. **Fecha de la guía del examen**: compara la versión del temario (*exam guide*, *study guide*) con la del curso que uses.
-4. **Renovación**: anota la fecha de vencimiento al aprobar. AWS y Google: 2–3 años, renovando con la versión vigente o un examen corto; Microsoft: cada 12 meses, gratis en línea; Linux Foundation: 2 años, repitiendo el examen; ISC2 y CompTIA: educación continua y cuota.
-5. **Si se retira tu certificación**: la conservas hasta su vencimiento, pero no podrás renovarla; planifica pasar a la sustituta.
-
-## Relación con otras secciones
-
-| Enfoque | Qué se mira desde ahí | Nota |
-| --- | --- | --- |
-| Cloud (el control) | Los conceptos que evalúan las certificaciones de cada proveedor, comparados | [IAM](../cloud/identidad-y-seguridad/iam-comparativa.md), [Redes en la nube](../cloud/redes-y-datos/redes.md), [FinOps y costos](../cloud/fundamentos/finops-costos.md), [Well-Architected](../cloud/fundamentos/well-architected.md) |
-| DevOps (la automatización) | Lo que piden CKA/CKAD, Terraform y las certificaciones de CI/CD | [Kubernetes](../devops/contenedores/kubernetes.md), [Terraform básico](../devops/iac/terraform-basico.md), [Integración continua](../devops/ci-cd/integracion-continua.md), [Observabilidad](../devops/operacion/observabilidad.md) |
-| DevSecOps (la verificación) | El temario de CKS, KCSA, Security+ y las certificaciones de seguridad cloud | [Seguridad de Kubernetes](../devsecops/infraestructura-y-contenedores/seguridad-kubernetes.md), [Cumplimiento](../devsecops/gobierno-y-respuesta/cumplimiento.md), [Fundamentos DevSecOps](../devsecops/fundamentos-devsecops.md) |
-| Negocio TI (el porqué) | ITIL, FinOps y gestión de proyectos | [Gestión de servicios e ITIL](../negocio/gestion-servicios-itil.md), [Proyectos y producto](../negocio/gestion-proyectos-producto.md) |
-| Networking (la base) | Lo que cubren Network+, CCNA, AZ-700 y Cloud Network Engineer | [Networking](../networking/index.md) |
+Cómo elegir sin coleccionar, qué demuestra una certificación y cuándo renovar está en [Cómo preparar un examen](como-preparar-un-examen.md). Lo propio de esta nota: la **página oficial** es la fuente de verdad (los cursos de terceros van atrasados), y si se retira tu certificación la conservas hasta su vencimiento, pero no podrás renovarla.
 
 ## Referencias
 
 - [AWS Certification: todos los exámenes](https://aws.amazon.com/certification/exams/)
 - [AWS Training and Certification Blog: novedades de septiembre de 2026 (SAP-C03, DVA-C03, MLA-C02)](https://aws.amazon.com/blogs/training-and-certification/september-2026-new-offerings/)
 - [Microsoft Learn: explorar credenciales](https://learn.microsoft.com/en-us/credentials/browse/)
-- [Microsoft Learn: renovar certificaciones](https://learn.microsoft.com/en-us/credentials/certifications/renew-your-microsoft-certification)
 - [Google Cloud Certification](https://cloud.google.com/learn/certification)
 - [Linux Foundation: catálogo de certificaciones](https://training.linuxfoundation.org/certification-catalog/)
-- [CNCF: certificaciones](https://www.cncf.io/training/certification/)
 - [HashiCorp Certifications](https://developer.hashicorp.com/certifications)
-- [CompTIA Certifications](https://www.comptia.org/certifications)
-- [ISC2 Certifications](https://www.isc2.org/certifications)
-- [Cloud Security Alliance: CCSK](https://cloudsecurityalliance.org/education/ccsk)
-- [GitLab Certifications](https://university.gitlab.com/pages/certifications)

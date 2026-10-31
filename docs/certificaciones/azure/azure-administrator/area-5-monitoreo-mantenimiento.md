@@ -21,46 +21,29 @@ tags:
 
 ## Azure Monitor: métricas y logs
 
-**Azure Monitor** es la plataforma de observabilidad de Azure. Recoge dos tipos de datos principales. La comparación con CloudWatch y Cloud Monitoring está en [Observabilidad nativa](../../../cloud/operacion-y-gobierno/observabilidad-nativa.md).
+Métricas frente a logs y la comparación con CloudWatch y Cloud Monitoring están en [Observabilidad nativa](../../../cloud/operacion-y-gobierno/observabilidad-nativa.md). Lo propio de Azure:
 
-| | **Metrics** (métricas) | **Logs** (registros) |
+| | **Metrics** | **Logs** |
 | --- | --- | --- |
-| Qué son | Valores numéricos en series de tiempo | Eventos y registros con muchos campos |
 | Dónde se guardan | Base de métricas de Azure Monitor | **Log Analytics workspace** |
 | Retención por defecto | 93 días para *platform metrics* | Configurable por workspace y tabla |
 | Cómo se consultan | **Metrics explorer** | **Log Analytics** con **KQL** (*Kusto Query Language*) |
-| Latencia | Casi tiempo real | Minutos |
 
-### Interpretar métricas
-
-En **Metrics explorer** eliges recurso, métrica, **aggregation** (agregación: *Avg*, *Min*, *Max*, *Sum*, *Count*), rango de tiempo y granularidad. Con **splitting** (división) separas por una dimensión (por ejemplo, por instancia o por código de respuesta) y con **filters** te quedas con un valor.
+En **Metrics explorer** eliges **aggregation** (*Avg*, *Min*, *Max*, *Sum*, *Count*), rango y granularidad; **splitting** separa por una dimensión y **filters** se queda con un valor.
 
 !!! tip "En el examen"
     Fíjate en la agregación. "Percentage CPU" con **Max** sobre 1 hora muestra el pico; con **Avg** puede esconderlo. Una pregunta típica muestra un gráfico y pide qué valor se ve en un momento concreto.
 
-### Fuentes de logs y diagnostic settings
-
-| Fuente | Qué contiene | Cómo se recoge |
+| Fuente de logs | Qué contiene | Cómo se recoge |
 | --- | --- | --- |
 | **Activity log** | Operaciones del *control plane* (quién creó, borró o cambió qué) | Automático, 90 días; envíalo a un workspace para conservarlo y consultarlo |
 | **Resource logs** | Logs internos de cada recurso (p. ej. lecturas de blobs, peticiones de Key Vault) | Requieren una **diagnostic setting** |
-| **Logs de VMs** (sistema operativo, rendimiento) | Syslog, eventos de Windows, contadores | **Azure Monitor Agent** (AMA) + **data collection rule** (DCR) |
+| **Logs de VMs** | Syslog, eventos de Windows, contadores | **Azure Monitor Agent** (AMA) + **data collection rule** (DCR) |
 | Microsoft Entra ID | Sign-in y audit logs | Diagnostic setting en Entra ID |
 
-Una **diagnostic setting** (configuración de diagnóstico) envía logs y métricas de un recurso a uno o varios destinos: **Log Analytics workspace**, **storage account** (archivo barato), **Event Hubs** (hacia un SIEM externo) o una solución de partner.
-
-```bash title="Enviar los logs de una storage account a Log Analytics"
-WS_ID=$(az monitor log-analytics workspace create -g rg-mon -n law-cuaderno --query id -o tsv)
-az monitor diagnostic-settings create --name diag-blob \
-  --resource "$(az storage account show -n stcuadernoaz104 -g rg-storage --query id -o tsv)/blobServices/default" \
-  --workspace "$WS_ID" \
-  --logs '[{"categoryGroup":"allLogs","enabled":true}]' \
-  --metrics '[{"category":"Transaction","enabled":true}]'
-```
+Una **diagnostic setting** envía logs y métricas a **Log Analytics workspace**, **storage account** (archivo barato), **Event Hubs** (SIEM externo) o una solución de partner.
 
 ### Consultar logs con KQL
-
-KQL encadena operadores con `|`: empiezas por una tabla y vas filtrando y agregando.
 
 ```kusto title="Quién borró recursos en las últimas 24 horas"
 AzureActivity
@@ -70,43 +53,9 @@ AzureActivity
 | order by TimeGenerated desc
 ```
 
-```kusto title="VMs que dejaron de enviar heartbeat"
-Heartbeat
-| summarize UltimoLatido = max(TimeGenerated) by Computer
-| where UltimoLatido < ago(15m)
-```
-
-```kusto title="CPU promedio por equipo cada 5 minutos"
-Perf
-| where ObjectName == "Processor" and CounterName == "% Processor Time"
-| summarize avg(CounterValue) by Computer, bin(TimeGenerated, 5m)
-| render timechart
-```
-
-| Operador | Para qué |
-| --- | --- |
-| `where` | Filtrar filas |
-| `project` | Elegir columnas |
-| `summarize ... by` | Agregar (count, avg, max…) |
-| `bin()` | Agrupar por intervalos de tiempo |
-| `order by` / `top` | Ordenar / primeras N filas |
-| `extend` | Crear columnas calculadas |
-| `join` | Combinar tablas |
-| `render` | Dibujar un gráfico |
-
-Fundamentos de cómo leer logs en general en [Leer logs](../../../devops/operacion/leer-logs.md).
+Operadores clave: `where` (filtrar), `project` (columnas), `summarize ... by` (agregar), `bin()` (intervalos de tiempo), `order by` / `top`, `extend` (columnas calculadas), `join` y `render` (gráfico). Tablas habituales: `AzureActivity`, `Heartbeat`, `Perf`, `StorageBlobLogs`.
 
 ## Alertas
-
-```mermaid
-flowchart LR
-    S[Señal: métrica, log, activity log] --> R[Alert rule]
-    R -->|se dispara| A[Alerta con severidad 0 a 4]
-    A --> P[Alert processing rules]
-    P --> G[Action group]
-    G --> N[Email, SMS, push, voz]
-    G --> X[Webhook, Logic App, Function, runbook, ITSM]
-```
 
 | Pieza | Qué es |
 | --- | --- |
@@ -114,15 +63,6 @@ flowchart LR
 | Tipos de regla | **Metric alert**, **Log search alert** (consulta KQL), **Activity log alert** (p. ej. "alguien borró una VM"), **Service Health** y **Resource Health** |
 | **Action group** | Lista reutilizable de **notificaciones** (correo, SMS, push de la app de Azure, voz, correo a un rol de Azure Resource Manager) y **acciones** (webhook, Logic App, Azure Function, Automation runbook, ITSM, Event Hubs) |
 | **Alert processing rule** | Modifica alertas ya disparadas: **suprimir** notificaciones (ventanas de mantenimiento) o **agregar** action groups a muchas reglas a la vez |
-
-```bash title="Alerta de CPU con action group de correo"
-az monitor action-group create -g rg-mon -n ag-ops --short-name ops \
-  --action email dani dani@example.com
-az monitor metrics alert create -g rg-mon -n alerta-cpu-alta \
-  --scopes "$(az vm show -g rg-vm -n vm-app01 --query id -o tsv)" \
-  --condition "avg Percentage CPU > 80" --window-size 5m --evaluation-frequency 1m \
-  --severity 2 --action ag-ops
-```
 
 !!! tip "En el examen"
     - "No enviar notificaciones el sábado de 22:00 a 02:00 por mantenimiento" → **alert processing rule** con supresión programada, no borrar las reglas.
@@ -132,8 +72,6 @@ az monitor metrics alert create -g rg-mon -n alerta-cpu-alta \
 
 ## Azure Monitor Insights
 
-Los **Insights** son experiencias de monitoreo preconfiguradas por tipo de recurso:
-
 | Insight | Qué muestra | Requisito |
 | --- | --- | --- |
 | **VM insights** | Rendimiento (CPU, memoria, disco, red) y, opcional, el **Map** de procesos y conexiones | Azure Monitor Agent, DCR y Log Analytics workspace |
@@ -142,21 +80,17 @@ Los **Insights** son experiencias de monitoreo preconfiguradas por tipo de recur
 
 ## Network Watcher y Connection monitor
 
-**Network Watcher** se habilita automáticamente por región (en el resource group `NetworkWatcherRG`). Sus herramientas de diagnóstico (IP flow verify, Next hop, Connection troubleshoot, NSG diagnostics, Packet capture) se describen en [Implement and manage virtual networking](area-4-redes-virtuales.md#troubleshooting-de-conectividad-con-network-watcher).
-
-**Connection monitor** vigila la conectividad **de forma continua** entre orígenes (VMs de Azure, máquinas on-premises con agente) y destinos (VMs, URLs, IPs, puertos): mide latencia, porcentaje de pérdidas y saltos, y dispara alertas. Diferencia clave:
+**Network Watcher** se habilita automáticamente por región (en `NetworkWatcherRG`). Sus herramientas de diagnóstico están en [Implement and manage virtual networking](area-4-redes-virtuales.md#troubleshooting-de-conectividad-con-network-watcher).
 
 | Herramienta | Uso |
 | --- | --- |
 | **Connection troubleshoot** | Prueba **puntual** ("¿llego ahora?") |
-| **Connection monitor** | Monitoreo **continuo** con historial y alertas |
+| **Connection monitor** | Monitoreo **continuo** (VMs de Azure u on-premises con agente hacia VMs, URLs, IPs o puertos): latencia, pérdidas, saltos, historial y alertas |
 | **VNet flow logs** + **Traffic analytics** | Qué flujos pasan por la red y análisis visual del tráfico |
 
 ## Azure Backup
 
-**Azure Backup** protege recursos de Azure y de on-premises con copias gestionadas, cifradas y aisladas de tu subscription de producción.
-
-### Recovery Services vault vs Backup vault
+Qué es backup frente a DR, RTO y RPO está en [Resiliencia](../../../cloud/operacion-y-gobierno/resiliencia.md). Lo que pregunta el examen:
 
 | | **Recovery Services vault** | **Backup vault** |
 | --- | --- | --- |
@@ -169,56 +103,21 @@ Los **Insights** son experiencias de monitoreo preconfiguradas por tipo de recur
     - Para backup de VMs, el vault debe estar en la **misma región** que la VM.
     - La **redundancia del almacenamiento del vault** (LRS, ZRS o GRS) se elige **antes** del primer backup; después no se puede cambiar. **Cross Region Restore** requiere GRS.
 
-### Backup policies
-
-Una **backup policy** (política de copia de seguridad) define:
-
-- **Frecuencia**: diaria o semanal; con la **Enhanced policy** también cada pocas horas (necesaria para VMs Trusted Launch y discos Premium SSD v2/Ultra).
-- **Retención**: puntos diarios, semanales, mensuales y anuales (por ejemplo, 30 días, 12 semanas, 12 meses, 5 años).
-- **Instant restore**: cuántos días se guardan los *snapshots* locales para restauraciones rápidas.
-
-```bash title="Backup de una VM con la política por defecto"
-az backup vault create -g rg-bkp -n rsv-cuaderno -l eastus
-az backup protection enable-for-vm -g rg-bkp --vault-name rsv-cuaderno \
-  --vm "$(az vm show -g rg-vm -n vm-app01 --query id -o tsv)" --policy-name DefaultPolicy
-az backup protection backup-now -g rg-bkp --vault-name rsv-cuaderno \
-  --container-name vm-app01 --item-name vm-app01 --backup-management-type AzureIaasVM
-```
-
-### Restaurar
+- **Backup policy**: frecuencia diaria o semanal (con **Enhanced policy**, cada pocas horas; necesaria para VMs Trusted Launch y discos Premium SSD v2/Ultra), retención diaria/semanal/mensual/anual e **instant restore** (días de snapshots locales).
+- **Seguridad**: **soft delete** (14 días adicionales, configurable), **immutable vault** y **multi-user authorization**. No puedes borrar un vault con elementos protegidos ni datos en soft delete.
+- **Reportes y alertas**: *Backup reports* requieren enviar los diagnósticos del vault a **Log Analytics**; las alertas integradas se enrutan con **alert processing rules** y action groups; **Azure Business Continuity Center** (reemplaza a Backup center) da la vista unificada.
 
 | Opción de restore de VM | Cuándo |
 | --- | --- |
 | **Create new VM** | Crear una VM nueva desde el punto de restauración |
 | **Restore disks** | Restaurar solo los discos y crear la VM a tu manera (plantilla) |
 | **Replace existing** | Reemplazar los discos de la VM existente |
-| **File Recovery** | Recuperar archivos sueltos: montas el punto de recuperación con un script y copias lo que necesitas |
+| **File Recovery** | Recuperar archivos sueltos montando el punto de recuperación con un script |
 | **Cross Region Restore** | Restaurar en la región secundaria (vault GRS con la opción activada) |
-
-### Seguridad y borrado del vault
-
-- **Soft delete** para backups: los datos borrados se guardan 14 días adicionales (configurable).
-- **Immutable vault** y **multi-user authorization** para proteger contra borrados malintencionados (ransomware).
-- No puedes borrar un vault que tenga elementos protegidos ni datos en soft delete: primero detienes la protección, borras los datos y esperas o purgas el soft delete.
-
-### Reportes y alertas de backup
-
-- **Backup reports**: requieren enviar los diagnósticos del vault a un **Log Analytics workspace** (diagnostic settings); se ven en el libro de Backup Reports.
-- **Alertas**: Azure Monitor genera alertas integradas para fallos de backup y restore; las rutas a correo o ITSM se configuran con **alert processing rules** y action groups.
-- **Azure Business Continuity Center** (centro que reemplaza a Backup center) da una vista unificada de protección, trabajos y alertas.
 
 ## Azure Site Recovery
 
-**Azure Site Recovery** (ASR) replica VMs de forma continua a otra región para **disaster recovery** (recuperación ante desastres). Estrategias, RTO y RPO en [Resiliencia](../../../cloud/operacion-y-gobierno/resiliencia.md) y [Continuidad de negocio](../../../negocio/continuidad-negocio.md).
-
-```mermaid
-flowchart LR
-    VM[VMs en región primaria] -- replicación continua --> T[Región secundaria: discos réplica]
-    T -- test failover --> TV[VNet de prueba aislada]
-    T -- failover --> NV[VMs creadas en la secundaria]
-    NV -- commit + re-protect --> R[Replicación inversa]
-    R -- failback --> VM
-```
+**ASR** replica VMs de forma continua a otra región para DR. Estrategias en [Resiliencia](../../../cloud/operacion-y-gobierno/resiliencia.md) y [Continuidad de negocio](../../../negocio/continuidad-negocio.md).
 
 | Paso | Qué hace |
 | --- | --- |
@@ -226,9 +125,7 @@ flowchart LR
 | **Replication policy** | Retención de puntos de recuperación y frecuencia de snapshots **app-consistent** |
 | **Test failover** | Crea las VMs en una **VNet aislada** para probar sin afectar a producción; luego *Cleanup test failover* |
 | **Failover** | Levanta las VMs en la secundaria con el punto elegido (*Latest*, *Latest processed*, *Latest app-consistent*, *Custom*) |
-| **Commit** | Confirma el failover |
-| **Re-protect** | Empieza a replicar desde la secundaria hacia la primaria |
-| **Failback** | Vuelve a la región original con otro failover |
+| **Commit** / **Re-protect** / **Failback** | Confirmar, replicar de vuelta hacia la primaria y regresar con otro failover |
 | **Recovery plans** | Agrupa VMs, define el orden de arranque y agrega scripts o pasos manuales |
 
 !!! tip "En el examen"
@@ -238,14 +135,14 @@ flowchart LR
 
 ## Casos de uso
 
-1. **Saber quién eliminó un grupo de recursos ayer.** → Consultar el **Activity log** (o `AzureActivity` en Log Analytics con KQL).
-2. **Recibir un SMS si la CPU de las VMs de producción supera el 85 % durante 10 minutos.** → **Metric alert** con ventana de 10 minutos y **action group** con SMS.
-3. **Silenciar todas las alertas de un resource group durante la ventana de parches de los domingos.** → **Alert processing rule** con supresión y horario recurrente.
-4. **Analizar lecturas y borrados en una storage account.** → **Diagnostic setting** de `blobServices` a un **Log Analytics workspace** y consultas KQL en `StorageBlobLogs`.
-5. **Vigilar de forma continua la latencia entre una VM de Azure y un servidor on-premises.** → **Connection monitor** con alertas.
-6. **Recuperar un archivo borrado de una VM hace tres días.** → Azure Backup **File Recovery** desde el punto de restauración.
-7. **Poder levantar una aplicación en otra región en menos de una hora si cae la principal.** → **Azure Site Recovery** con recovery plan y pruebas periódicas con test failover.
-8. **Proteger managed disks con snapshots incrementales programados.** → **Backup vault** con política de backup de discos.
+1. Quién eliminó un resource group ayer → **Activity log** (o `AzureActivity` con KQL).
+2. SMS si la CPU supera el 85 % durante 10 minutos → **metric alert** con ventana de 10 min y **action group** con SMS.
+3. Silenciar alertas durante la ventana de parches de los domingos → **alert processing rule** con supresión recurrente.
+4. Analizar lecturas y borrados en una storage account → **diagnostic setting** de `blobServices` a Log Analytics y KQL en `StorageBlobLogs`.
+5. Vigilar de forma continua la latencia VM ↔ servidor on-premises → **Connection monitor** con alertas.
+6. Recuperar un archivo borrado hace tres días → Azure Backup **File Recovery**.
+7. Levantar la app en otra región en menos de una hora → **Site Recovery** con recovery plan y test failover periódicos.
+8. Snapshots incrementales programados de managed disks → **Backup vault** con política de discos.
 
 ## Preguntas de práctica
 
@@ -326,24 +223,15 @@ flowchart LR
 | Azure Monitor frente a CloudWatch y Cloud Monitoring | [Observabilidad nativa](../../../cloud/operacion-y-gobierno/observabilidad-nativa.md) |
 | SLI/SLO, alertas útiles y OpenTelemetry | [Observabilidad](../../../devops/operacion/observabilidad.md) |
 | Leer e interpretar logs | [Leer logs](../../../devops/operacion/leer-logs.md) |
-| Incidentes, runbooks y postmortems | [Operación y fiabilidad (SRE)](../../../devops/operacion/operacion-sre.md), [Runbooks y playbooks](../../../devops/operacion/runbooks-playbooks.md) |
 | HA, DR, RTO/RPO y pruebas de DR | [Resiliencia](../../../cloud/operacion-y-gobierno/resiliencia.md) |
 | BCP, BIA y criticidad de sistemas | [Continuidad de negocio](../../../negocio/continuidad-negocio.md) |
-| Logs de seguridad y SIEM | [Detección y respuesta](../../../devsecops/gobierno-y-respuesta/deteccion-respuesta.md) |
 | Diagnóstico de red | [Troubleshooting de red](../../../networking/avanzado/troubleshooting-red.md) |
 
 ## Referencias
 
 - [Study guide del examen AZ-104](https://learn.microsoft.com/en-us/credentials/certifications/resources/study-guides/az-104)
-- [Información general de Azure Monitor](https://learn.microsoft.com/es-es/azure/azure-monitor/fundamentals/overview)
-- [Métricas de Azure Monitor](https://learn.microsoft.com/es-es/azure/azure-monitor/metrics/data-platform-metrics)
 - [Configuración de diagnóstico](https://learn.microsoft.com/es-es/azure/azure-monitor/platform/diagnostic-settings)
-- [Información general de Kusto Query Language](https://learn.microsoft.com/es-es/kusto/query/)
-- [Información general de alertas](https://learn.microsoft.com/es-es/azure/azure-monitor/alerts/alerts-overview)
-- [Grupos de acciones](https://learn.microsoft.com/es-es/azure/azure-monitor/alerts/action-groups)
 - [Reglas de procesamiento de alertas](https://learn.microsoft.com/es-es/azure/azure-monitor/alerts/alerts-processing-rules)
-- [VM insights](https://learn.microsoft.com/es-es/azure/azure-monitor/vm/vminsights-overview)
 - [Connection monitor](https://learn.microsoft.com/es-es/azure/network-watcher/connection-monitor-overview)
-- [¿Qué es Azure Backup?](https://learn.microsoft.com/es-es/azure/backup/backup-overview)
 - [Información general de los almacenes de Backup](https://learn.microsoft.com/es-es/azure/backup/backup-vault-overview)
 - [Azure Site Recovery: recuperación ante desastres de VMs de Azure](https://learn.microsoft.com/es-es/azure/site-recovery/azure-to-azure-architecture)

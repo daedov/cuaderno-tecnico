@@ -25,74 +25,45 @@ tags:
 
 ## 1a. Qué es Infrastructure as Code
 
-**Infrastructure as Code** (IaC, infraestructura como código) es definir la infraestructura en **archivos de texto versionados** en lugar de crearla a mano en una consola web. Una herramienta lee esos archivos y llama a las APIs para que la realidad coincida con el código. El panorama completo (Terraform, CloudFormation, Bicep, Pulumi, Terragrunt) está en [Infrastructure as Code: panorama y herramientas](../../../devops/iac/infraestructura-como-codigo.md); aquí solo lo que pide el examen.
-
-Terraform es:
+Definición, declarativo vs imperativo, idempotencia e IaC vs configuration management están en [Infrastructure as Code: panorama y herramientas](../../../devops/iac/infraestructura-como-codigo.md). Lo que el examen pregunta de Terraform:
 
 | Característica | Qué significa | Contraste |
 | --- | --- | --- |
 | **Declarative** (declarativo) | Describes el **estado final**; Terraform calcula los pasos | Imperativo: un script Bash que ejecuta comandos en orden |
 | **Idempotent** (idempotente) | Aplicar dos veces el mismo código no cambia nada la segunda vez | Un script que ejecuta "crear VM" dos veces crea dos VMs |
-| Basado en **HCL** (*HashiCorp Configuration Language*) | Lenguaje legible por personas y máquinas; también admite JSON (`.tf.json`) | YAML/JSON de otras herramientas |
+| Basado en **HCL** (*HashiCorp Configuration Language*) | También admite JSON (`.tf.json`) | YAML/JSON de otras herramientas |
 | Con **state** | Guarda qué objetos reales corresponden a cada bloque del código | CloudFormation/Bicep guardan el estado en el propio servicio |
-| **Immutable infrastructure** (infraestructura inmutable) como enfoque preferido | Ante ciertos cambios, reemplaza el recurso en vez de modificarlo | *Configuration management* (Ansible, Chef) que modifica servidores existentes |
+| **Immutable infrastructure** (infraestructura inmutable) | Ante ciertos cambios, reemplaza el recurso en vez de modificarlo | *Configuration management* (Ansible, Chef) que modifica servidores existentes |
 
 !!! note "Terraform no es configuration management"
-    Terraform **aprovisiona** (crea redes, VMs, bases de datos). Configurar lo de dentro de un servidor (paquetes, archivos) es trabajo de herramientas como [Ansible](../../../devops/iac/ansible.md), de imágenes preconstruidas (Packer) o de `user_data`/cloud-init. Los *provisioners* (`local-exec`, `remote-exec`) existen, pero HashiCorp los considera **último recurso**.
+    Terraform **aprovisiona**. Lo de dentro del servidor es trabajo de [Ansible](../../../devops/iac/ansible.md), Packer o `user_data`/cloud-init. Los *provisioners* (`local-exec`, `remote-exec`) existen, pero HashiCorp los considera **último recurso**.
 
 ## 1b. Ventajas de los patrones de IaC
 
-| Ventaja | En la práctica |
-| --- | --- |
-| **Reproducibilidad y consistencia** | El mismo código crea `dev`, `staging` y `prod` iguales; se acaban los "copos de nieve" (*snowflake servers*, servidores únicos imposibles de recrear) |
-| **Versionado** | El historial de Git dice quién cambió qué y por qué; se puede volver atrás |
-| **Revisión antes de aplicar** | `terraform plan` y los **pull requests** (solicitudes de cambio) muestran el impacto antes de tocar nada |
-| **Automatización** | El mismo flujo corre en un pipeline CI/CD, sin clics manuales |
-| **Reutilización** | Los **modules** (módulos) encapsulan patrones y se comparten |
-| **Documentación viva** | El código describe la infraestructura real mejor que un diagrama desactualizado |
-| **Velocidad y menos errores** | Crear 50 recursos idénticos es un `count = 50`, no 50 formularios |
-| **Seguridad verificable** | El código se escanea antes de aplicarlo (ver [IaC scanning](../../../devsecops/escaneos/iac-scanning.md)) |
+Reproducibilidad (adiós a los *snowflake servers*), versionado en Git, revisión con `plan` y *pull requests*, automatización en CI/CD, reutilización con **modules**, documentación viva, velocidad (`count = 50`) y seguridad verificable con [IaC scanning](../../../devsecops/escaneos/iac-scanning.md).
 
 !!! tip "En el examen"
     Las ventajas típicas son **versionado, reutilización, automatización, consistencia y revisión del plan**. Una opción como "IaC elimina la necesidad de entender la nube" o "IaC hace imposible el drift" es falsa: alguien puede seguir cambiando recursos a mano.
 
 ## 1c. Multi-cloud, hybrid cloud y flujos agnósticos al servicio
 
-Terraform usa **el mismo lenguaje y el mismo workflow** para cualquier plataforma que tenga un **provider**: nubes públicas, plataformas on-premises (VMware vSphere, OpenStack) y servicios SaaS (GitHub, Datadog, Cloudflare, PagerDuty).
+Terraform usa **el mismo lenguaje y el mismo workflow** para cualquier plataforma con **provider**: nubes públicas, on-premises (vSphere, OpenStack) y SaaS (GitHub, Datadog, Cloudflare).
 
 | Concepto | Qué significa con Terraform |
 | --- | --- |
-| **Multi-cloud** (varias nubes) | Una configuración puede crear recursos en AWS y en Google Cloud a la vez, con dependencias entre ellos (por ejemplo, un registro DNS en Cloudflare que apunta a un load balancer de Azure) |
-| **Hybrid cloud** (nube híbrida) | El mismo flujo gestiona recursos on-premises y en la nube |
-| **Service-agnostic workflow** (flujo agnóstico al servicio) | Write → Plan → Apply es igual para cualquier provider: el equipo aprende **un** flujo, no la herramienta nativa de cada servicio |
+| **Multi-cloud** | Una configuración crea recursos en varias nubes a la vez, con dependencias entre ellos (DNS en Cloudflare que apunta a un load balancer de Azure) |
+| **Hybrid cloud** (nube híbrida) | El mismo flujo gestiona on-premises y nube |
+| **Service-agnostic workflow** | Write → Plan → Apply es igual para cualquier provider: el equipo aprende **un** flujo |
 
 !!! warning "Agnóstico al flujo, no al recurso"
-    El código **no es portable** entre nubes: un `aws_instance` no se convierte en `azurerm_linux_virtual_machine` cambiando el provider. Lo que es común es el lenguaje, el workflow, el state y los módulos. Para comparar los servicios de cada nube usa [Máquinas virtuales](../../../cloud/computo/maquinas-virtuales.md) y [Redes en la nube](../../../cloud/redes-y-datos/redes.md).
+    El código **no es portable** entre nubes: un `aws_instance` no se convierte en `azurerm_linux_virtual_machine` cambiando el provider. Lo común es el lenguaje, el workflow, el state y los módulos.
 
 ## 2a. Instalar y versionar providers
 
-Un **provider** se declara en `required_providers` dentro del bloque `terraform`. `terraform init` lo descarga del **Terraform Registry** y lo guarda en `.terraform/providers/`.
+Un **provider** se declara en `required_providers` del bloque `terraform`; `terraform init` lo descarga del **Terraform Registry** a `.terraform/providers/`. El bloque comentado línea por línea está en [Anatomía: versions.tf](../../../recursos/anatomia/terraform.md#versionstf-comentado-linea-por-linea).
 
-```hcl title="providers.tf"
-terraform {
-  required_version = ">= 1.12" # versión de la CLI de Terraform
-
-  required_providers {
-    random = {
-      source  = "hashicorp/random" # [hostname/]namespace/type
-      version = "~> 3.7"           # >= 3.7.0 y < 4.0.0
-    }
-    local = {
-      source  = "hashicorp/local"
-      version = "~> 2.5"
-    }
-  }
-}
-```
-
-La **source address** (dirección de origen) tiene la forma `[hostname/]namespace/type`. Si no pones hostname, se asume `registry.terraform.io`: `hashicorp/random` es en realidad `registry.terraform.io/hashicorp/random`.
-
-### Version constraints (restricciones de versión)
+- **Source address**: `[hostname/]namespace/type`. Sin hostname se asume `registry.terraform.io` (`hashicorp/random` = `registry.terraform.io/hashicorp/random`).
+- `required_version` restringe la versión de la **CLI**; `version` dentro de `required_providers` restringe el **provider**.
 
 | Operador | Significado | Ejemplo |
 | --- | --- | --- |
@@ -103,86 +74,32 @@ La **source address** (dirección de origen) tiene la forma `[hostname/]namespac
 
 ### Dependency lock file
 
-`terraform init` crea **`.terraform.lock.hcl`**, el *dependency lock file* (archivo de bloqueo de dependencias), con la versión exacta elegida y sus **hashes** (sumas de verificación). **Se sube a Git**: así todo el equipo y el pipeline usan exactamente la misma versión.
-
-```hcl title=".terraform.lock.hcl (extracto real)"
-provider "registry.terraform.io/hashicorp/archive" {
-  version     = "2.8.1"
-  constraints = "~> 2.7"
-  hashes = [
-    "h1:eehhIUcuegkswQDKArYBAhVV9wQmRVMhyYGaD7kHIj0=",
-    "zh:03de290604114a89fcd45c2e5bc7787d5a1ebfc5f964fb5989306bea7a4c79ec",
-    # ...
-  ]
-}
-```
-
-Si cambias la restricción a algo incompatible con lo bloqueado, Terraform se niega hasta que actualices el lock (salida real con Terraform 1.12.2):
-
-```console
-$ terraform plan
-Error: Inconsistent dependency lock file
-  - provider registry.terraform.io/hashicorp/random: locked version selection 3.9.1 doesn't match the updated version constraints "~> 3.6.0"
-To update the locked dependency selections to match a changed configuration,
-run:
-  terraform init -upgrade
-$ terraform init -upgrade
-- Finding hashicorp/random versions matching "~> 3.6.0"...
-- Installed hashicorp/random v3.6.3 (signed by HashiCorp)
-```
+`.terraform.lock.hcl` guarda la versión exacta elegida de cada provider y sus **hashes**, y **se sube a Git** (detalle en [Anatomía: .terraform.lock.hcl](../../../recursos/anatomia/terraform.md#terraformlockhcl)). Si cambias la restricción a algo incompatible con lo bloqueado, `plan` falla con `Inconsistent dependency lock file` hasta que ejecutes `terraform init -upgrade`.
 
 !!! tip "En el examen"
     - El lock file bloquea **providers**, **no módulos** (las versiones de módulos se fijan con `version` en el bloque `module`).
     - `terraform init` respeta el lock file; **`terraform init -upgrade`** busca la versión más nueva que cumpla las restricciones y reescribe el lock.
     - `terraform providers lock -platform=linux_amd64 -platform=windows_amd64` añade hashes de otras plataformas (útil si desarrollas en Windows y el pipeline corre en Linux).
-    - `required_version` restringe la versión de la **CLI**; `version` dentro de `required_providers` restringe el **provider**.
 
 ## 2b. Cómo usa Terraform los providers
 
-Terraform **core** (el binario `terraform`) no sabe nada de AWS ni de GitHub. Lee la configuración, construye el **grafo de dependencias**, compara con el state y pide a cada **provider plugin** (un binario aparte que se comunica con core por RPC) que lea, cree, actualice o borre objetos usando la API del servicio.
-
-```mermaid
-flowchart LR
-    A[Archivos .tf] --> B[Terraform core]
-    S[(State)] <--> B
-    B <-->|RPC| P1[Provider aws]
-    B <-->|RPC| P2[Provider github]
-    P1 <-->|API| C1[AWS]
-    P2 <-->|API| C2[GitHub]
-```
+Terraform **core** (el binario `terraform`) no sabe nada de AWS ni de GitHub: lee la configuración, construye el **grafo de dependencias**, compara con el state y pide a cada **provider plugin** (binario aparte, comunicado por RPC) que lea, cree, actualice o borre objetos con la API del servicio.
 
 | Concepto | Detalle |
 | --- | --- |
 | **Terraform Registry** | Repositorio público de providers y módulos (`registry.terraform.io`) |
-| **Tiers** (niveles) de providers | **Official** (mantenidos por HashiCorp, namespace `hashicorp`), **Partner** (mantenidos por la empresa del servicio, verificados), **Community** (mantenidos por la comunidad) |
-| Cada provider aporta | *Resource types* (`aws_s3_bucket`), *data sources* (`data.aws_ami`), *ephemeral resources* y a veces funciones propias (`provider::nombre::funcion`) |
-| Configuración | Bloque `provider "nombre" { ... }`: región, credenciales (mejor por variables de entorno o identidad, nunca en el código) |
-| Dónde se guardan | `.terraform/providers/`; con `TF_PLUGIN_CACHE_DIR` se comparte una caché entre proyectos |
+| **Tiers** (niveles) de providers | **Official** (HashiCorp, namespace `hashicorp`), **Partner** (la empresa del servicio, verificada), **Community** (la comunidad) |
+| Cada provider aporta | *Resource types*, *data sources*, *ephemeral resources* y a veces funciones propias (`provider::nombre::funcion`) |
+| Configuración | Bloque `provider "nombre" { ... }`; credenciales por variables de entorno o identidad, nunca en el código |
+| Dónde se guardan | `.terraform/providers/`; `TF_PLUGIN_CACHE_DIR` comparte una caché entre proyectos |
 
-Para ver qué providers necesita la configuración y el state (salida real del laboratorio):
-
-```console
-$ terraform providers
-Providers required by configuration:
-.
-├── provider[registry.terraform.io/hashicorp/local] ~> 2.5
-├── provider[registry.terraform.io/hashicorp/archive] ~> 2.7
-├── provider[registry.terraform.io/hashicorp/random] ~> 3.7
-└── module.etiquetas
-
-Providers required by state:
-    provider[registry.terraform.io/hashicorp/archive]
-    ...
-```
-
-!!! note "Hay un provider integrado"
-    `terraform_remote_state` y `terraform_data` vienen del provider **built-in** `terraform.io/builtin/terraform`, que no se declara ni se descarga.
+`terraform providers` muestra los providers que piden la configuración (con sus restricciones, también los de módulos) y el state. `terraform_remote_state` y `terraform_data` vienen del provider **built-in** `terraform.io/builtin/terraform`, que no se declara ni se descarga.
 
 ## 2c. Configuración con varios providers
 
-Puedes usar **varios providers distintos** en la misma configuración (cada uno en `required_providers`) y **varias configuraciones del mismo provider** con `alias`. El caso clásico es desplegar en dos regiones o en dos cuentas:
+Varios providers distintos van cada uno en `required_providers`; varias configuraciones del **mismo** provider se distinguen con `alias`:
 
-```hcl title="providers.tf"
+```hcl
 provider "aws" {
   region = "us-east-1" # configuración por defecto (sin alias)
 }
@@ -192,79 +109,48 @@ provider "aws" {
   region = "eu-west-1"
 }
 
-resource "aws_s3_bucket" "principal" {
-  bucket = "ejemplo-principal-123"
-}
-
 resource "aws_s3_bucket" "replica" {
   provider = aws.europa # <PROVIDER>.<ALIAS>, sin comillas
   bucket   = "ejemplo-replica-123"
 }
 ```
 
-Lo mismo funciona con cualquier provider; el laboratorio lo probó con `random` (que no necesita credenciales):
-
-```hcl
-provider "random" {
-  alias = "secundario"
-}
-
-resource "random_id" "a" {
-  provider    = random.secundario
-  byte_length = 4
-}
-```
-
 !!! tip "En el examen"
     - Un recurso **sin** `provider` usa la configuración **por defecto** (la que no tiene alias) del provider que indica su prefijo (`aws_` → `aws`).
-    - Para pasar un provider con alias a un **módulo** se usa el argumento `providers = { aws = aws.europa }` en el bloque `module` (ver [objetivo 5](objetivo-5-modulos.md)).
+    - Para pasar un provider con alias a un **módulo** se usa `providers = { aws = aws.europa }` en el bloque `module` (ver [objetivo 5](objetivo-5-modulos.md)).
     - Un mismo `apply` puede tocar AWS, Azure y GitHub: eso es multi-cloud con un solo workflow.
 
 ## 2d. Cómo usa y gestiona Terraform el state
 
-El **state** (estado) es un archivo JSON (por defecto `terraform.tfstate` en la carpeta de trabajo) que **asocia cada recurso del código con un objeto real** (por ID) y guarda sus atributos.
+El **state** es un archivo JSON (por defecto `terraform.tfstate`) que **asocia cada recurso del código con un objeto real** (por ID) y guarda sus atributos.
 
 | Para qué sirve | Explicación |
 | --- | --- |
-| **Mapping to the real world** (mapeo con el mundo real) | Sabe que `random_pet.nombre` es el objeto con ID `dev-better-aardvark`. Sin state no sabría qué objetos son suyos |
-| **Metadata** (metadatos) | Guarda dependencias para destruir en el orden correcto aunque ya hayas borrado el código |
-| **Performance** (rendimiento) | Cachea atributos; en infraestructuras grandes se puede saltar el refresh con `-refresh=false` |
-| **Syncing** (sincronización) | Con un **remote backend**, todo el equipo trabaja contra el mismo state |
+| **Mapping to the real world** | Sabe qué objeto real es cada recurso. Sin state no sabría qué objetos son suyos |
+| **Metadata** | Guarda dependencias para destruir en orden aunque ya hayas borrado el código |
+| **Performance** | Cachea atributos; en infraestructuras grandes se puede saltar el refresh con `-refresh=false` |
+| **Syncing** | Con un **remote backend**, todo el equipo trabaja contra el mismo state |
 
-Antes de planificar, Terraform hace un **refresh** (lectura) de los objetos reales para actualizar el state en memoria y luego compara **configuración vs state actualizado**.
-
-```console
-$ terraform state pull | head -6
-{
-  "version": 4,
-  "terraform_version": "1.12.2",
-  "serial": 38,
-  "lineage": "567d1b23-5c91-1e23-7811-615e80dec483",
-  "outputs": {
-```
-
-- `serial` aumenta con cada escritura; `lineage` identifica de forma única ese state (evita mezclar states de proyectos distintos).
-- Cada escritura deja una copia `terraform.tfstate.backup` (backend local).
+- Antes de planificar, Terraform hace un **refresh** de los objetos reales y compara **configuración vs state actualizado**.
+- En el JSON, `serial` aumenta con cada escritura y `lineage` identifica ese state (evita mezclar states de proyectos distintos). El backend local deja una copia `terraform.tfstate.backup`.
 
 !!! danger "El state contiene secretos en texto plano"
-    Contraseñas generadas, claves privadas o el valor de una variable `sensitive` **se guardan sin cifrar en el state**. `sensitive = true` solo oculta el valor en la salida de la CLI. Protege el backend (cifrado, control de acceso), no subas el state a Git y usa *ephemeral values* o *write-only arguments* cuando puedas (ver [objetivo 4](objetivo-4-configuracion.md#4h-datos-sensibles-y-vault)).
-
-Los backends, el locking y el drift se ven en [Objetivos 6 y 7](objetivo-6-7-estado-y-mantenimiento.md).
+    Contraseñas generadas, claves privadas o el valor de una variable `sensitive` **se guardan sin cifrar en el state**. `sensitive = true` solo oculta el valor en la CLI. Protege el backend, no subas el state a Git y usa *ephemeral values* o *write-only arguments* cuando puedas (ver [objetivo 4](objetivo-4-configuracion.md#4h-datos-sensibles-y-vault)).
 
 !!! tip "En el examen"
     - "Terraform **requiere** el state para funcionar": verdadero. No es opcional.
     - Editar el JSON del state a mano: no. Usa `terraform state ...`, `moved`, `removed` o `import`.
-    - El state local es el **default**: si no configuras backend, se usa `local`.
+    - El state local es el **default**: si no configuras backend, se usa `local`. Backends, locking y drift: [Objetivos 6 y 7](objetivo-6-7-estado-y-mantenimiento.md).
 
 ## Casos de uso
 
-1. **Un equipo crea cada entorno a mano y ninguno es igual.** IaC con Terraform y un módulo común: el mismo código produce entornos consistentes y revisables.
-2. **Una empresa usa AWS para cómputo, Cloudflare para DNS y GitHub para repositorios.** Una configuración con tres providers gestiona todo con el mismo workflow, y las referencias entre recursos ordenan las dependencias.
-3. **El pipeline instala una versión de provider distinta a la de las laptops.** Subir `.terraform.lock.hcl` a Git y, si el pipeline corre en otra plataforma, `terraform providers lock -platform=...`.
-4. **Hay que desplegar el mismo bucket en dos regiones.** Dos bloques `provider "aws"`, uno con `alias`, y `provider = aws.<alias>` en el recurso de la segunda región.
-5. **Una persona cambió el tamaño de una VM desde la consola.** El refresh lo detecta; el siguiente `plan` propone volver al valor del código (drift, objetivo 6).
-6. **Alguien propone guardar el state en el repositorio "para no perderlo".** No: contiene secretos en texto plano. Usa un remote backend con cifrado, versionado y locking.
-7. **Se quiere actualizar el provider de AWS a la última versión menor.** Restricción `~> 6.0` y `terraform init -upgrade`; revisa el plan antes de aplicar.
+1. **Cada entorno se crea a mano y ninguno es igual** → IaC con un módulo común.
+2. **AWS para cómputo, Cloudflare para DNS y GitHub para repos** → una configuración con tres providers y un solo workflow.
+3. **El pipeline instala otra versión de provider que las laptops** → `.terraform.lock.hcl` en Git y `terraform providers lock -platform=...`.
+4. **El mismo bucket en dos regiones** → dos bloques `provider "aws"`, uno con `alias`, y `provider = aws.<alias>`.
+5. **Alguien cambió el tamaño de una VM en la consola** → el refresh lo detecta y el `plan` propone volver al código (drift, objetivo 6).
+6. **Guardar el state en el repositorio "para no perderlo"** → no: tiene secretos. Remote backend con cifrado, versionado y locking.
+7. **Subir el provider de AWS a la última menor** → `~> 6.0` y `terraform init -upgrade`; revisa el plan.
 
 ## Preguntas de práctica
 
@@ -337,14 +223,13 @@ Los backends, el locking y el drift se ven en [Objetivos 6 y 7](objetivo-6-7-est
 
 - [Infrastructure as Code: panorama y herramientas](../../../devops/iac/infraestructura-como-codigo.md): declarativo vs imperativo, IaC vs configuration management, comparativa de herramientas.
 - [Infrastructure as Code con Terraform](../../../devops/iac/terraform-basico.md): conceptos clave, estructura de archivos, qué subir a Git.
-- [IaC scanning](../../../devsecops/escaneos/iac-scanning.md) y [Seguridad de IaC](../../../devsecops/infraestructura-y-contenedores/seguridad-iac.md): verificar el código antes de aplicarlo.
+- [Anatomía de los archivos de Terraform](../../../recursos/anatomia/terraform.md): bloque `terraform`, providers con alias y lock file comentados.
+- [IaC scanning](../../../devsecops/escaneos/iac-scanning.md): verificar el código antes de aplicarlo.
 - Siguiente: [Objetivo 3: Core Terraform workflow](objetivo-3-flujo-de-trabajo.md).
 
 ## Referencias
 
 - [What is Terraform?](https://developer.hashicorp.com/terraform/intro)
-- [Use cases (multi-cloud, etc.)](https://developer.hashicorp.com/terraform/intro/use-cases)
-- [Providers](https://developer.hashicorp.com/terraform/language/providers)
 - [Provider requirements](https://developer.hashicorp.com/terraform/language/providers/requirements)
 - [Version constraints](https://developer.hashicorp.com/terraform/language/expressions/version-constraints)
 - [Dependency lock file](https://developer.hashicorp.com/terraform/language/files/dependency-lock)

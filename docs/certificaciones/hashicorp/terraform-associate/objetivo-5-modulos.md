@@ -22,16 +22,7 @@ tags:
 
 ## ¿Qué es un módulo?
 
-Un **module** (módulo) es **cualquier carpeta con archivos `.tf`**. La carpeta donde ejecutas `terraform` es el **root module** (módulo raíz); los que llama con bloques `module` son **child modules** (módulos hijo). Sirven para **encapsular y reutilizar** patrones: una red, un clúster, una aplicación estándar.
-
-```mermaid
-flowchart TB
-    R["Root module<br/>(donde ejecutas terraform)"] -->|inputs| M1["module.red"]
-    R -->|inputs| M2["module.app"]
-    M1 -->|outputs| R
-    M2 -->|outputs| R
-    M2 --> M3["module.app.module.logs<br/>(módulo anidado)"]
-```
+Un **module** es **cualquier carpeta con archivos `.tf`**. La carpeta donde ejecutas `terraform` es el **root module** (módulo raíz); los que llama con bloques `module` son **child modules** (módulos hijo). Un módulo hijo comentado línea por línea está en [Anatomía: módulo hijo](../../../recursos/anatomia/terraform.md#modulo-hijo-comentado).
 
 ## 5a. Fuentes de módulos
 
@@ -57,7 +48,7 @@ Un **subdirectorio** dentro de un paquete se indica con doble barra: `"git::http
 
 ## 5b. Alcance de las variables
 
-Cada módulo tiene **su propio espacio de nombres**. Un módulo hijo **no ve** las variables, locals ni recursos del padre, y el padre **no ve** los recursos internos del hijo. Lo único que cruza la frontera:
+Cada módulo tiene **su propio espacio de nombres**. Un hijo **no ve** las variables, locals ni recursos del padre, y el padre **no ve** los recursos internos del hijo (probado: `Error: Reference to undeclared input variable` en el hijo y `Error: Unsupported attribute` en el padre). Lo único que cruza la frontera:
 
 | Dirección | Mecanismo |
 | --- | --- |
@@ -65,55 +56,14 @@ Cada módulo tiene **su propio espacio de nombres**. Un módulo hijo **no ve** l
 | Hijo → padre | **Outputs** del hijo, leídos como `module.NOMBRE.OUTPUT` |
 | Providers | Se **heredan** por defecto (la configuración por defecto); los alias se pasan con `providers = { ... }` |
 
-Pruebas reales con Terraform 1.12.2:
-
-```console
-# Un módulo hijo intenta usar var.entorno, que solo existe en el padre
-$ terraform validate
-Error: Reference to undeclared input variable
-  on modules\nombre\main.tf line 16, in resource "random_pet" "this":
-  16:   prefix = var.entorno
-An input variable with the name "entorno" has not been declared.
-
-# El padre intenta leer un recurso interno del hijo
-$ echo 'module.nombres["web"].random_pet.this' | terraform console
-Error: Unsupported attribute
-```
-
 !!! tip "En el examen"
     "¿Cómo accede el módulo raíz al ID de un recurso creado dentro de un módulo hijo?" → el hijo debe **declarar un output** y el padre lo lee con `module.<nombre>.<output>`. No hay otra forma. Las variables del hijo sin `default` son **obligatorias** en el bloque `module`.
 
 ## 5c. Usar módulos
 
-Módulo hijo probado:
+Meta-argumentos que acepta un bloque `module`: `source`, `version`, `count`, `for_each`, `providers` y `depends_on`. Con `for_each`, cada instancia queda en el state como `module.nombres["api"].random_pet.this`:
 
-```hcl title="modules/nombre/main.tf"
-terraform {
-  required_providers {
-    random = {
-      source  = "hashicorp/random"
-      version = ">= 3.5" # en módulos reutilizables, solo versión mínima
-    }
-  }
-}
-
-variable "prefijo" {
-  type        = string
-  description = "Prefijo del nombre"
-}
-
-resource "random_pet" "this" {
-  prefix = var.prefijo
-}
-
-output "id" {
-  value = random_pet.this.id
-}
-```
-
-Llamada desde el módulo raíz, con `for_each` sobre el módulo:
-
-```hcl title="main.tf"
+```hcl
 module "nombres" {
   source   = "./modules/nombre"
   for_each = toset(["web", "api"])
@@ -121,70 +71,19 @@ module "nombres" {
   prefijo = "${var.entorno}-${each.key}"
 }
 
-output "nombres" {
-  value = { for k, m in module.nombres : k => m.id }
-}
-```
-
-```console
-$ terraform apply -auto-approve
-Outputs:
-
-nombres = {
-  "api" = "dev-api-meet-firefly"
-  "web" = "dev-web-bright-loon"
-}
-$ terraform state list
-module.nombres["api"].random_pet.this
-module.nombres["web"].random_pet.this
-```
-
-Meta-argumentos que acepta un bloque `module`: `source`, `version`, `count`, `for_each`, `providers` y `depends_on`.
-
-```hcl
-# Ilustrativo: pasar un provider con alias a un módulo
 module "replica" {
-  source = "./modules/bucket"
-
-  providers = {
-    aws = aws.europa
-  }
+  source    = "./modules/bucket"
+  providers = { aws = aws.europa } # provider con alias
 }
 ```
 
-### Estructura estándar de un módulo
-
-| Archivo | Contenido |
-| --- | --- |
-| `main.tf` | Recursos |
-| `variables.tf` | Inputs, con `description` y `type` |
-| `outputs.tf` | Outputs |
-| `versions.tf` | `required_providers` con versiones mínimas |
-| `README.md` | Documentación (el Registry la muestra) |
-| `examples/`, `modules/` | Ejemplos de uso y submódulos |
+Estructura estándar de un módulo: `main.tf`, `variables.tf` (con `description` y `type`), `outputs.tf`, `versions.tf` (versiones mínimas), `README.md` (el Registry la muestra) y opcionalmente `examples/` y `modules/`.
 
 Buenas prácticas: los módulos reutilizables **no** deben tener bloques `provider` propios (los recibe del raíz) y deben declarar versiones mínimas (`>=`), dejando que el raíz fije las exactas. Evita módulos que solo envuelven un recurso sin añadir valor.
 
 ## 5d. Versiones de módulos
 
-`version` solo funciona con módulos de un **registry** (público o privado). Acepta las mismas restricciones que los providers (`=`, `>=`, `~>`):
-
-```hcl
-module "vpc" {
-  source  = "terraform-aws-modules/vpc/aws"
-  version = "~> 6.0"
-  # ...
-}
-```
-
-Con un módulo local, Terraform lo rechaza (salida real):
-
-```console
-$ terraform init
-Error: Invalid registry module source address
-  on main.tf line 7, in module "nombres":
-Failed to parse module registry address: can't use local directory
-```
+`version` solo funciona con módulos de un **registry** (público o privado) y acepta las mismas restricciones que los providers (`=`, `>=`, `~>`). Con un módulo local, `init` falla con `Invalid registry module source address`.
 
 | Fuente | Cómo fijar la versión |
 | --- | --- |
@@ -199,13 +98,13 @@ Failed to parse module registry address: can't use local directory
 
 ## Casos de uso
 
-1. **Tres equipos crean la misma red con pequeñas diferencias.** Un módulo `red` con variables para CIDR y número de subredes, publicado en el **private registry** de HCP Terraform.
-2. **Usar un módulo de la comunidad para una VPC sin que cambie por sorpresa.** `source = "terraform-aws-modules/vpc/aws"` con `version = "~> 6.0"` y revisar el plan al hacer `init -upgrade`.
-3. **El módulo vive en un repositorio Git interno.** `source = "git::ssh://git@ejemplo.com/infra/red.git?ref=v2.1.0"`.
-4. **Crear el mismo componente para varios clientes.** `for_each` sobre el bloque `module` con un mapa de clientes.
-5. **El raíz necesita el ID de la subred creada dentro del módulo.** Output `subnet_id` en el módulo y referencia `module.red.subnet_id`.
-6. **Desplegar el módulo en una segunda región.** Provider con alias y `providers = { aws = aws.europa }` en el bloque `module`.
-7. **Mover recursos del raíz a un módulo nuevo sin recrearlos.** Bloques `moved` con `from = aws_s3_bucket.logs` y `to = module.logs.aws_s3_bucket.this` ([objetivo 6](objetivo-6-7-estado-y-mantenimiento.md#6d-drift-y-refactorizacion-del-state)).
+1. **Tres equipos crean la misma red con pequeñas diferencias** → módulo `red` con variables, publicado en el **private registry** de HCP Terraform.
+2. **Un módulo de la comunidad que no cambie por sorpresa** → `version = "~> 6.0"` y revisar el plan tras `init -upgrade`.
+3. **El módulo vive en un Git interno** → `source = "git::ssh://git@ejemplo.com/infra/red.git?ref=v2.1.0"`.
+4. **El mismo componente para varios clientes** → `for_each` sobre el bloque `module`.
+5. **El raíz necesita el ID de una subred del módulo** → output `subnet_id` y `module.red.subnet_id`.
+6. **Desplegar el módulo en otra región** → `providers = { aws = aws.europa }`.
+7. **Mover recursos del raíz a un módulo sin recrearlos** → bloques `moved` ([objetivo 6](objetivo-6-7-estado-y-mantenimiento.md#6d-drift-y-refactorizacion-del-state)).
 
 ## Preguntas de práctica
 
@@ -280,7 +179,6 @@ Failed to parse module registry address: can't use local directory
 - [Terraform workspaces](../../../devops/iac/terraform-workspaces.md#alternativa-un-directorio-por-entorno): un directorio por entorno que reutiliza módulos.
 - [Infrastructure as Code: panorama y herramientas](../../../devops/iac/infraestructura-como-codigo.md#estructura-de-un-repositorio-de-iac): estructura de repositorio y Terragrunt.
 - [Pruebas de infraestructura](../../../devops/iac/pruebas-infraestructura.md): probar módulos con `terraform test` y Terratest.
-- [Software supply chain](../../../devsecops/codigo-y-dependencias/cadena-suministro.md): version pinning de dependencias de terceros.
 - Siguiente: [Objetivos 6 y 7: state y mantenimiento](objetivo-6-7-estado-y-mantenimiento.md).
 
 !!! example "Practica en el laboratorio"
@@ -291,6 +189,5 @@ Failed to parse module registry address: can't use local directory
 - [Modules overview](https://developer.hashicorp.com/terraform/language/modules)
 - [Module sources](https://developer.hashicorp.com/terraform/language/modules/sources)
 - [Module block reference](https://developer.hashicorp.com/terraform/language/block/module)
-- [Module composition](https://developer.hashicorp.com/terraform/language/modules/develop/composition)
 - [Terraform Registry: publishing modules](https://developer.hashicorp.com/terraform/registry/modules/publish)
 - [HCP Terraform private registry](https://developer.hashicorp.com/terraform/cloud-docs/registry)

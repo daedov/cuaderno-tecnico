@@ -12,36 +12,26 @@ tags:
 > El dominio con más peso: acceso seguro a recursos con IAM y multi-cuenta, cargas de trabajo protegidas en la VPC y en el borde, y controles de datos con cifrado, gestión de claves y backups.
 
 !!! info "Qué evalúa este dominio"
-    - **Task 1.1 – Design secure access to AWS resources**: usuarios, grupos, roles y políticas; mínimo privilegio y MFA; acceso entre cuentas con STS; estrategia multi-cuenta con Organizations, Control Tower y SCPs; resource policies; federación con un directorio.
-    - **Task 1.2 – Design secure workloads and applications**: VPC con security groups, NACLs, route tables y NAT; segmentación en subnets públicas y privadas; service endpoints; Cognito, GuardDuty, Macie; Shield, WAF, Secrets Manager; VPN y Direct Connect.
-    - **Task 1.3 – Determine appropriate data security controls**: cifrado en reposo (KMS) y en tránsito (ACM/TLS), políticas de claves, rotación de claves y certificados, backups y replicación, retención, lifecycle y cumplimiento.
+    - **Task 1.1 – Design secure access to AWS resources**: mínimo privilegio, roles y STS entre cuentas, multi-cuenta con Organizations y SCPs, resource policies y federación.
+    - **Task 1.2 – Design secure workloads and applications**: segmentación de la VPC, endpoints, Cognito, WAF/Shield, detección de amenazas, VPN y Direct Connect.
+    - **Task 1.3 – Determine appropriate data security controls**: cifrado en reposo (KMS) y en tránsito (ACM/TLS), rotación de claves y certificados, backups, retención y cumplimiento.
 
     Formato y resto de dominios en el [resumen del examen](resumen-examen.md).
 
 ## IAM: identidades y tipos de políticas
 
-La base está en [IAM: AWS, Azure y GCP](../../../cloud/identidad-y-seguridad/iam-comparativa.md#aws-iam); aquí va lo que el examen exige distinguir.
+Usuarios, grupos, roles, MFA y root están en [Cloud Practitioner](../cloud-practitioner/dominio-2-seguridad-cumplimiento.md#gestion-de-identidades-y-accesos). Regla de diseño: personas por **IAM Identity Center**, aplicaciones con **roles** y credenciales temporales de **AWS STS** (instance profile en EC2, execution role en Lambda, task role en ECS).
 
-- **Root user** (usuario raíz): solo para tareas que lo requieren (cambiar el plan de soporte, cerrar la cuenta). Activa MFA y no crees access keys para él.
-- **IAM user** (usuario IAM): credenciales de larga duración. En diseños modernos se evita: las personas entran por **IAM Identity Center** y las aplicaciones usan **roles**.
-- **IAM role** (rol): identidad sin credenciales fijas; quien la asume recibe **temporary credentials** (credenciales temporales) de **AWS STS**. Es la respuesta correcta para EC2 (instance profile), Lambda (execution role), ECS (task role) y acceso entre cuentas.
-
-| Tipo de política | Dónde se adjunta | ¿Concede permisos? | Para qué |
+| Tipo de política | Se adjunta a | ¿Concede? | Para qué |
 | --- | --- | --- | --- |
-| **Identity-based policy** | Usuario, grupo o rol | Sí | Qué puede hacer esa identidad |
-| **Resource-based policy** | Recurso (bucket S3, cola SQS, clave KMS, función Lambda) | Sí, incluso a otras cuentas | Quién puede usar ese recurso; incluye un `Principal` |
-| **Permissions boundary** (límite de permisos) | Usuario o rol | No, solo limita | Tope máximo; típico para delegar la creación de roles a desarrolladores sin que escalen privilegios |
-| **Service control policy (SCP)** | Cuenta u OU en AWS Organizations | No, solo limita | Guardrail (barrera) para todas las identidades de las cuentas miembro, incluido su root |
-| **Resource control policy (RCP)** | Cuenta u OU en AWS Organizations | No, solo limita | Tope sobre lo que se puede hacer con los recursos de la organización (perímetro de datos) |
-| **Session policy** | Al asumir un rol o federarse | No, solo limita | Reducir permisos de una sesión concreta |
+| **Identity-based** | Usuario, grupo o rol | Sí | Qué puede hacer esa identidad |
+| **Resource-based** | Bucket S3, cola SQS, clave KMS, Lambda | Sí, incluso a otras cuentas | Quién usa el recurso; lleva `Principal` |
+| **Permissions boundary** (límite de permisos) | Usuario o rol | No, solo limita | Delegar la creación de roles sin escalar privilegios |
+| **SCP** (service control policy) | Cuenta u OU | No, solo limita | Guardrail (barrera) para las cuentas miembro, incluido su root |
+| **RCP** (resource control policy) | Cuenta u OU | No, solo limita | Perímetro de datos sobre los recursos de la organización |
+| **Session policy** | Sesión al asumir un rol | No, solo limita | Reducir permisos de una sesión concreta |
 
-### Cómo se evalúa una petición
-
-1. Por defecto todo está **denegado** (*implicit deny*).
-2. Un **explicit deny** (denegación explícita) en cualquier política gana siempre.
-3. SCPs, RCPs, permissions boundaries y session policies deben **permitir** la acción (intersección).
-4. Una identity-based **o** resource-based policy debe concederla.
-5. **Entre cuentas** hacen falta **las dos partes**: la cuenta origen debe permitirle a su identidad la acción y el recurso de la cuenta destino debe confiar en ella (resource policy o trust policy del rol).
+**Evaluación**: todo empieza denegado; un **explicit deny** gana siempre; las políticas que solo limitan deben permitir la acción (intersección) y una identity-based **o** resource-based debe concederla. **Entre cuentas** hacen falta las dos partes: origen y destino.
 
 !!! tip "En el examen"
     - Las SCPs **no afectan a la management account** (cuenta de administración) y **no conceden** permisos: si una pregunta propone "dar acceso con una SCP", es incorrecta.
@@ -50,159 +40,92 @@ La base está en [IAM: AWS, Azure y GCP](../../../cloud/identidad-y-seguridad/ia
 
 ### Acceso entre cuentas (cross-account)
 
-```mermaid
-flowchart LR
-    U[Rol o usuario en cuenta A] -->|sts:AssumeRole| R[Rol en cuenta B]
-    R -->|trust policy: confía en cuenta A| U
-    R -->|permisos del rol| S3[(Bucket en cuenta B)]
-```
-
-- El rol de la cuenta B tiene una **trust policy** (política de confianza) que nombra a la cuenta A; la identidad de A necesita `sts:AssumeRole` sobre ese rol.
-- Para terceros (un proveedor SaaS que accede a tu cuenta) añade un **External ID** en la trust policy para evitar el problema del *confused deputy* (suplente confundido).
-- Alternativa para S3, SQS, SNS o KMS: una **resource-based policy** que conceda a la otra cuenta. La diferencia: con resource policy la identidad conserva sus permisos originales; al asumir un rol, los "cambia" por los del rol.
+- Rol en B con **trust policy** (política de confianza) que nombra a A; la identidad de A necesita `sts:AssumeRole`. Para un SaaS de terceros, añade **External ID** (evita el *confused deputy*).
+- Alternativa en S3, SQS, SNS o KMS: **resource-based policy**. La identidad conserva sus permisos; al asumir un rol, los cambia por los del rol.
 
 ### Federación e identidades de usuarios
 
 | Necesidad | Servicio |
 | --- | --- |
-| Empleados entran a muchas cuentas con su usuario corporativo (Entra ID, Okta, Active Directory) | **AWS IAM Identity Center** con permission sets (SAML 2.0 + SCIM) |
-| Aplicaciones en AWS que necesitan Active Directory real (Windows, Kerberos, GPO) | **AWS Managed Microsoft AD** (AWS Directory Service) |
-| Usar el AD on-premises existente sin copiar usuarios a AWS | **AD Connector** (proxy hacia tu AD) |
-| Usuarios finales de una app web o móvil (registro, login, redes sociales) | **Amazon Cognito user pools** |
-| Usuarios de la app que deben acceder **directamente** a S3 o DynamoDB con credenciales temporales | **Amazon Cognito identity pools** |
+| Empleados con usuario corporativo (Entra ID, Okta, AD) en muchas cuentas | **IAM Identity Center** con permission sets (SAML 2.0 + SCIM) |
+| Apps en AWS que necesitan AD real (Kerberos, GPO) | **AWS Managed Microsoft AD** |
+| Usar el AD on-premises sin copiar usuarios | **AD Connector** (proxy) |
+| Usuarios finales de una app web o móvil | **Cognito user pools** |
+| Esos usuarios acceden **directamente** a S3 o DynamoDB | **Cognito identity pools** |
 
 !!! tip "En el examen: Cognito"
-    **User pool = autenticación** (quién eres; devuelve tokens JWT). **Identity pool = autorización a recursos AWS** (te da credenciales temporales de un rol IAM). Muchas apps usan los dos: login en el user pool y luego intercambio del token en el identity pool.
+    **User pool = autenticación** (quién eres; devuelve tokens JWT). **Identity pool = autorización a recursos AWS** (credenciales temporales de un rol IAM). Muchas apps usan los dos.
 
 ## Estrategia multi-cuenta
 
-Separar cargas en cuentas distintas es el límite de seguridad más fuerte de AWS. La teoría está en [Gobernanza](../../../cloud/operacion-y-gobierno/gobernanza.md#estrategia-multi-cuenta).
-
-| Servicio | Qué aporta |
-| --- | --- |
-| **AWS Organizations** | Agrupa cuentas en OUs, consolidated billing (facturación consolidada), SCPs y RCPs |
-| **AWS Control Tower** | Despliega una **landing zone** con buenas prácticas: cuentas de log archive y audit, guardrails preventivos (SCP) y detectivos (Config), Account Factory |
-| **AWS RAM** (Resource Access Manager) | Compartir recursos entre cuentas sin duplicarlos (subnets de una VPC, Transit Gateway, reglas de Route 53 Resolver) |
-| **CloudTrail organization trail** | Un solo trail para todas las cuentas hacia un bucket central |
+La cuenta es el límite de seguridad más fuerte de AWS (teoría en [Gobernanza](../../../cloud/operacion-y-gobierno/gobernanza.md#estrategia-multi-cuenta)). **AWS Organizations** aporta OUs, consolidated billing, SCPs y RCPs; **AWS Control Tower** despliega una **landing zone** con cuentas de log archive y audit, guardrails preventivos (SCP) y detectivos (Config) y Account Factory; **AWS RAM** (Resource Access Manager) comparte recursos entre cuentas sin duplicarlos (subnets, Transit Gateway, reglas de Route 53 Resolver), y un **CloudTrail organization trail** lleva los logs de todas las cuentas a un bucket central.
 
 ## Seguridad de red en la VPC
 
-Repasa primero [Redes en la nube](../../../cloud/redes-y-datos/redes.md#firewalls-stateful-y-stateless) y [Seguridad de red](../../../networking/avanzado/seguridad-red.md).
-
-| Aspecto | Security group | Network ACL |
-| --- | --- | --- |
-| Nivel | Interfaz de red (ENI) / instancia | Subnet |
-| Estado | **Stateful**: el tráfico de retorno se permite solo | **Stateless**: debes permitir también el retorno (puertos efímeros 1024–65535) |
-| Reglas | Solo **allow** | **Allow y deny** |
-| Evaluación | Todas las reglas | En orden por número; gana la primera que coincide |
-| Referencias | Puede referenciar otro security group como origen | Solo CIDR |
-| Uso típico | Control fino por capa (web → app → db) | Bloquear una IP o rango concreto a nivel de subnet |
+La tabla básica está en [Security groups vs network ACLs](../cloud-practitioner/dominio-3-tecnologia-servicios.md#security-groups-vs-network-acls). Lo que añade SAA: la NACL, por ser stateless, necesita reglas de retorno para los **puertos efímeros** (1024–65535) y evalúa en orden por número (gana la primera que coincide); el security group puede usar **otro security group como origen**, la NACL solo CIDR.
 
 !!! tip "En el examen"
     "Bloquear una IP maliciosa concreta" → **NACL** (los security groups no tienen deny). "Permitir que solo la capa de aplicación llegue a la base de datos" → regla en el security group de la DB con **origen = security group de la app**.
 
-**Segmentación típica**: subnets públicas (ruta `0.0.0.0/0` → Internet Gateway) solo para load balancers y NAT gateways; subnets privadas para aplicación y datos, que salen a internet a través del **NAT gateway** (solo salida). Para administrar instancias privadas sin bastion host ni puerto 22 abierto: **Systems Manager Session Manager**.
+**Segmentación típica**: subnets públicas (ruta `0.0.0.0/0` → Internet Gateway) solo para load balancers y NAT gateways; subnets privadas para aplicación y datos, que salen por el **NAT gateway**. Para administrar instancias privadas sin bastion ni puerto 22: **Systems Manager Session Manager**.
 
 ### VPC endpoints y PrivateLink
 
-Sirven para llegar a servicios de AWS **sin pasar por internet ni por el NAT gateway**.
+Llegar a servicios de AWS **sin pasar por internet ni por el NAT gateway**.
 
 | Aspecto | Gateway endpoint | Interface endpoint (AWS PrivateLink) |
 | --- | --- | --- |
-| Servicios | Solo **S3 y DynamoDB** | La mayoría de servicios de AWS, servicios SaaS y tus propios servicios |
-| Cómo funciona | Entrada en la **route table** hacia un prefix list | Una **ENI con IP privada** en tu subnet y DNS privado |
+| Servicios | Solo **S3 y DynamoDB** | Casi todos los de AWS, SaaS y tus propios servicios |
+| Cómo funciona | Entrada en la **route table** | **ENI con IP privada** en tu subnet |
 | Costo | Sin cargo | Por hora por AZ + por GB procesado |
 | Acceso desde on-premises (VPN/DX) o desde otra región | No | Sí |
 | Control | Endpoint policy | Endpoint policy + security group |
 
-```mermaid
-flowchart LR
-    subgraph VPC
-        App[EC2 en subnet privada] --> RT[Route table]
-        App --> ENI[Interface endpoint ENI]
-    end
-    RT -->|prefix list de S3| GW[Gateway endpoint] --> S3[(Amazon S3)]
-    ENI --> SM[Secrets Manager / SQS / KMS]
-```
-
-- Puedes forzar en la **bucket policy** que solo se acceda desde un endpoint con la condición `aws:SourceVpce`.
-- Para **exponer tu propio servicio** a otras VPC o cuentas sin peering y sin solapamiento de CIDR: crea un **endpoint service** detrás de un **Network Load Balancer** (o Gateway Load Balancer) y los consumidores crean interface endpoints.
+- Forzar en la **bucket policy** el acceso solo desde un endpoint: condición `aws:SourceVpce`.
+- **Exponer tu propio servicio** a otras VPC o cuentas sin peering ni solapamiento de CIDR: **endpoint service** detrás de un **Network Load Balancer** (o Gateway Load Balancer).
 
 ### Conexiones externas seguras
 
-| Opción | Cifrado | Cuándo |
-| --- | --- | --- |
-| **AWS Site-to-Site VPN** | IPsec sobre internet | Rápido de montar, ancho de banda moderado, respaldo de Direct Connect |
-| **AWS Client VPN** | TLS (OpenVPN) | Usuarios remotos individuales que entran a la VPC |
-| **AWS Direct Connect** | **No cifra por defecto** | Enlace privado dedicado, latencia consistente, mucho volumen |
-| Direct Connect + VPN (o MACsec) | IPsec sobre DX, o MACsec en conexiones dedicadas compatibles | Requisito de enlace privado **y** cifrado |
-
-El detalle de rendimiento y costo está en el [Dominio 3](dominio-3-arquitecturas-alto-rendimiento.md#conectividad-hibrida-vpn-vs-direct-connect).
+Site-to-Site VPN (IPsec), Client VPN (TLS) y Direct Connect se comparan en el [Dominio 3](dominio-3-arquitecturas-alto-rendimiento.md#conectividad-hibrida-vpn-vs-direct-connect). La trampa de seguridad: **Direct Connect no cifra por defecto**. Si piden enlace privado **y** cifrado → Direct Connect + VPN IPsec sobre DX, o MACsec en conexiones dedicadas compatibles.
 
 ## Protección del borde y detección de amenazas
 
-| Servicio | Protege contra | Dónde se aplica |
-| --- | --- | --- |
-| **AWS WAF** | Ataques de capa 7: SQL injection, XSS, bots, rate limiting, bloqueo por país o IP | CloudFront, ALB, API Gateway, AppSync, Cognito user pools, App Runner, Verified Access |
-| **AWS Shield Standard** | DDoS de capa 3/4 | Automático y gratis en todas las cuentas |
-| **AWS Shield Advanced** | DDoS más sofisticado; incluye equipo de respuesta (SRT), protección de costos por escalado durante un ataque y métricas | CloudFront, Route 53, Global Accelerator, ELB, Elastic IP; suscripción con costo alto y compromiso anual |
-| **AWS Firewall Manager** | Gestión central de reglas WAF, Shield Advanced, security groups y Network Firewall | Toda la organización |
-| **AWS Network Firewall** | Filtrado stateful, IPS, filtrado por dominio en el tráfico de la VPC | Subnets de inspección de la VPC |
-
-| Servicio de detección | Qué hace |
-| --- | --- |
-| **Amazon GuardDuty** | Detección de amenazas con ML sobre CloudTrail, VPC Flow Logs, DNS logs, S3, EKS, etc. (cripto-minería, credenciales filtradas) |
-| **Amazon Inspector** | Escaneo de vulnerabilidades (CVE) en EC2, imágenes de ECR y Lambda |
-| **Amazon Macie** | Descubre **datos sensibles (PII)** en S3 |
-| **Amazon Detective** | Investigación: grafos de relaciones para analizar un hallazgo |
-| **AWS Security Hub** | Agrega hallazgos y evalúa estándares (CIS, AWS Foundational Security Best Practices) |
-| **AWS Config** | Historial de configuración y reglas de cumplimiento |
-| **AWS CloudTrail** | Quién hizo qué llamada a la API y cuándo (auditoría) |
+Qué hace cada servicio (GuardDuty, Inspector, Macie, Detective, Security Hub, WAF, Shield) está en [Servicios que hay que distinguir](../cloud-practitioner/dominio-2-seguridad-cumplimiento.md#servicios-que-hay-que-distinguir). En SAA importa **dónde se aplica**: **WAF** en CloudFront, ALB, API Gateway, AppSync, Cognito user pools, App Runner y Verified Access; **Shield Advanced** en CloudFront, Route 53, Global Accelerator, ELB y Elastic IP (costo alto y compromiso anual); **Firewall Manager** aplica reglas WAF, Shield Advanced, security groups y Network Firewall en toda la organización; **AWS Network Firewall** hace filtrado stateful, IPS y por dominio en subnets de inspección de la VPC.
 
 !!! tip "En el examen"
     Palabras clave: "PII en buckets" → **Macie**; "actividad maliciosa o comprometida" → **GuardDuty**; "CVE en instancias o imágenes" → **Inspector**; "SQL injection / XSS" → **WAF**; "DDoS con soporte 24/7 y protección de costos" → **Shield Advanced**; "quién borró el recurso" → **CloudTrail**; "el recurso cambió de configuración / no cumple" → **Config**.
 
 ## Cifrado y gestión de claves
 
-Conceptos generales (envelope encryption, quién gestiona la clave) en [Seguridad base](../../../cloud/identidad-y-seguridad/seguridad-base.md#cifrado-en-transito-y-en-reposo).
+KMS vs CloudHSM a nivel básico en [Cloud Practitioner](../cloud-practitioner/dominio-2-seguridad-cumplimiento.md); envelope encryption en [Seguridad de cifrado y secretos](../../../cloud/seguridad/seguridad-cifrado-secretos.md#envelope-encryption-y-modelos-de-clave).
 
-### AWS KMS y CloudHSM
+| Tipo de clave | Rotación | Key policy editable | Uso típico |
+| --- | --- | --- | --- |
+| **AWS owned key** | AWS | No (ni la ves) | Cifrado por defecto de algunos servicios |
+| **AWS managed key** (`aws/s3`, `aws/rds`) | Automática anual | No | Cifrado sencillo sin control fino |
+| **Customer managed key** | Automática opcional (periodo configurable) o manual | **Sí** | Controlar quién la usa, acceso entre cuentas, auditoría, desactivarla |
+| Material importado (BYOK) | Solo manual | Sí | Generar la clave fuera de AWS |
+| **AWS CloudHSM** | Tú | N/A | HSM dedicado de un solo tenant, FIPS 140 nivel 3 |
 
-| Tipo de clave | Quién la gestiona | Rotación | Política de clave editable | Uso típico |
-| --- | --- | --- | --- | --- |
-| **AWS owned key** | AWS, compartida entre cuentas | AWS | No (ni la ves) | Cifrado por defecto de algunos servicios |
-| **AWS managed key** (`aws/s3`, `aws/rds`) | AWS, en tu cuenta | Automática anual | No | Cifrado sencillo sin control fino |
-| **Customer managed key** | Tú | Automática opcional (periodo configurable) o manual | **Sí** | Control de quién usa la clave, acceso entre cuentas, auditoría, desactivar o programar el borrado |
-| Material importado (BYOK) | Tú generas el material | Solo manual | Sí | Requisito de generar la clave fuera de AWS |
-| **AWS CloudHSM** | Tú, en HSM dedicados de un solo tenant | Tú | N/A | Requisitos de HSM dedicado, control exclusivo de las claves, FIPS 140 nivel 3 |
-
-- KMS cifra directamente solo datos pequeños (hasta 4 KB); para lo demás usa **envelope encryption** con data keys.
-- Las claves KMS son **regionales**. Para cifrar en una región y descifrar en otra (DR, tablas globales) existen las **multi-Region keys**.
-- Para compartir un snapshot cifrado entre cuentas: debe estar cifrado con una **customer managed key** cuya key policy permita a la otra cuenta (no se puede con una AWS managed key).
+- KMS cifra directamente solo datos de hasta 4 KB; para lo demás, **envelope encryption** con data keys.
+- Las claves KMS son **regionales**; para cifrar en una región y descifrar en otra, **multi-Region keys**.
+- Compartir un snapshot cifrado entre cuentas exige una **customer managed key** cuya key policy permita a la otra cuenta (no se puede con una AWS managed key).
 
 ### Cifrado en S3
 
 | Opción | Clave | Cuándo |
 | --- | --- | --- |
 | **SSE-S3** | Gestionada por S3 | Cifrado por defecto de todos los objetos nuevos desde 2023 |
-| **SSE-KMS** | Clave KMS | Auditoría en CloudTrail de cada uso de la clave y control por key policy; activa **S3 Bucket Keys** para reducir llamadas (y costo) a KMS |
-| **DSSE-KMS** | Clave KMS, doble capa | Requisitos de cumplimiento que exigen dos capas de cifrado |
+| **SSE-KMS** | Clave KMS | Auditoría de cada uso en CloudTrail; **S3 Bucket Keys** reduce llamadas (y costo) a KMS |
+| **DSSE-KMS** | Clave KMS, doble capa | Cumplimiento que exige dos capas de cifrado |
 | **SSE-C** | La envías tú en cada petición | No quieres que AWS guarde la clave |
 | Client-side encryption | Cifras antes de subir | Los datos no pueden llegar sin cifrar a AWS |
 
-Para forzar cifrado en tránsito: condición `aws:SecureTransport` = `false` con `Deny` en la bucket policy.
+Forzar cifrado en tránsito: `Deny` con `aws:SecureTransport` = `false` en la bucket policy.
 
 ### Secretos y certificados
 
-| Aspecto | AWS Secrets Manager | SSM Parameter Store |
-| --- | --- | --- |
-| Para qué | Credenciales de bases de datos, API keys, tokens | Configuración y parámetros; también secretos simples (`SecureString` con KMS) |
-| **Rotación automática** | **Sí** (gestionada para RDS, Aurora, Redshift, DocumentDB; con Lambda para el resto) | No nativa |
-| Replicación entre regiones | Sí | No |
-| Costo | Por secreto al mes + llamadas a la API | Tier Standard sin costo adicional; Advanced con costo |
-| Tamaño | Hasta 64 KB | 4 KB (Standard) / 8 KB (Advanced) |
-
-- **AWS Certificate Manager (ACM)**: certificados TLS públicos gratuitos para servicios integrados (ELB, CloudFront, API Gateway) con **renovación automática**. Para CloudFront, el certificado debe estar en **us-east-1**. Para certificados internos, **AWS Private CA**.
+Secrets Manager vs Parameter Store en [Cloud Practitioner](../cloud-practitioner/dominio-2-seguridad-cumplimiento.md#gestion-de-identidades-y-accesos). SAA añade: Secrets Manager rota de forma **gestionada** RDS, Aurora, Redshift y DocumentDB (Lambda para el resto) y replica entre regiones. **ACM** da certificados TLS públicos gratis con **renovación automática** para ELB, CloudFront y API Gateway; para CloudFront, en **us-east-1**. Internos: **AWS Private CA**.
 
 !!! tip "En el examen"
     "Rotar la contraseña de RDS automáticamente cada 30 días con el menor esfuerzo" → **Secrets Manager**. "Guardar parámetros de configuración de forma barata" → **Parameter Store**. "Certificado que se renueve solo en el ALB" → **ACM**.
@@ -211,24 +134,21 @@ Para forzar cifrado en tránsito: condición `aws:SecureTransport` = `false` con
 
 | Necesidad | Solución |
 | --- | --- |
-| Recuperar objetos borrados o sobrescritos | **S3 Versioning** (+ MFA Delete para proteger el borrado de versiones) |
-| WORM: nadie puede borrar durante X años (normativa) | **S3 Object Lock** en modo **Compliance** (ni root puede); modo **Governance** permite a usuarios con permiso especial saltarlo; **Legal hold** sin fecha |
-| Copia en otra región por cumplimiento o latencia | **S3 Cross-Region Replication (CRR)**; requiere versioning |
-| Evitar buckets públicos por error | **S3 Block Public Access** a nivel de cuenta + Object Ownership "Bucket owner enforced" (ACLs desactivadas) |
+| Recuperar objetos borrados o sobrescritos | **S3 Versioning** (+ MFA Delete) |
+| WORM: nadie borra durante X años | **Object Lock** modo **Compliance** (ni root); **Governance** se salta con permiso especial; **Legal hold** sin fecha |
+| Copia en otra región | **S3 Cross-Region Replication (CRR)**; requiere versioning |
+| Evitar buckets públicos por error | **S3 Block Public Access** a nivel de cuenta + ACLs desactivadas |
 | Compartir un objeto temporalmente | **Presigned URL** (URL prefirmada) |
-| Backups centralizados con retención y copia entre regiones o cuentas | **AWS Backup** con backup plans y **Backup Vault Lock** (inmutable) |
+| Backups centralizados entre regiones o cuentas | **AWS Backup** + **Backup Vault Lock** (inmutable) |
 | Point-in-time recovery | RDS/Aurora (backups automáticos, retención hasta 35 días), DynamoDB PITR |
 
 ## Casos de uso
 
-1. **Una empresa quiere que sus 40 cuentas de AWS no puedan desactivar CloudTrail, ni siquiera con el usuario root de cada cuenta.** → SCP que deniegue `cloudtrail:StopLogging` y `cloudtrail:DeleteTrail` en la OU raíz. Las SCPs aplican también al root de las cuentas miembro.
-2. **Una aplicación en EC2 debe leer objetos de un bucket en otra cuenta.** → Rol de instancia en la cuenta A + bucket policy en la cuenta B que permita ese rol (o rol en B asumido desde A). Nunca access keys en la instancia.
-3. **Las instancias privadas descargan gigabytes diarios de S3 y la factura del NAT gateway es alta.** → **Gateway endpoint** de S3: sin costo y el tráfico no pasa por el NAT. Además mejora la seguridad.
-4. **Una app móvil necesita que cada usuario suba fotos directamente a su carpeta de S3.** → Cognito user pool para login + **identity pool** con un rol que use la variable `${cognito-identity.amazonaws.com:sub}` en el prefijo permitido.
-5. **Un banco necesita conexión privada a AWS con latencia estable y cifrado de extremo a extremo.** → Direct Connect + Site-to-Site VPN sobre la conexión (o MACsec si la conexión lo soporta).
-6. **Auditoría exige saber quién usó la clave de cifrado de los datos de clientes y poder revocarla.** → SSE-KMS con **customer managed key**: cada uso queda en CloudTrail y puedes desactivar la clave o restringir la key policy.
-7. **Una API pública recibe miles de peticiones por segundo desde unas pocas IPs.** → AWS WAF con **rate-based rule** en el ALB o en CloudFront.
-8. **Registros financieros deben conservarse 7 años sin posibilidad de borrado.** → S3 Object Lock en modo **Compliance** con retención de 7 años, más lifecycle a Glacier Deep Archive para costo.
+1. **40 cuentas no deben poder desactivar CloudTrail, ni con su root** → SCP que deniegue `cloudtrail:StopLogging` y `cloudtrail:DeleteTrail` en la OU raíz.
+2. **EC2 lee un bucket de otra cuenta** → rol de instancia en A + bucket policy en B que permita ese rol. Nunca access keys.
+3. **Factura alta del NAT gateway por descargas de S3** → **gateway endpoint** de S3 (gratis y más seguro).
+4. **Banco: enlace privado, latencia estable y cifrado** → Direct Connect + Site-to-Site VPN (o MACsec).
+5. **Saber quién usó la clave de los datos de clientes y poder revocarla** → SSE-KMS con **customer managed key**.
 
 ## Preguntas de práctica
 
@@ -295,32 +215,18 @@ Para forzar cifrado en tránsito: condición `aws:SecureTransport` = `false` con
 
 ## Para profundizar
 
-- [IAM: AWS, Azure y GCP](../../../cloud/identidad-y-seguridad/iam-comparativa.md): políticas, roles y buenas prácticas.
-- [Seguridad base](../../../cloud/identidad-y-seguridad/seguridad-base.md): cifrado, KMS, secretos, WAF, detección y auditoría.
+- [IAM: AWS, Azure y GCP](../../../cloud/fundamentos/iam-comparativa.md): políticas, roles y buenas prácticas.
+- [Fundamentos de seguridad cloud](../../../cloud/seguridad/fundamentos-seguridad-cloud.md): cifrado, KMS, secretos, WAF, detección y auditoría.
 - [Gobernanza](../../../cloud/operacion-y-gobierno/gobernanza.md): landing zone, SCPs y multi-cuenta.
 - [Redes en la nube](../../../cloud/redes-y-datos/redes.md) y [Seguridad de red](../../../networking/avanzado/seguridad-red.md): segmentación, firewalls y VPN.
-- [Secretos e identidades](../../../devsecops/identidades-y-pipeline/secretos-identidades.md): rotación y OIDC desde el pipeline.
-- [Responsabilidad compartida](../../../cloud/fundamentos/responsabilidad-compartida.md).
-
-## Relación con otras secciones
-
-| Enfoque | Qué se mira desde ahí | Nota |
-| --- | --- | --- |
-| Cloud (el control) | IAM, KMS, VPC y servicios de seguridad | [IAM](../../../cloud/identidad-y-seguridad/iam-comparativa.md), [Seguridad base](../../../cloud/identidad-y-seguridad/seguridad-base.md) |
-| DevOps (la automatización) | Roles y redes definidos como código | [Infrastructure as Code](../../../devops/iac/infraestructura-como-codigo.md) |
-| DevSecOps (la verificación) | Detectar `*:*`, puertos abiertos y buckets públicos | [Seguridad de IaC](../../../devsecops/infraestructura-y-contenedores/seguridad-iac.md), [CSPM](../../../devsecops/escaneos/cspm.md), [Cumplimiento](../../../devsecops/gobierno-y-respuesta/cumplimiento.md) |
-| Networking (la base) | Firewalls, VPN y segmentación | [Seguridad de red](../../../networking/avanzado/seguridad-red.md) |
-| Laboratorios (la práctica) | Practicar esto paso a paso | [Lab 17: AWS: VPC con subnets públicas y privadas y una EC2](../../../laboratorios/cloud/aws-vpc-ec2.md) |
+- [Seguridad de IaC](../../../devsecops/infraestructura-y-contenedores/seguridad-iac.md) y [CSPM](../../../devsecops/escaneos/cspm.md): detectar `*:*`, puertos abiertos y buckets públicos.
+- [Lab 17: AWS: VPC con subnets públicas y privadas y una EC2](../../../laboratorios/cloud/aws-vpc-ec2.md).
 
 ## Referencias
 
 - [Exam guide SAA-C03: Domain 1](https://docs.aws.amazon.com/aws-certification/latest/solutions-architect-associate-03/solutions-architect-associate-03-domain1.html)
 - [Policy evaluation logic (IAM)](https://docs.aws.amazon.com/IAM/latest/UserGuide/reference_policies_evaluation-logic.html)
 - [Service control policies](https://docs.aws.amazon.com/organizations/latest/userguide/orgs_manage_policies_scps.html)
-- [Permissions boundaries](https://docs.aws.amazon.com/IAM/latest/UserGuide/access_policies_boundaries.html)
 - [AWS PrivateLink y VPC endpoints](https://docs.aws.amazon.com/vpc/latest/privatelink/concepts.html)
-- [Security groups vs network ACLs](https://docs.aws.amazon.com/vpc/latest/userguide/infrastructure-security.html)
 - [AWS KMS concepts](https://docs.aws.amazon.com/kms/latest/developerguide/concepts.html)
-- [Amazon Cognito](https://docs.aws.amazon.com/cognito/latest/developerguide/what-is-amazon-cognito.html)
-- [S3 Object Lock](https://docs.aws.amazon.com/AmazonS3/latest/userguide/object-lock.html)
 - [AWS Security Reference Architecture](https://docs.aws.amazon.com/prescriptive-guidance/latest/security-reference-architecture/welcome.html)

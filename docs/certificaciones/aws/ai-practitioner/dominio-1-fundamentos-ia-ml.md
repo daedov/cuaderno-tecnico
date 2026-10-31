@@ -22,89 +22,29 @@ tags:
 
 Son círculos concéntricos: cada uno es un subconjunto del anterior, salvo la IA agéntica, que es una forma de **usar** los modelos.
 
-```mermaid
-flowchart TB
-    subgraph IA["Artificial Intelligence (IA)"]
-        subgraph ML["Machine Learning"]
-            subgraph DL["Deep Learning"]
-                GEN["Generative AI<br/>(foundation models, LLMs)"]
-            end
-        end
-    end
-    GEN --> AG["Agentic AI<br/>(el modelo planifica y usa herramientas)"]
-```
-
 | Término | Qué es | Ejemplo |
 | --- | --- | --- |
-| **Artificial intelligence** (inteligencia artificial, IA) | Cualquier técnica que permite a una máquina imitar capacidades humanas: razonar, percibir, decidir. Incluye reglas escritas a mano | Un sistema experto con reglas `if/else` |
-| **Machine learning** (aprendizaje automático, ML) | Subconjunto de la IA en que el sistema **aprende patrones de los datos** en vez de seguir reglas programadas | Un modelo que aprende a detectar fraude con transacciones históricas |
-| **Deep learning** (aprendizaje profundo) | ML con **neural networks** (redes neuronales) de muchas capas. Destaca con datos no estructurados: imágenes, audio, texto | Reconocer caras en fotos |
-| **Generative AI** (IA generativa, GenAI) | Deep learning que **genera contenido nuevo** (texto, imagen, audio, código) a partir de un prompt | Redactar un correo o crear una imagen |
-| **Agentic AI** (IA agéntica) | Sistemas en que un modelo **planifica pasos, llama herramientas y actúa** para cumplir un objetivo, con poca intervención humana | Un agente que revisa un pedido, consulta el inventario y abre un ticket |
+| **Artificial intelligence** (inteligencia artificial, IA) | Cualquier técnica que imita capacidades humanas; incluye reglas escritas a mano | Un sistema experto con reglas `if/else` |
+| **Machine learning** (aprendizaje automático, ML) | El sistema **aprende patrones de los datos** en vez de seguir reglas programadas | Detectar fraude con transacciones históricas |
+| **Deep learning** (aprendizaje profundo) | ML con **neural networks** (redes neuronales) de muchas capas; destaca con imágenes, audio y texto | Reconocer caras en fotos |
+| **Generative AI** (IA generativa, GenAI) | Deep learning que **genera contenido nuevo** a partir de un prompt (ver [Dominio 2](dominio-2-fundamentos-ia-generativa.md)) | Redactar un correo o crear una imagen |
+| **Agentic AI** (IA agéntica) | Un modelo **planifica pasos, llama herramientas y actúa** para cumplir un objetivo | Un agente que revisa un pedido, consulta el inventario y abre un ticket |
 
-### Vocabulario básico
-
-- **Algorithm** (algoritmo): el procedimiento matemático que aprende (por ejemplo, regresión lineal, XGBoost, una red neuronal).
-- **Model** (modelo): el resultado de entrenar un algoritmo con datos. Es lo que haces llegar a producción.
-- **Training** (entrenamiento): ajustar los **parámetros** del modelo con datos para que reduzca su error.
-- **Inference** (inferencia): usar el modelo ya entrenado para predecir o generar con datos nuevos.
-- **Neural network** (red neuronal): capas de nodos ("neuronas") conectados con pesos; cada capa transforma la entrada y la pasa a la siguiente.
-- **Computer vision** (visión por computadora): IA que interpreta imágenes y video.
-- **Natural language processing** (procesamiento de lenguaje natural, NLP): IA que entiende o genera lenguaje humano.
-- **Large language model** (modelo de lenguaje grande, LLM): modelo de deep learning entrenado con enormes cantidades de texto para entender y generar lenguaje.
-- **Bias** (sesgo): error sistemático que favorece o perjudica a ciertos grupos o resultados (ver [Dominio 4](dominio-4-ia-responsable.md)).
-- **Fairness** (equidad): que el modelo trate de forma justa a distintos grupos.
-- **Fit** (ajuste): qué tan bien se adapta el modelo a los datos. Ver [overfitting y underfitting](#overfitting-y-underfitting).
+Vocabulario mínimo: **model** (modelo) es el resultado de entrenar un **algorithm** con datos; **training** ajusta sus parámetros; **inference** (inferencia) es usarlo con datos nuevos. **Computer vision** interpreta imágenes y video; **NLP** (*natural language processing*) entiende o genera lenguaje; un **LLM** (*large language model*) es un modelo de deep learning entrenado con enormes cantidades de texto. **Bias** (sesgo) y **fairness** (equidad) se ven en el [Dominio 4](dominio-4-ia-responsable.md).
 
 ## Tipos de datos
 
-| Tipo | Qué es | Ejemplo |
-| --- | --- | --- |
-| **Labeled data** (datos etiquetados) | Cada ejemplo trae la respuesta correcta (*label*, etiqueta) | Correos marcados como "spam" / "no spam" |
-| **Unlabeled data** (datos sin etiquetar) | Solo entradas, sin respuesta | Millones de documentos sin clasificar |
-| **Structured data** (estructurados) | Filas y columnas con esquema fijo | Una tabla de clientes en RDS |
-| **Unstructured data** (no estructurados) | Sin esquema fijo | Texto libre, imágenes, audio, video |
-| **Tabular** | Datos en tabla (un tipo de estructurado) | CSV de ventas |
-| **Time-series** (series temporales) | Valores ordenados en el tiempo | Métricas de CPU por minuto, ventas diarias |
-| **Image / text** | No estructurados por naturaleza | Fotos de productos, reseñas |
+**Labeled data** (etiquetados: cada ejemplo trae la respuesta, como correos marcados "spam") frente a **unlabeled data** (solo entradas). **Structured / tabular** (filas y columnas con esquema fijo) frente a **unstructured** (texto libre, imágenes, audio, video). **Time-series** (series temporales): valores ordenados en el tiempo, como ventas diarias.
 
 ## Tipos de aprendizaje
 
-```mermaid
-flowchart LR
-    A["¿Tienes la respuesta correcta<br/>para cada ejemplo?"] -->|Sí| S["Supervised learning"]
-    A -->|No| B["¿Buscas estructura<br/>en los datos?"]
-    B -->|Sí| U["Unsupervised learning"]
-    A -->|"No, pero hay recompensas<br/>por acción"| R["Reinforcement learning"]
-    S --> C["Classification<br/>(categoría)"]
-    S --> RG["Regression<br/>(número)"]
-    U --> CL["Clustering"]
-    U --> AN["Anomaly detection"]
-    U --> DR["Dimensionality reduction"]
-```
+| Tipo | Datos | Tareas |
+| --- | --- | --- |
+| **Supervised learning** (supervisado) | Etiquetados: pares entrada → respuesta | **Classification** (clasificación): predice una **categoría**, binaria o multiclase (regresión logística, árboles, XGBoost). **Regression** (regresión): predice un **valor numérico** continuo (regresión lineal) |
+| **Unsupervised learning** (no supervisado) | Sin etiquetas: busca estructura | **Clustering** (agrupamiento, p. ej. k-means), **anomaly detection** (detección de anomalías), **dimensionality reduction** (p. ej. PCA) |
+| **Reinforcement learning** (por refuerzo, RL) | Un **agent** actúa en un **environment** y recibe **rewards** (recompensas) | Aprende por prueba y error la **policy** que maximiza la recompensa: robótica, juegos, rutas y **RLHF** para alinear LLMs (ver [Dominio 3](dominio-3-aplicaciones-modelos-fundacionales.md#entrenamiento-y-fine-tuning-de-fms)) |
 
-### Supervised learning
-
-En el **supervised learning** (aprendizaje supervisado) el modelo aprende con **datos etiquetados**: ve muchos pares entrada → respuesta y aprende a generalizar.
-
-- **Classification** (clasificación): predice una **categoría**. Binaria (fraude sí/no) o multiclase (tipo de producto). Algoritmos típicos: regresión logística, árboles de decisión, XGBoost.
-- **Regression** (regresión): predice un **valor numérico continuo** (precio de una casa, demanda de mañana). Ejemplo: regresión lineal.
-
-### Unsupervised learning
-
-En el **unsupervised learning** (aprendizaje no supervisado) no hay etiquetas: el modelo busca estructura por sí mismo.
-
-- **Clustering** (agrupamiento): agrupa elementos parecidos. Ejemplo: segmentar clientes con **k-means**.
-- **Anomaly detection** (detección de anomalías): encuentra lo que se sale del patrón (transacciones raras, picos en logs).
-- **Dimensionality reduction** (reducción de dimensionalidad): resume muchas variables en pocas (por ejemplo, PCA) para visualizar o acelerar otros modelos.
-
-### Reinforcement learning
-
-En el **reinforcement learning** (aprendizaje por refuerzo, RL) un **agent** (agente) actúa en un **environment** (entorno), recibe una **reward** (recompensa) o penalización y aprende por prueba y error la **policy** (política de decisión) que maximiza la recompensa acumulada. Se usa en robótica, juegos, optimización de rutas y, en GenAI, en **RLHF** (*reinforcement learning from human feedback*, aprendizaje por refuerzo con retroalimentación humana) para alinear LLMs con lo que las personas prefieren (ver [Dominio 3](dominio-3-aplicaciones-modelos-fundacionales.md)).
-
-!!! note "Otras variantes que aparecen en material de estudio"
-    - **Semi-supervised learning**: pocos datos etiquetados y muchos sin etiquetar.
-    - **Self-supervised learning** (autosupervisado): el modelo crea sus propias etiquetas a partir de los datos, por ejemplo prediciendo la siguiente palabra. Así se hace el *pre-training* de los LLMs.
+Variantes que aparecen en material de estudio: **semi-supervised** (pocos datos etiquetados y muchos sin etiquetar) y **self-supervised** (el modelo crea sus propias etiquetas, por ejemplo prediciendo la siguiente palabra; así se hace el *pre-training* de los LLMs).
 
 !!! tip "En el examen"
     - "Predecir si…", "¿es A o B?" → **classification**. "¿Cuánto…?", "¿qué valor…?" → **regression**. "Agrupar sin categorías previas" → **clustering**.
@@ -115,203 +55,117 @@ En el **reinforcement learning** (aprendizaje por refuerzo, RL) un **agent** (ag
 
 | Tipo | Cómo funciona | Cuándo usarla | En SageMaker AI |
 | --- | --- | --- | --- |
-| **Real-time** (en tiempo real) | Endpoint siempre encendido; respuesta en milisegundos | Tráfico constante y baja latencia (recomendaciones en una web) | Real-time endpoints |
-| **Serverless** | El endpoint escala a cero entre peticiones; puede haber **cold start** (arranque en frío) | Tráfico intermitente o impredecible; pagas solo por uso | Serverless Inference |
-| **Asynchronous** (asíncrona) | La petición se encola y el resultado se deja en S3 | Payloads grandes o procesamiento largo (minutos) sin necesitar respuesta inmediata | Asynchronous Inference |
-| **Batch** (por lotes) | Procesa un dataset completo de una vez, sin endpoint persistente | Predicciones periódicas sobre muchos registros (puntuar todos los clientes cada noche) | Batch Transform |
+| **Real-time** (en tiempo real) | Endpoint siempre encendido; respuesta en milisegundos | Tráfico constante y baja latencia | Real-time endpoints |
+| **Serverless** | Escala a cero entre peticiones; puede haber **cold start** (arranque en frío) | Tráfico intermitente; pagas solo por uso | Serverless Inference |
+| **Asynchronous** (asíncrona) | La petición se encola y el resultado se deja en S3 | Payloads grandes o procesamiento de minutos | Asynchronous Inference |
+| **Batch** (por lotes) | Procesa un dataset completo, sin endpoint persistente | Predicciones periódicas sobre muchos registros | Batch Transform |
 
 !!! tip "En el examen"
     "Sin necesidad de respuesta inmediata, millones de registros cada noche" → **batch**. "Tráfico esporádico, minimizar costo" → **serverless**. "Archivos grandes, procesamiento de varios minutos" → **asynchronous**. "Latencia baja y constante" → **real-time**.
 
 ## Overfitting y underfitting
 
-- **Overfitting** (sobreajuste): el modelo memoriza el entrenamiento, incluido el ruido. Va muy bien en entrenamiento y mal con datos nuevos. Se asocia a **alta varianza**.
-- **Underfitting** (subajuste): el modelo es demasiado simple y no capta el patrón. Va mal en entrenamiento y en datos nuevos. Se asocia a **alto sesgo** (*bias* en sentido estadístico).
-- **Good fit**: equilibrio entre ambos (*bias-variance tradeoff*).
+| | Entrenamiento | Datos nuevos | Se asocia a | Cómo se corrige |
+| --- | --- | --- | --- | --- |
+| **Overfitting** (sobreajuste) | Muy bien (memoriza, incluido el ruido) | Mal | **Alta varianza** | Más datos y más variados, *regularization*, *early stopping*, modelo más simple, *cross-validation* |
+| **Underfitting** (subajuste) | Mal | Mal | **Alto sesgo** (estadístico) | Modelo más complejo, mejores *features*, entrenar más |
 
-Cómo se combate el overfitting: más datos y más variados, *regularization* (regularización), *early stopping*, simplificar el modelo, *cross-validation*. El underfitting: un modelo más complejo, mejores *features* (variables), entrenar más tiempo.
-
-Por eso los datos se dividen en **training set** (entrenar), **validation set** (ajustar hiperparámetros) y **test set** (medir al final con datos nunca vistos).
+El equilibrio es el *bias-variance tradeoff*. Por eso los datos se dividen en **training set** (entrenar), **validation set** (ajustar hiperparámetros) y **test set** (medir al final con datos nunca vistos).
 
 ## Cuándo usar IA y cuándo no
 
-La IA aporta valor cuando ayuda a **decidir mejor** (*assist human decision making*), cuando permite **escalar** lo que no escala con personas o cuando **automatiza** tareas repetitivas con datos abundantes.
+La IA aporta valor cuando ayuda a **decidir mejor**, a **escalar** lo que no escala con personas o a **automatizar** tareas repetitivas con datos abundantes. No es adecuada cuando se necesita un **resultado exacto y determinista** (una fórmula conocida: usa reglas), cuando el **costo** supera el beneficio, cuando no hay datos suficientes o de calidad, o cuando la regulación exige una explicación que el modelo no puede dar.
 
-No es la herramienta adecuada cuando:
-
-- Se necesita un **resultado exacto y determinista** en vez de una predicción (calcular un impuesto con una fórmula conocida: usa reglas).
-- El **costo** de construir y mantener el modelo supera el beneficio (*cost-benefit analysis*).
-- No hay datos suficientes o de calidad.
-- La regulación exige una explicación que el modelo no puede dar.
-
-### Técnica según el caso
-
-| Caso de negocio | Técnica |
-| --- | --- |
-| Predecir abandono de clientes (sí/no) | Classification |
-| Estimar el precio de un inmueble | Regression |
-| Segmentar clientes para marketing sin grupos previos | Clustering |
-| Detectar transacciones fraudulentas raras | Classification (con etiquetas) o anomaly detection (sin ellas) |
-| Pronosticar la demanda de las próximas semanas | Regression sobre series temporales (*forecasting*) |
-| Recomendar productos | Recommendation systems (filtrado colaborativo) |
-| Resumir documentos o responder preguntas | GenAI (foundation model) |
+Técnica según el caso: abandono sí/no → classification; precio de un inmueble → regression; segmentar sin grupos previos → clustering; fraude raro → classification (con etiquetas) o anomaly detection (sin ellas); demanda futura → regression sobre series temporales (*forecasting*); recomendar productos → recommendation systems; resumir o responder preguntas → GenAI.
 
 ### ML tradicional vs foundation models
 
 | Criterio | ML tradicional (modelo propio) | Foundation model (GenAI) |
 | --- | --- | --- |
-| Tarea | Específica y bien definida (puntuar riesgo de crédito) | Abierta, con lenguaje o contenido (resumir, conversar, redactar) |
-| Datos | Necesita datos etiquetados del problema | Funciona con pocos o ningún ejemplo (*zero/few-shot*) |
-| **Explicabilidad** | Alta en modelos simples (árboles, regresión) | Baja: difícil explicar por qué generó algo |
-| **Regulación** | Preferible cuando hay que justificar decisiones (crédito, seguros, salud) | Riesgo mayor en decisiones reguladas |
-| Costo y latencia | Barato y rápido en inferencia | Más caro por token y con más latencia |
-| Determinismo | Misma entrada, misma salida | No determinista por defecto |
+| Tarea | Específica y bien definida (puntuar riesgo de crédito) | Abierta, con lenguaje o contenido |
+| Datos | Datos etiquetados del problema | Pocos o ningún ejemplo (*zero/few-shot*) |
+| **Explicabilidad** | Alta en modelos simples (árboles, regresión) | Baja |
+| **Regulación** | Preferible cuando hay que justificar decisiones | Riesgo mayor en decisiones reguladas |
+| Costo, latencia, determinismo | Barato, rápido, misma entrada → misma salida | Más caro por token, más latencia, no determinista |
 
 !!! tip "En el examen"
     Si el escenario menciona **explicabilidad obligatoria**, **regulador** o **decisiones sobre personas** (crédito, contratación), la respuesta suele ser un modelo tradicional e interpretable, no un LLM.
 
 ## Servicios de IA gestionados de AWS
 
-Los **AI services** (servicios de IA preentrenados) se consumen por API sin saber ML. Son la respuesta cuando la pregunta dice *no ML expertise* o *least operational overhead*.
+Los **AI services** (servicios de IA preentrenados) se consumen por API sin saber ML: son la respuesta cuando la pregunta dice *no ML expertise* o *least operational overhead*.
 
 | Servicio | Qué hace | Caso típico |
 | --- | --- | --- |
-| **Amazon Comprehend** | NLP: sentimiento, entidades, frases clave, idioma, clasificación personalizada, detección de PII | Analizar el sentimiento de reseñas |
-| **Amazon Translate** | Traducción automática neuronal | Traducir un catálogo a cinco idiomas |
-| **Amazon Transcribe** | *Speech-to-text* (voz a texto), con identificación de hablantes y redacción de PII | Transcribir llamadas del call center |
-| **Amazon Polly** | *Text-to-speech* (texto a voz) con voces naturales | Leer en voz alta artículos de un sitio |
-| **Amazon Lex** | Chatbots y bots de voz con intents y slots (la tecnología de Alexa) | Bot que agenda citas por chat o teléfono |
-| **Amazon Rekognition** | Visión: objetos, caras, texto en imagen, moderación de contenido, video | Moderar imágenes que suben los usuarios |
-| **Amazon Textract** | Extrae texto, formularios y tablas de documentos escaneados (más que OCR) | Digitalizar facturas y formularios |
+| **Amazon Comprehend** | NLP: sentimiento, entidades, frases clave, idioma, clasificación, detección de PII | Sentimiento de reseñas |
+| **Amazon Translate** | Traducción automática neuronal | Traducir un catálogo |
+| **Amazon Transcribe** | *Speech-to-text* (voz a texto), hablantes y redacción de PII | Transcribir llamadas |
+| **Amazon Polly** | *Text-to-speech* (texto a voz) | Leer artículos en voz alta |
+| **Amazon Lex** | Chatbots y bots de voz con intents y slots | Bot que agenda citas |
+| **Amazon Rekognition** | Visión: objetos, caras, texto en imagen, moderación, video | Moderar imágenes subidas |
+| **Amazon Textract** | Texto, formularios y tablas de documentos escaneados (más que OCR) | Digitalizar facturas |
 | **Amazon Personalize** | Recomendaciones personalizadas en tiempo real | "Productos que te pueden gustar" |
-| **Amazon SageMaker AI** | Plataforma completa para construir, entrenar y desplegar tus propios modelos | Modelo de riesgo propio con datos de la empresa |
+| **Amazon SageMaker AI** | Construir, entrenar y desplegar tus propios modelos | Modelo de riesgo propio |
 
 !!! tip "En el examen: no confundas"
-    - **Textract** extrae texto de documentos; **Comprehend** analiza el significado del texto. Un flujo típico: Textract → Comprehend.
+    - **Textract** extrae texto de documentos; **Comprehend** analiza el significado. Flujo típico: Textract → Comprehend.
     - **Transcribe** (voz → texto) vs **Polly** (texto → voz). Truco: *Polly* habla como un loro.
     - **Lex** construye la conversación; Transcribe/Polly solo convierten audio.
     - **Rekognition** es para imágenes y video; si es un documento con campos, es **Textract**.
 
 ## Ciclo de vida de ML
 
-```mermaid
-flowchart LR
-    A["Objetivo de negocio"] --> B["Recolección<br/>de datos"]
-    B --> C["EDA"]
-    C --> D["Preprocesamiento"]
-    D --> E["Feature<br/>engineering"]
-    E --> F["Entrenamiento"]
-    F --> G["Hyperparameter<br/>tuning"]
-    G --> H["Evaluación"]
-    H --> I["Despliegue"]
-    I --> J["Monitoreo"]
-    J -->|"drift"| B
-```
-
-- **Data collection** (recolección): reunir datos de las fuentes (S3, bases de datos, streaming).
-- **EDA** (*exploratory data analysis*, análisis exploratorio): entender distribuciones, nulos, correlaciones, desbalanceo.
-- **Data pre-processing** (preprocesamiento): limpiar, imputar nulos, normalizar, dividir en train/validation/test.
-- **Feature engineering** (ingeniería de características): crear variables útiles (por ejemplo, "días desde la última compra").
-- **Training**: entrenar el algoritmo.
-- **Hyperparameter tuning** (ajuste de hiperparámetros): probar configuraciones del algoritmo que no se aprenden de los datos (tasa de aprendizaje, profundidad del árbol).
-- **Evaluation**: medir con el test set y las métricas adecuadas.
-- **Deployment** (despliegue): exponer el modelo para inferencia.
-- **Monitoring**: vigilar **data drift** (los datos de producción cambian respecto del entrenamiento) y **model drift / concept drift** (la relación entre entradas y resultado cambia). Cuando se degrada, se **reentrena**.
-
-### Servicios de AWS por etapa
+Objetivo de negocio → **data collection** → **EDA** (*exploratory data analysis*) → **pre-processing** (limpiar, imputar, normalizar, dividir) → **feature engineering** → **training** → **hyperparameter tuning** (configuración que no se aprende de los datos) → **evaluation** → **deployment** → **monitoring**. En monitoreo se vigila el **data drift** (los datos de producción cambian respecto del entrenamiento) y el **model / concept drift** (cambia la relación entre entradas y resultado); cuando el modelo se degrada, se **reentrena**.
 
 | Etapa | Servicio o función |
 | --- | --- |
-| Almacenar y catalogar datos | Amazon S3, AWS Glue (ETL y Data Catalog), AWS Lake Formation |
-| Preparar datos sin código | **SageMaker Data Wrangler** (integrado en SageMaker Canvas), AWS Glue DataBrew |
-| Etiquetar datos | **SageMaker Ground Truth** (etiquetado con personas y ayuda de ML) |
-| Guardar y compartir features | **SageMaker Feature Store** |
-| Entrenar y ajustar | SageMaker AI Training, Automatic Model Tuning |
-| Modelos preentrenados listos | **SageMaker JumpStart** (hub de modelos y soluciones), Amazon Bedrock |
-| ML sin código para analistas | **SageMaker Canvas** |
+| Datos: almacenar, catalogar, preparar | S3, AWS Glue (ETL y Data Catalog), Lake Formation, **SageMaker Data Wrangler** (en Canvas), Glue DataBrew |
+| Etiquetar / guardar features | **SageMaker Ground Truth** / **SageMaker Feature Store** |
+| Entrenar y ajustar | SageMaker AI Training, Automatic Model Tuning; ML sin código con **SageMaker Canvas** |
+| Modelos preentrenados | **SageMaker JumpStart**, Amazon Bedrock |
 | Orquestar y versionar | **SageMaker Pipelines**, **SageMaker Model Registry** |
-| Desplegar | Endpoints de SageMaker AI (real-time, serverless, async, batch) |
-| Monitorear | **SageMaker Model Monitor** (calidad de datos y de modelo, drift de sesgo y de explicabilidad) |
-| Sesgo y explicabilidad | **SageMaker Clarify** |
-| Documentar y gobernar | **SageMaker Model Cards**, SageMaker Model Dashboard, SageMaker Role Manager |
-| GenAI sin gestionar infraestructura | Amazon Bedrock |
-| Asistentes para negocio y desarrollo | Amazon Quick (negocio), Kiro (desarrollo), Amazon Q (en la consola) |
+| Monitorear | **SageMaker Model Monitor** (calidad de datos y modelo, drift de sesgo y explicabilidad) |
+| Sesgo, explicabilidad y gobierno | **SageMaker Clarify**, **SageMaker Model Cards**, Model Dashboard, Role Manager |
 
-## Origen de los modelos y uso en producción
-
-**De dónde sale el modelo**:
-
-- **Pre-trained open source models** (modelos abiertos preentrenados): Llama, Mistral y otros, disponibles en JumpStart o Bedrock.
-- **Modelos propietarios por API**: los del catálogo de Bedrock (Amazon Nova, Anthropic Claude, etc.).
-- **Training custom models** (entrenar uno propio): con tus datos en SageMaker AI. Máximo control y máximo costo.
-
-**Cómo se consume en producción**:
-
-| Opción | Qué gestionas tú | Ejemplo en AWS |
-| --- | --- | --- |
-| **Managed API service** (API gestionada) | Solo las llamadas | Amazon Bedrock, servicios de IA preentrenados |
-| **Self-hosted API** (autoalojado) | Instancias, escalado, parches, endpoint | Endpoint de SageMaker AI, o un contenedor en EC2/EKS |
+**Origen y consumo de modelos**: modelos abiertos (Llama, Mistral…) en JumpStart o Bedrock, propietarios por API en Bedrock, o propios entrenados en SageMaker AI (máximo control y costo). Por API gestionada (Bedrock) solo gestionas las llamadas; autoalojado (endpoint de SageMaker AI, EC2/EKS) gestionas instancias, escalado y endpoint.
 
 ## MLOps
 
-**MLOps** es aplicar prácticas de DevOps al ML: que entrenar y desplegar modelos sea **repetible, automatizado y auditable**. Conceptos que pide la guía:
-
-- **Experimentation** (experimentación): registrar cada prueba (datos, parámetros, métricas) para comparar.
-- **Repeatable processes**: pipelines como código en lugar de notebooks manuales.
-- **Scalable systems**: infraestructura que crece con los datos y el tráfico.
-- **Managing technical debt** (deuda técnica): el código "de pegamento" y los datos sin versionar se acumulan rápido en ML.
-- **Production readiness**: pruebas, aprobación del modelo, rollback.
-- **Model monitoring** y **model re-training**: detectar drift y reentrenar automáticamente.
-
-Es la misma idea que el CI/CD de software (ver [Integración continua](../../../devops/ci-cd/integracion-continua.md) y [Despliegue continuo](../../../devops/ci-cd/despliegue-continuo.md)), con el modelo y los datos como artefactos adicionales.
+**MLOps** aplica DevOps al ML para que entrenar y desplegar sea **repetible, automatizado y auditable**: *experimentation* (registrar datos, parámetros y métricas de cada prueba), *repeatable processes* (pipelines como código), *scalable systems*, *managing technical debt*, *production readiness* (pruebas, aprobación, rollback), *model monitoring* y *model re-training*. Es el mismo CI/CD de software con el modelo y los datos como artefactos adicionales (ver [Integración continua](../../../devops/ci-cd/integracion-continua.md)).
 
 ## Métricas de evaluación
-
-### Matriz de confusión
-
-Para un clasificador binario (por ejemplo, "¿es fraude?"):
 
 | | Predicho: fraude | Predicho: no fraude |
 | --- | --- | --- |
 | **Real: fraude** | TP (*true positive*) | FN (*false negative*) |
 | **Real: no fraude** | FP (*false positive*) | TN (*true negative*) |
 
-| Métrica | Fórmula | Pregunta que responde | Úsala cuando… |
-| --- | --- | --- | --- |
-| **Accuracy** (exactitud) | (TP + TN) / total | ¿Qué porcentaje acierta en general? | Las clases están balanceadas |
-| **Precision** (precisión) | TP / (TP + FP) | De lo que marqué como positivo, ¿cuánto lo era? | Un falso positivo es caro (bloquear a un cliente legítimo, filtro de spam) |
-| **Recall** (sensibilidad, *sensitivity*) | TP / (TP + FN) | De todos los positivos reales, ¿cuántos encontré? | Un falso negativo es caro (fraude no detectado, diagnóstico médico) |
-| **F1 score** | 2 × (P × R) / (P + R) | Equilibrio entre precision y recall | Clases desbalanceadas y ambos errores importan |
-| **AUC-ROC** | Área bajo la curva ROC (0,5 = azar; 1 = perfecto) | ¿Qué tan bien separa las clases en todos los umbrales? | Comparar modelos de clasificación |
+| Métrica | Fórmula | Úsala cuando… |
+| --- | --- | --- |
+| **Accuracy** (exactitud) | (TP + TN) / total | Las clases están balanceadas |
+| **Precision** (precisión) | TP / (TP + FP) | Un falso positivo es caro (bloquear a un cliente legítimo, spam) |
+| **Recall** (sensibilidad) | TP / (TP + FN) | Un falso negativo es caro (fraude no detectado, diagnóstico médico) |
+| **F1 score** | 2 × (P × R) / (P + R) | Clases desbalanceadas y ambos errores importan |
+| **AUC-ROC** | Área bajo la curva ROC (0,5 = azar; 1 = perfecto) | Comparar clasificadores en todos los umbrales |
 
 !!! example "Ejemplo resuelto"
-    1000 transacciones, 10 son fraude. El modelo marca 15 como fraude, de las cuales 8 lo son.
+    1000 transacciones, 10 son fraude. El modelo marca 15 como fraude, de las cuales 8 lo son: TP = 8, FP = 7, FN = 2, TN = 983. Accuracy = **99,1%** (un modelo que diga siempre "no fraude" tendría 99%), precision = **53%**, recall = **80%**, F1 ≈ **0,64**. Con clases desbalanceadas, la accuracy engaña.
 
-    - TP = 8, FP = 7, FN = 2, TN = 983.
-    - Accuracy = (8 + 983) / 1000 = **99,1%** (parece excelente, pero un modelo que diga siempre "no fraude" tendría 99%).
-    - Precision = 8 / 15 = **53%**. Recall = 8 / 10 = **80%**. F1 ≈ **0,64**.
-
-    Moraleja: con clases desbalanceadas, la accuracy engaña; mira precision, recall y F1.
-
-Para **regresión** se usan **MAE** (*mean absolute error*, error absoluto medio), **RMSE** (*root mean squared error*, castiga más los errores grandes) y **R²** (cuánta variación explica el modelo).
-
-### Métricas de negocio
-
-El modelo también se mide en dinero y en usuarios: **cost per user** (costo por usuario), **development costs** (costo de desarrollo), **customer feedback** (opinión de clientes) y **ROI** (*return on investment*, retorno de la inversión). Un modelo con mejor F1 que cuesta el triple puede no compensar. Ver [Métricas, KPIs y OKRs](../../../negocio/metricas-kpis-okrs.md).
+Para **regresión**: **MAE** (error absoluto medio), **RMSE** (castiga más los errores grandes) y **R²** (variación explicada). Métricas de **negocio**: *cost per user*, *development costs*, *customer feedback* y **ROI**; un modelo con mejor F1 que cuesta el triple puede no compensar. Las métricas de modelos generativos (ROUGE, BLEU…) están en el [Dominio 3](dominio-3-aplicaciones-modelos-fundacionales.md#evaluar-un-fm).
 
 !!! tip "En el examen"
     "Es crítico no dejar pasar ningún caso positivo" → **recall**. "Es crítico no molestar con falsas alarmas" → **precision**. "Dataset desbalanceado" → no elijas accuracy.
 
 ## Casos de uso
 
-1. **Una aseguradora quiere extraer datos de miles de formularios escaneados de siniestros.** → **Amazon Textract**: entiende formularios y tablas, no solo texto plano.
-2. **Un call center quiere transcribir llamadas y saber si el cliente terminó molesto.** → **Amazon Transcribe** para el texto y **Amazon Comprehend** para el sentimiento.
-3. **Una tienda online quiere recomendaciones personalizadas sin un equipo de data science.** → **Amazon Personalize**.
-4. **Un banco necesita decidir créditos y el regulador exige justificar cada rechazo.** → Modelo tradicional interpretable entrenado en **SageMaker AI** con **SageMaker Clarify** para explicar las predicciones, no un LLM.
-5. **Una red social debe detectar imágenes inapropiadas antes de publicarlas.** → **Amazon Rekognition** (moderación de contenido).
-6. **Una empresa puntúa a todos sus clientes con un modelo de churn una vez por semana.** → Inferencia **batch** (Batch Transform): no necesita endpoint encendido.
-7. **Un modelo de demanda empezó a fallar tras un cambio en los hábitos de compra.** → Es **drift**; detectarlo con **SageMaker Model Monitor** y reentrenar.
-8. **Una startup quiere un bot que reserve citas por teléfono.** → **Amazon Lex** (conversación) con **Amazon Polly** para la voz.
+1. Extraer datos de miles de formularios escaneados → **Amazon Textract**.
+2. Transcribir llamadas y saber si el cliente terminó molesto → **Transcribe** + **Comprehend**.
+3. Recomendaciones sin equipo de data science → **Amazon Personalize**.
+4. Créditos con regulador que exige justificar cada rechazo → modelo interpretable en **SageMaker AI** + **Clarify**, no un LLM.
+5. Detectar imágenes inapropiadas antes de publicarlas → **Amazon Rekognition**.
+6. Puntuar a todos los clientes una vez por semana → inferencia **batch** (Batch Transform).
+7. Modelo de demanda que falla tras cambiar los hábitos de compra → **drift**: **Model Monitor** y reentrenar.
+8. Bot que reserva citas por teléfono → **Amazon Lex** + **Amazon Polly**.
 
 ## Preguntas de práctica
 
@@ -394,7 +248,7 @@ El modelo también se mide en dinero y en usuarios: **cost per user** (costo por
 | Almacenamiento de datos de entrenamiento | [Almacenamiento y datos](../../../cloud/redes-y-datos/almacenamiento-datos.md) |
 | MLOps como CI/CD | [Integración continua](../../../devops/ci-cd/integracion-continua.md), [Despliegue continuo](../../../devops/ci-cd/despliegue-continuo.md) |
 | Monitoreo y drift | [Observabilidad](../../../devops/operacion/observabilidad.md) |
-| Métricas de negocio y ROI | [Métricas, KPIs y OKRs](../../../negocio/metricas-kpis-okrs.md), [TI y negocio](../../../negocio/ti-y-negocio.md) |
+| Métricas de negocio y ROI | [Métricas, KPIs y OKRs](../../../negocio/metricas-kpis-okrs.md) |
 | Siguiente dominio | [Dominio 2: Fundamentals of GenAI](dominio-2-fundamentos-ia-generativa.md) |
 
 ## Referencias

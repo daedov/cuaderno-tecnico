@@ -9,6 +9,7 @@ Guías de estudio para certificaciones técnicas: qué evalúa cada examen, expl
 
 - [Roles profesionales](roles-profesionales.md): qué hace cada puesto (Cloud Engineer, DevOps, SRE, Platform, seguridad…) y qué certificaciones encajan con cada uno.
 - [Otras certificaciones que conviene conocer](otras-certificaciones.md): mapa de Kubernetes, AWS, Azure, Google Cloud, HashiCorp, seguridad, redes y gestión, con rutas sugeridas por rol y certificaciones retiradas.
+- [Cómo preparar un examen](como-preparar-un-examen.md): estrategia, palabras clave y trampas que sirven para cualquier proveedor. Cada guía solo añade lo propio de su examen.
 
 ## AWS
 

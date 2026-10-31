@@ -25,7 +25,7 @@ tags:
 
     Vuelve al [resumen del examen](resumen-examen.md) para ver el formato y el plan de estudio.
 
-Todos los ejemplos con `random`, `local` y `archive` se probaron con **Terraform 1.12.2**; los que usan AWS o Vault se marcan como ilustrativos.
+La sintaxis de HCL, cada bloque comentado línea por línea y la tabla de meta-argumentos están en [Anatomía de los archivos de Terraform](../../../recursos/anatomia/terraform.md). Aquí queda lo que el examen evalúa: reglas exactas, diferencias y trampas.
 
 ## 4a. Resource vs data
 
@@ -36,125 +36,46 @@ Todos los ejemplos con `random`, `local` y `archive` se probaron con **Terraform
 | Dirección | `TIPO.NOMBRE` (`aws_instance.web`) | `data.TIPO.NOMBRE` (`data.aws_ami.al2023`) |
 | Ejemplo típico | Un bucket, una VM | La AMI más reciente, la VPC por defecto, un secreto, el ID de la cuenta |
 
-```hcl
-# Ilustrativo (AWS): leer la AMI más reciente y usarla en una VM
-data "aws_ami" "al2023" {
-  most_recent = true
-  owners      = ["amazon"]
-
-  filter {
-    name   = "name"
-    values = ["al2023-ami-*-x86_64"]
-  }
-}
-
-resource "aws_instance" "web" {
-  ami           = data.aws_ami.al2023.id
-  instance_type = "t3.micro"
-}
-```
-
-En el laboratorio, `data "archive_file"` empaqueta archivos en un `.zip`. Como depende de recursos que aún no existen, el plan lo lee **durante el apply** (salida real):
-
-```console
-  # data.archive_file.paquete will be read during apply
-  # (config refers to values not yet known)
- <= data "archive_file" "paquete" {
-```
+Si un data source depende de valores que aún no existen, el plan lo lee **durante el apply** (`<= data ... will be read during apply`).
 
 ## 4b. Referencias y direcciones
 
-| Expresión | Qué devuelve |
-| --- | --- |
-| `random_pet.nombre.id` | Atributo de un recurso |
-| `data.archive_file.paquete.output_size` | Atributo de un data source |
-| `var.entorno` | Variable de entrada |
-| `local.prefijo` | Valor local |
-| `module.etiquetas.tags` | Output de un módulo hijo |
-| `random_string.sufijo[0]` | Instancia de un recurso con `count` |
-| `local_file.config["web"]` | Instancia de un recurso con `for_each` |
-| `path.module`, `path.root`, `path.cwd` | Rutas del módulo, del módulo raíz y del directorio actual |
-| `terraform.workspace` | Nombre del CLI workspace activo |
-| `self` | El propio recurso (solo en `postcondition`, provisioners y `connection`) |
-| `each.key`, `each.value`, `count.index` | Dentro de recursos con `for_each` o `count` |
+La tabla completa (`var.`, `local.`, `data.`, `module.`, `[0]`, `["clave"]`, `path.module`, `terraform.workspace`…) está en [Expresiones y referencias](../../../recursos/sintaxis/hcl.md#expresiones-y-referencias). Lo que suele caer:
+
+- `local.x` se referencia en singular aunque el bloque sea `locals`.
+- `count` → `recurso[0]`; `for_each` → `recurso["clave"]`.
+- `path.cwd` es el directorio actual (además de `path.module` y `path.root`).
+- `self` es el propio recurso, solo en `postcondition`, provisioners y `connection`.
 
 Al referenciar un atributo de otro recurso creas una **implicit dependency** (dependencia implícita): Terraform crea primero el referenciado. Ver [4f](#4f-dependencias-entre-recursos).
 
 ## 4c. Variables y outputs
 
-### Input variables
+Argumentos del bloque `variable` (`type`, `default`, `description`, `validation`, `sensitive`, `nullable`, `ephemeral`) explicados en [Anatomía: variables.tf](../../../recursos/anatomia/terraform.md#variablestf-comentado-linea-por-linea). Una variable **sin `default`** es obligatoria: Terraform la pide de forma interactiva o falla con `-input=false`.
 
-```hcl title="variables.tf"
-variable "entorno" {
-  description = "Nombre del entorno"
-  type        = string
-  default     = "dev"
-  nullable    = false
+**Precedencia** (de menor a mayor; la última gana), probada en el laboratorio:
 
-  validation {
-    condition     = contains(["dev", "staging", "prod"], var.entorno)
-    error_message = "El entorno debe ser dev, staging o prod."
-  }
-}
-
-variable "token_api" {
-  type      = string
-  sensitive = true # se oculta en la salida, pero se guarda en el state
-}
-```
-
-Argumentos del bloque `variable`: `type`, `default`, `description`, `validation`, `sensitive`, `nullable`, `ephemeral`. Una variable **sin `default`** es obligatoria: Terraform la pide de forma interactiva o falla con `-input=false`.
-
-**Precedencia** (de menor a mayor; la última gana). Probado en el laboratorio con la misma variable definida en cada sitio:
-
-| Orden | Fuente | Resultado real de `entorno` |
-| --- | --- | --- |
-| 1 | `default` del bloque | `"default-del-bloque"` |
-| 2 | Variable de entorno `TF_VAR_entorno` | `"desde-env"` |
-| 3 | `terraform.tfvars` (y `terraform.tfvars.json`) | `"desde-tfvars"` |
-| 4 | `*.auto.tfvars` (en orden alfabético) | `"desde-auto"` |
-| 5 | `-var` y `-var-file` en la línea de comandos (en el orden en que aparecen) | `"desde-cli"` |
+| Orden | Fuente |
+| --- | --- |
+| 1 | `default` del bloque |
+| 2 | Variable de entorno `TF_VAR_entorno` |
+| 3 | `terraform.tfvars` (y `terraform.tfvars.json`) |
+| 4 | `*.auto.tfvars` (en orden alfabético) |
+| 5 | `-var` y `-var-file` en la línea de comandos (en el orden en que aparecen) |
 
 !!! tip "En el examen"
     La pregunta típica: "se define en `terraform.tfvars` y en `TF_VAR_`, ¿cuál gana?" → **`terraform.tfvars`**. La línea de comandos siempre gana. HCP Terraform tiene sus propias variables de workspace y variable sets ([objetivo 8](objetivo-8-hcp-terraform.md)).
 
 ### Outputs y locals
 
-```hcl title="outputs.tf"
-output "nombre" {
-  description = "Nombre generado"
-  value       = random_pet.proyecto.id
-}
-
-output "token" {
-  value     = var.token_api
-  sensitive = true # obligatorio si el valor deriva de algo sensible
-}
-```
-
-Si un output usa un valor sensible sin `sensitive = true`, Terraform falla (salida real): `Error: Output refers to sensitive values`. Los outputs sirven para mostrar datos tras el apply, para exponer valores de un **módulo hijo** al padre y para que otra configuración los lea con `terraform_remote_state`.
-
-```console
-$ terraform output
-token = <sensitive>
-$ terraform output token
-"no-uses-esto-en-prod"
-```
-
-Ojo: pedir un output sensible **por nombre** (o con `-json`/`-raw`) **sí** muestra el valor.
-
-Los **locals** (valores locales) son nombres para expresiones que se repiten dentro del módulo; no se pueden pasar desde fuera:
-
-```hcl
-locals {
-  prefijo  = "lab-${var.entorno}"
-  publicos = [for nombre, s in var.servicios : nombre if s.publico]
-}
-```
+- Si un output usa un valor sensible sin `sensitive = true`, Terraform falla: `Error: Output refers to sensitive values`.
+- `terraform output` muestra `token = <sensitive>`, pero pedirlo **por nombre** (o con `-json`/`-raw`) **sí** muestra el valor.
+- Los outputs sirven para mostrar datos tras el apply, exponer valores de un **módulo hijo** al padre y que otra configuración los lea con `terraform_remote_state`.
+- Los **locals** dan nombre a expresiones que se repiten dentro del módulo; no se pueden pasar desde fuera.
 
 ## 4d. Tipos complejos
 
-| Tipo | Tipo primitivo/colección | Ejemplo | Detalle |
+| Tipo | Clase | Ejemplo | Detalle |
 | --- | --- | --- | --- |
 | `string`, `number`, `bool` | Primitivos | `"dev"`, `3`, `true` | Se convierten automáticamente cuando es posible (`"3"` ↔ `3`) |
 | `list(T)` | Colección | `["a", "b"]` | Ordenada, mismo tipo, índice desde 0 |
@@ -164,11 +85,13 @@ locals {
 | `tuple([...])` | Estructural | `["a", 1, true]` | Posiciones fijas con tipos distintos |
 | `any` | Comodín | | Terraform infiere el tipo |
 
-```hcl title="variables.tf (probado)"
+`optional(tipo, default)` permite omitir atributos de un `object`:
+
+```hcl
 variable "servicios" {
   type = map(object({
     puerto  = number
-    publico = optional(bool, false) # atributo opcional con valor por defecto
+    publico = optional(bool, false) # api queda con publico = false
   }))
   default = {
     web = { puerto = 443, publico = true }
@@ -177,11 +100,7 @@ variable "servicios" {
 }
 ```
 
-`optional(tipo, default)` permite omitir atributos de un `object`. En el ejemplo, `api` queda con `publico = false`.
-
 ## 4e. Expresiones y funciones
-
-### Expresiones
 
 | Expresión | Ejemplo | Resultado real en `terraform console` |
 | --- | --- | --- |
@@ -189,30 +108,9 @@ variable "servicios" {
 | **For** a lista | `[for k, s in var.servicios : "${k}:${s.puerto}"]` | `["api:8080", "web:443"]` |
 | **For** a mapa con filtro | `{ for k, s in var.servicios : k => s.puerto if !s.publico }` | `{ "api" = 8080 }` |
 | **Splat** (`[*]`) | `var.subredes[*].cidr` | `["10.0.1.0/24", "10.0.2.0/24"]` |
-| **String template** (plantilla) | `"lab-${var.entorno}"` | `"lab-dev"` |
 | **Heredoc** | `<<-EOT ... EOT` | Texto multilínea (el `-` quita la indentación) |
 
-### Meta-argumentos `count` y `for_each`
-
-```hcl title="main.tf (probado)"
-resource "random_string" "sufijo" {
-  count   = 2 # crea random_string.sufijo[0] y [1]
-  length  = 6
-  special = false
-  upper   = false
-}
-
-resource "local_file" "config" {
-  for_each = var.servicios # crea local_file.config["api"] y ["web"]
-
-  filename = "${path.module}/salida/${each.key}.conf"
-  content  = <<-EOT
-    nombre=${random_pet.proyecto.id}-${each.key}
-    puerto=${each.value.puerto}
-    publico=${each.value.publico}
-  EOT
-}
-```
+### count vs for_each
 
 | | `count` | `for_each` |
 | --- | --- | --- |
@@ -225,77 +123,42 @@ No se pueden usar `count` y `for_each` a la vez en el mismo bloque, y sus valore
 
 ### Dynamic blocks
 
-Un bloque `dynamic` genera **bloques anidados** repetidos a partir de una colección. Probado con `archive_file`, que acepta varios bloques `source`:
-
-```hcl title="main.tf (probado)"
-data "archive_file" "paquete" {
-  type        = "zip"
-  output_path = "${path.module}/salida/paquete.zip"
-
-  dynamic "source" {
-    for_each = local_file.config
-    content {
-      content  = source.value.content          # el iterador se llama como el bloque
-      filename = basename(source.value.filename)
-    }
-  }
-}
-```
-
-Úsalos con moderación: hacen el código más difícil de leer. El caso clásico en la nube son las reglas `ingress` de un security group.
+Un bloque `dynamic` genera **bloques anidados** repetidos a partir de una colección; dentro de `content`, el iterador se llama como el bloque (ejemplo en [Anatomía: módulo hijo](../../../recursos/anatomia/terraform.md#modulo-hijo-comentado)). Úsalos con moderación; el caso clásico son las reglas `ingress` de un security group.
 
 ### Funciones built-in
 
-Terraform **no** permite funciones definidas por el usuario (solo las integradas y las que aporten los providers). Se prueban en `terraform console`. Resultados reales:
+Terraform **no** permite funciones definidas por el usuario (solo las integradas y las que aporten los providers). Se prueban en `terraform console`. Resultados reales de las que esconden trampa:
 
 | Función | Ejemplo | Resultado |
 | --- | --- | --- |
-| `upper`, `lower` | `upper(var.entorno)` | `"DEV"` |
-| `join`, `split` | `join("-", ["lab", "dev"])` | `"lab-dev"` |
-| `replace`, `substr`, `format` | `format("%s-%03d", "vm", 7)` | `"vm-007"` |
-| `length` | `length("hola")` | `4` |
 | `merge` | `merge({ a = 1 }, { b = 2, a = 9 })` | `{ a = 9, b = 2 }` (gana el último) |
 | `lookup` | `lookup({ dev = 1, prod = 3 }, "qa", 1)` | `1` (valor por defecto) |
 | `element` | `element(["a", "b", "c"], 4)` | `"b"` (da la vuelta) |
 | `flatten` | `flatten([[1, 2], [3]])` | `[1, 2, 3]` |
-| `toset`, `tolist`, `tomap` | `toset(["b", "a", "b"])` | `["a", "b"]` |
 | `coalesce` | `coalesce("", "x")` | `"x"` (primer valor no vacío) |
 | `try`, `can` | `try(var.servicios.db.puerto, 5432)` | `5432` |
 | `cidrsubnet` | `cidrsubnet("10.0.0.0/16", 8, 2)` | `"10.0.2.0/24"` |
+| `format` | `format("%s-%03d", "vm", 7)` | `"vm-007"` |
 | `file`, `templatefile` | `file("noexiste.txt")` | Error: el archivo debe existir **antes** del plan |
-| `jsonencode`, `yamlencode` | `jsonencode({ a = 1 })` | `"{\"a\":1}"` |
+
+Otras comunes: `upper`/`lower`, `join`/`split`, `length`, `toset`/`tolist`/`tomap`, `jsonencode`/`yamlencode`.
 
 ## 4f. Dependencias entre recursos
-
-Terraform construye un grafo a partir de las **referencias**. Si no hay referencia pero sí una dependencia real (por ejemplo, una política IAM que debe existir antes de que una aplicación arranque), se usa `depends_on`.
-
-```hcl title="main.tf (probado)"
-resource "local_file" "marca" {
-  filename = "${path.module}/marca.txt"
-  content  = "creado"
-
-  depends_on = [random_pet.base] # dependencia explícita: no hay referencia
-
-  lifecycle {
-    create_before_destroy = true
-  }
-}
-```
 
 | Tipo | Cómo se declara | Cuándo |
 | --- | --- | --- |
 | **Implicit** (implícita) | Referenciando un atributo: `ami = data.aws_ami.al2023.id` | Siempre que puedas: es la forma preferida |
-| **Explicit** (explícita) | `depends_on = [recurso.nombre]` | Solo si la dependencia no se ve en los argumentos. Hace los planes más conservadores (más valores "known after apply") |
+| **Explicit** (explícita) | `depends_on = [recurso.nombre]` | Solo si la dependencia no se ve en los argumentos (una política IAM que debe existir antes de que la app arranque). Hace los planes más conservadores (más valores "known after apply") |
 
 ### Reglas de `lifecycle`
 
-| Regla | Efecto | Probado |
-| --- | --- | --- |
-| `create_before_destroy = true` | En un reemplazo, **crea el nuevo antes** de destruir el viejo. El plan muestra `+/-` en vez de `-/+` | Sí: `+/- resource "random_pet" "servidor"` |
-| `prevent_destroy = true` | Cualquier plan que destruya el recurso **falla** | Sí: `Error: Instance cannot be destroyed` |
-| `ignore_changes = [atributo]` | Ignora cambios en esos atributos (por ejemplo, tags que cambia otro sistema) | Sí: cambiar `length` no generó cambios |
-| `replace_triggered_by = [ref]` | Reemplaza el recurso cuando cambia otro | Sí: `will be replaced due to changes in replace_triggered_by` |
-| `precondition` / `postcondition` | Custom conditions ([4g](#4g-custom-conditions)) | Sí |
+| Regla | Efecto |
+| --- | --- |
+| `create_before_destroy = true` | En un reemplazo, **crea el nuevo antes** de destruir el viejo. El plan muestra `+/-` en vez de `-/+` |
+| `prevent_destroy = true` | Cualquier plan que destruya el recurso **falla** (`Error: Instance cannot be destroyed`) |
+| `ignore_changes = [atributo]` | Ignora cambios en esos atributos (por ejemplo, tags que cambia otro sistema) |
+| `replace_triggered_by = [ref]` | Reemplaza el recurso cuando cambia otro |
+| `precondition` / `postcondition` | Custom conditions ([4g](#4g-custom-conditions)) |
 
 !!! warning "create_before_destroy y nombres únicos"
     Si el recurso tiene un nombre que debe ser único (un bucket, un DNS), el nuevo choca con el viejo mientras ambos existen. Usa nombres generados (`name_prefix` o un sufijo aleatorio).
@@ -307,7 +170,7 @@ resource "local_file" "marca" {
 
 ## 4g. Custom conditions
 
-Cuatro mecanismos para validar, que se diferencian por **cuándo** se evalúan y **qué pasa si fallan**:
+Cuatro mecanismos que se diferencian por **cuándo** se evalúan y **qué pasa si fallan**:
 
 | Mecanismo | Dónde | Cuándo se evalúa | Si falla |
 | --- | --- | --- | --- |
@@ -316,11 +179,8 @@ Cuatro mecanismos para validar, que se diferencian por **cuándo** se evalúan y
 | **`postcondition`** | `lifecycle` de un resource/data | Después de crear/leer (puede usar `self`) | **Error** (el objeto ya puede existir) |
 | **`check`** block | Bloque de nivel superior | Al final de plan y apply | Solo **warning** (aviso): no bloquea |
 
-```hcl title="main.tf (probado)"
+```hcl
 resource "random_pet" "proyecto" {
-  prefix = local.prefijo
-  length = 2
-
   lifecycle {
     precondition {
       condition     = length(var.servicios) > 0
@@ -336,41 +196,24 @@ resource "random_pet" "proyecto" {
 check "paquete_no_vacio" {
   assert {
     condition     = data.archive_file.paquete.output_size > 0
-    error_message = "El zip generado está vacío."
+    error_message = "El zip generado está vacío." # sale como "Warning: Check block assertion failed"
   }
 }
 ```
 
-Salidas reales:
-
-```console
-$ terraform plan -var entorno=pruebas
-Error: Invalid value for variable
-  on variables.tf line 1:
-   1: variable "entorno" {
-    │ var.entorno is "pruebas"
-El entorno debe ser dev, staging o prod.
-
-$ terraform plan          # con la condición del check forzada a fallar
-Warning: Check block assertion failed
-  on main.tf line 61, in check "paquete_no_vacio":
-    │ data.archive_file.paquete.output_size is 364
-El zip generado está vacío.
-```
-
-Desde Terraform 1.9, una `validation` puede referirse a **otras variables** (probado: `condition = var.max_nodos >= var.min_nodos`). Un bloque `check` puede tener su propio **scoped data source** (un `data` dentro del `check`), útil para comprobar, por ejemplo, que un endpoint responde con un 200 tras el despliegue. HCP Terraform evalúa los `check` periódicamente con **continuous validation** ([objetivo 8](objetivo-8-hcp-terraform.md#8b-colaboracion-y-gobierno)).
+- Desde Terraform 1.9, una `validation` puede referirse a **otras variables** (`condition = var.max_nodos >= var.min_nodos`).
+- Un `check` puede tener su propio **scoped data source** (un `data` dentro del `check`), por ejemplo para comprobar que un endpoint responde 200.
+- HCP Terraform evalúa los `check` periódicamente con **continuous validation** ([objetivo 8](objetivo-8-hcp-terraform.md#8b-colaboracion-y-gobierno)).
 
 !!! tip "En el examen"
     "Quiero avisar sin bloquear el despliegue" → `check`. "Quiero rechazar un valor de entrada" → `validation`. "Quiero garantizar algo de un recurso antes/después de crearlo" → `precondition`/`postcondition`. Las pruebas automatizadas con `terraform test` son otro tema (ver [Pruebas de infraestructura](../../../devops/iac/pruebas-infraestructura.md#terraform-test)).
 
 ## 4h. Datos sensibles y Vault
 
-### Lo que hace y no hace `sensitive`
-
 | Medida | Oculta en la CLI | Fuera del state y del plan |
 | --- | --- | --- |
 | `sensitive = true` en variable u output | Sí | **No**: queda en texto plano en el state |
-| `nonsensitive(valor)` | Lo **vuelve a mostrar** (probado: `nonsensitive(var.token_api)` → `"no-uses-esto-en-prod"`) | No |
+| `nonsensitive(valor)` | Lo **vuelve a mostrar** | No |
 | **Ephemeral** (Terraform 1.10+) | Sí | **Sí** |
 | **Write-only arguments** (Terraform 1.11+) | Sí | **Sí** |
 
@@ -378,50 +221,17 @@ Prueba real: un `resource "random_password"` normal guardó su `result` en `terr
 
 ### Ephemeral values (valores efímeros)
 
-```hcl title="main.tf (probado)"
-variable "clave_db" {
-  type      = string
-  sensitive = true
-  ephemeral = true # existe solo durante la ejecución
-}
+Variables u outputs con `ephemeral = true` y **ephemeral resources** (`ephemeral "random_password" "db" { ... }`), que se abren y se cierran en cada run (`Opening...`/`Closing...`: no se "crea" nada). Reglas probadas:
 
-ephemeral "random_password" "db" { # ephemeral resource: se abre y se cierra en cada run
-  length  = 20
-  special = false
-}
-```
-
-Reglas que el examen puede preguntar (probadas):
-
-- Un valor efímero solo puede usarse en sitios que también son efímeros: otras variables/outputs `ephemeral`, `locals`, bloques `provider`, provisioners y **write-only arguments**. Asignarlo a un argumento normal o a un output normal da `Error: Ephemeral value not allowed`.
-- Los outputs `ephemeral = true` solo se permiten en **módulos hijo**: en el módulo raíz da `Error: Ephemeral outputs are not allowed in context of a root module`.
-- En la salida verás `ephemeral.random_password.db: Opening...` y `Closing...`: no se "crea" nada.
+- Un valor efímero solo puede usarse en sitios también efímeros: otras variables/outputs `ephemeral`, `locals`, bloques `provider`, provisioners y **write-only arguments**. En un argumento u output normal da `Error: Ephemeral value not allowed`.
+- Los outputs `ephemeral = true` solo se permiten en **módulos hijo**: en el raíz da `Error: Ephemeral outputs are not allowed in context of a root module`.
 
 ### Write-only arguments (argumentos de solo escritura)
 
-Algunos recursos ofrecen argumentos que terminan en `_wo`: Terraform los envía al provider pero **nunca los guarda** en el plan ni en el state. Como Terraform no recuerda el valor, se acompaña de un argumento de versión que incrementas cuando quieres rotar el secreto.
+Argumentos que terminan en `_wo`: Terraform los envía al provider pero **nunca los guarda** en el plan ni en el state. Como no recuerda el valor, se acompañan de un argumento de versión que incrementas para rotar el secreto.
 
 ```hcl
-# Ilustrativo (AWS provider reciente): contraseña de RDS que nunca llega al state
-ephemeral "random_password" "db" {
-  length  = 24
-  special = false
-}
-
-resource "aws_db_instance" "app" {
-  # ... resto de argumentos ...
-  username            = "app"
-  password_wo         = ephemeral.random_password.db.result
-  password_wo_version = 1 # súbelo a 2 para rotar la contraseña
-}
-```
-
-### Vault
-
-**HashiCorp Vault** es el gestor de secretos de HashiCorp (ver [Secretos e identidades](../../../devsecops/identidades-y-pipeline/secretos-identidades.md#hashicorp-vault)). Con el **Vault provider**, Terraform lee secretos en vez de tenerlos en `.tfvars`:
-
-```hcl
-# Ilustrativo: leer un secreto KV v2 de Vault como valor efímero
+# Ilustrativo: contraseña de RDS leída de Vault que nunca llega al state
 ephemeral "vault_kv_secret_v2" "db" {
   mount = "secret"
   name  = "app/db"
@@ -430,31 +240,34 @@ ephemeral "vault_kv_secret_v2" "db" {
 resource "aws_db_instance" "app" {
   # ...
   password_wo         = tostring(ephemeral.vault_kv_secret_v2.db.data.password)
-  password_wo_version = 1
+  password_wo_version = 1 # súbelo a 2 para rotar la contraseña
 }
 ```
+
+### Vault
+
+**HashiCorp Vault** es el gestor de secretos de HashiCorp (ver [Secretos e identidades](../../../devsecops/identidades-y-pipeline/secretos-identidades.md#hashicorp-vault)). Con el **Vault provider**, Terraform lee secretos en vez de tenerlos en `.tfvars`.
 
 !!! warning "data source de Vault = secreto en el state"
     Con un `data "vault_kv_secret_v2"` clásico, el secreto leído **se guarda en el state**. Por eso la recomendación actual es usar el **ephemeral resource** y write-only arguments cuando el recurso destino los soporte. Revisa en la documentación del provider qué versiones los incluyen.
 
-Buenas prácticas de datos sensibles que resume el objetivo:
+Buenas prácticas que resume el objetivo:
 
-- No escribir secretos en `.tf` ni en `.tfvars` versionados; usar variables de entorno, Vault o el gestor de secretos de la nube.
-- Marcar variables y outputs con `sensitive = true`.
+- Nada de secretos en `.tf` ni en `.tfvars` versionados: variables de entorno, Vault o el gestor de secretos de la nube.
+- `sensitive = true` en variables y outputs; preferir ephemeral y write-only para que el secreto no llegue al state.
 - Tratar el **state** y los **planes guardados** como secretos: backend cifrado, acceso mínimo, nunca en Git.
-- Preferir ephemeral y write-only para que el secreto no llegue al state.
-- En HCP Terraform, marcar variables como **sensitive** (no se pueden volver a leer desde la UI ni la API) y usar **dynamic provider credentials** en vez de llaves estáticas ([objetivo 8](objetivo-8-hcp-terraform.md)).
+- En HCP Terraform, variables **sensitive** (no se pueden volver a leer desde la UI ni la API) y **dynamic provider credentials** en vez de llaves estáticas ([objetivo 8](objetivo-8-hcp-terraform.md)).
 
 ## Casos de uso
 
-1. **Crear un bucket por cada equipo de una lista que cambia a menudo.** `for_each` con un `set` o `map`: quitar un equipo solo destruye su bucket (con `count` se desplazarían los índices).
-2. **Crear un recurso solo en producción.** `count = var.entorno == "prod" ? 1 : 0`.
-3. **Usar siempre la imagen más reciente del sistema operativo.** Un `data` source que la busca y una referencia a su `id`.
-4. **Un certificado debe reemplazarse sin cortar el servicio.** `lifecycle { create_before_destroy = true }`.
-5. **Proteger la base de datos de producción de un `destroy` accidental.** `prevent_destroy = true` (y, en la nube, la protección contra borrado del propio servicio).
-6. **Avisar si el endpoint no responde tras el despliegue, sin bloquear el pipeline.** Bloque `check` con un data source `http` dentro.
-7. **Rechazar tamaños de instancia no aprobados.** `validation` en la variable con `contains([...], var.tipo)`.
-8. **La contraseña de la base de datos no debe quedar en el state.** `ephemeral` + write-only argument (`password_wo`), leyendo el valor desde Vault con un ephemeral resource.
+1. **Un bucket por cada equipo de una lista que cambia a menudo** → `for_each`: quitar un equipo solo destruye su bucket.
+2. **Crear un recurso solo en producción** → `count = var.entorno == "prod" ? 1 : 0`.
+3. **Usar siempre la imagen más reciente del sistema operativo** → `data` source y referencia a su `id`.
+4. **Reemplazar un certificado sin cortar el servicio** → `create_before_destroy = true`.
+5. **Proteger la base de datos de producción de un `destroy`** → `prevent_destroy = true` (y la protección contra borrado del propio servicio).
+6. **Avisar si el endpoint no responde tras el despliegue, sin bloquear** → `check` con un data source `http` dentro.
+7. **Rechazar tamaños de instancia no aprobados** → `validation` con `contains([...], var.tipo)`.
+8. **La contraseña de la base de datos no debe quedar en el state** → ephemeral resource de Vault + `password_wo`.
 
 ## Preguntas de práctica
 
@@ -535,21 +348,18 @@ Buenas prácticas de datos sensibles que resume el objetivo:
 
 ## Para profundizar
 
+- [Anatomía de los archivos de Terraform](../../../recursos/anatomia/terraform.md): sintaxis HCL, variables, outputs, meta-argumentos y `lifecycle` comentados.
 - [Infrastructure as Code con Terraform](../../../devops/iac/terraform-basico.md#dar-valor-a-las-variables): variables, precedencia y ejemplo completo con AWS.
 - [Terraform workspaces](../../../devops/iac/terraform-workspaces.md#usar-el-workspace-en-el-codigo): `terraform.workspace` en mapas de `locals` y `precondition` para bloquear `default`.
 - [Pruebas de infraestructura](../../../devops/iac/pruebas-infraestructura.md): `terraform test` y `mock_provider`.
-- [Secretos e identidades](../../../devsecops/identidades-y-pipeline/secretos-identidades.md) y [Seguridad de IaC](../../../devsecops/infraestructura-y-contenedores/seguridad-iac.md): Vault, rotación, escaneo de configuración.
+- [Secretos e identidades](../../../devsecops/identidades-y-pipeline/secretos-identidades.md): Vault y rotación.
 - Siguiente: [Objetivo 5: Terraform modules](objetivo-5-modulos.md).
 
 ## Referencias
 
-- [Resources](https://developer.hashicorp.com/terraform/language/resources) y [Data sources](https://developer.hashicorp.com/terraform/language/data-sources)
 - [References to named values](https://developer.hashicorp.com/terraform/language/expressions/references)
 - [Input variables](https://developer.hashicorp.com/terraform/language/values/variables) y [Output values](https://developer.hashicorp.com/terraform/language/values/outputs)
-- [Type constraints](https://developer.hashicorp.com/terraform/language/expressions/type-constraints)
-- [Expressions](https://developer.hashicorp.com/terraform/language/expressions) y [Built-in functions](https://developer.hashicorp.com/terraform/language/functions)
+- [Built-in functions](https://developer.hashicorp.com/terraform/language/functions)
 - [The lifecycle meta-argument](https://developer.hashicorp.com/terraform/language/meta-arguments/lifecycle)
 - [Custom conditions](https://developer.hashicorp.com/terraform/language/expressions/custom-conditions) y [Checks](https://developer.hashicorp.com/terraform/language/checks)
-- [Manage sensitive data](https://developer.hashicorp.com/terraform/language/manage-sensitive-data)
 - [Ephemeral values](https://developer.hashicorp.com/terraform/language/manage-sensitive-data/ephemeral) y [Write-only arguments](https://developer.hashicorp.com/terraform/language/manage-sensitive-data/write-only)
-- [Vault provider](https://registry.terraform.io/providers/hashicorp/vault/latest/docs)

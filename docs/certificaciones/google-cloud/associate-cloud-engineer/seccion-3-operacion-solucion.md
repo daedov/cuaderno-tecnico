@@ -23,32 +23,20 @@ tags:
 
 ## Operar Compute Engine
 
-```bash
-gcloud compute instances list --filter="status=RUNNING" --format="table(name,zone,machineType.basename(),status)"
-gcloud compute ssh web-1 --zone=us-central1-a --tunnel-through-iap
-gcloud compute instances stop web-1 --zone=us-central1-a
-gcloud compute instances set-machine-type web-1 --zone=us-central1-a --machine-type=e2-standard-4
-```
-
-Para cambiar el machine type, la VM debe estar **detenida**. Una VM detenida no cobra cómputo, pero **sí cobra discos e IPs estáticas reservadas**.
+Para cambiar el machine type (`set-machine-type`), la VM debe estar **detenida**. Una VM detenida no cobra cómputo, pero **sí discos e IPs estáticas reservadas**. Para conectarte sin IP externa: `gcloud compute ssh --tunnel-through-iap` ([Sección 2](seccion-2-planificar-implementar.md#availability-policy-y-acceso-ssh)).
 
 ### Snapshots e images
 
 | | **Snapshot** | **Image** (custom image) | **Machine image** |
 | --- | --- | --- | --- |
 | Qué copia | Un disco, de forma **incremental** | Un disco de arranque, para crear VMs nuevas | Toda la VM: discos, metadata, configuración |
-| Uso típico | Backup y restauración | Plantilla base ("golden image") en instance templates | Clonar o respaldar una VM completa |
-| Ámbito | Global (se puede restaurar en otra región) | Global; se agrupan en **image families** | Global |
+| Uso típico | Backup y restauración | "Golden image" en instance templates | Clonar o respaldar una VM completa |
+| Ámbito | Global (restaurable en otra región) | Global; se agrupan en **image families** | Global |
 
 ```bash
-gcloud compute snapshots create web-1-pre-upgrade --source-disk=web-1 --source-disk-zone=us-central1-a
 gcloud compute resource-policies create snapshot-schedule diario \
   --region=us-central1 --start-time=04:00 --daily-schedule --max-retention-days=14
 gcloud compute disks add-resource-policies web-1 --zone=us-central1-a --resource-policies=diario
-gcloud compute images create web-base-v3 --source-disk=web-1 --source-disk-zone=us-central1-a \
-  --family=web-base
-gcloud compute snapshots list
-gcloud compute snapshots delete web-1-pre-upgrade
 ```
 
 !!! tip "En el examen"
@@ -56,122 +44,77 @@ gcloud compute snapshots delete web-1-pre-upgrade
 
 ## Operar GKE
 
-### Inventario y recursos de Kubernetes
+Objetos de Kubernetes (Deployment, StatefulSet, Service, Ingress, DaemonSet) en [Kubernetes](../../../devops/contenedores/kubernetes.md); comandos de inventario y rollout (`kubectl get`, `describe`, `logs`, `rollout undo`) en la [chuleta de kubectl](../../../recursos/comandos/kubectl.md). Para el examen: **StatefulSet** = Pods con identidad y disco propio; **DaemonSet** = un Pod por node (limitado en Autopilot).
 
-```bash
-gcloud container clusters list
-kubectl get nodes -o wide
-kubectl get pods,svc,deploy,statefulset -A
-kubectl describe pod api-7d9f8c-x2k4p
-kubectl logs deploy/api --tail=50
-kubectl rollout status deploy/api
-kubectl rollout undo deploy/api
-```
-
-| Objeto | Para qué |
-| --- | --- |
-| **Deployment** | Pods sin estado, réplicas, rolling updates |
-| **StatefulSet** | Pods con identidad estable y disco propio (bases de datos, colas) |
-| **Service** (`ClusterIP`, `NodePort`, `LoadBalancer`) | IP estable y balanceo hacia los Pods |
-| **Ingress** / **Gateway** | Entrada HTTP(S) con un Application Load Balancer |
-| **DaemonSet** | Un Pod por node (agentes); limitado en Autopilot |
-
-Detalle de cada objeto en [Kubernetes](../../../devops/contenedores/kubernetes.md) y la [chuleta de kubectl](../../../recursos/comandos/kubectl.md).
-
-### Artifact Registry
-
-Las imágenes se guardan en **Artifact Registry** (Container Registry está retirado). Para que GKE pueda descargar imágenes de un repositorio **privado**, la service account de los nodes necesita **Artifact Registry Reader** (`roles/artifactregistry.reader`) en el repositorio o el proyecto.
-
-```bash
-gcloud artifacts repositories create apps --repository-format=docker --location=us-central1
-gcloud auth configure-docker us-central1-docker.pkg.dev
-docker push us-central1-docker.pkg.dev/app-prod-4821/apps/api:1.5.0
-```
+**Artifact Registry** (Container Registry está retirado): para descargar imágenes de un repositorio **privado**, la service account de los nodes necesita **Artifact Registry Reader** (`roles/artifactregistry.reader`).
 
 ### Node pools y autoscaling
 
-En **GKE Standard** los nodes se organizan en **node pools** (grupos de nodes con la misma configuración). Para cambiar el machine type de los nodes se crea un pool nuevo, se migran los Pods y se borra el viejo.
+En **GKE Standard** los nodes van en **node pools**. Para cambiar el machine type se crea un pool nuevo, se migran los Pods y se borra el viejo.
 
 ```bash
 gcloud container node-pools create highmem --cluster=batch --zone=us-central1-a \
   --machine-type=n2-highmem-4 --num-nodes=1 --enable-autoscaling --min-nodes=0 --max-nodes=4
-gcloud container node-pools update default-pool --cluster=batch --zone=us-central1-a \
-  --enable-autoscaling --min-nodes=1 --max-nodes=6
 gcloud container clusters resize batch --node-pool=default-pool --num-nodes=2 --zone=us-central1-a
-gcloud container node-pools delete highmem --cluster=batch --zone=us-central1-a
 ```
 
 | Escalado | Qué escala | Cómo |
 | --- | --- | --- |
-| **Horizontal Pod Autoscaler** (HPA) | Número de Pods | CPU, memoria o métricas personalizadas: `kubectl autoscale deploy api --cpu-percent=60 --min=2 --max=10` |
-| **Vertical Pod Autoscaler** (VPA) | Requests de CPU y memoria de cada Pod | Recomienda o ajusta los requests; se activa en el clúster (`--enable-vertical-pod-autoscaling`) |
-| **Cluster autoscaler** | Número de nodes de un pool | `--enable-autoscaling` en el node pool (en Autopilot lo hace Google) |
+| **Horizontal Pod Autoscaler** (HPA) | Número de Pods | CPU, memoria o métricas: `kubectl autoscale deploy api --cpu-percent=60 --min=2 --max=10` |
+| **Vertical Pod Autoscaler** (VPA) | Requests de CPU y memoria | Recomienda o ajusta; `--enable-vertical-pod-autoscaling` en el clúster |
+| **Cluster autoscaler** | Nodes de un pool | `--enable-autoscaling` en el node pool (en Autopilot lo hace Google) |
 
 !!! warning "Autopilot y resource requests"
-    En **Autopilot** pagas por los **requests** de los Pods y Google ajusta valores fuera de rango a los mínimos y máximos permitidos (y aplica valores por defecto si no los defines). Define siempre `resources.requests` realistas: requests altos son dinero desperdiciado; requests bajos causan expulsiones o throttling. Para GPUs o hardware específico usa **ComputeClasses** o `nodeSelector` según la documentación vigente.
+    En **Autopilot** pagas por los **requests** de los Pods; Google ajusta valores fuera de rango y aplica valores por defecto si no los defines. Requests altos son dinero desperdiciado; bajos causan expulsiones o throttling. Para GPUs o hardware específico usa **ComputeClasses** o `nodeSelector`.
 
 ## Cloud Run: revisiones, tráfico y autoscaling
 
-Cada despliegue crea una **revision**. Puedes desplegar una revisión **sin enviarle tráfico**, probarla con una URL con **tag** y luego moverle el tráfico de a poco (*canary*).
+Cada despliegue crea una **revision**. Puedes desplegarla **sin tráfico**, probarla con una URL con **tag** y moverle tráfico de a poco (*canary*).
 
 ```bash
 gcloud run deploy api --image=us-central1-docker.pkg.dev/app-prod-4821/apps/api:1.5.0 \
   --region=us-central1 --no-traffic --tag=candidata
 gcloud run services update-traffic api --region=us-central1 --to-tags=candidata=10
-gcloud run services update-traffic api --region=us-central1 --to-latest
 gcloud run services update-traffic api --region=us-central1 --to-revisions=api-00041-xoz=100   # rollback
-gcloud run services update api --region=us-central1 \
-  --min-instances=1 --max-instances=20 --concurrency=80 --cpu=1 --memory=512Mi
 ```
 
 | Parámetro | Efecto |
 | --- | --- |
-| `--min-instances` | Instancias siempre listas: evita **cold starts** (arranques en frío), pero cobra aunque no haya tráfico |
+| `--min-instances` | Instancias siempre listas: evita **cold starts**, pero cobra aunque no haya tráfico |
 | `--max-instances` | Tope de escalado: protege presupuesto y bases de datos de abajo |
 | `--concurrency` | Peticiones simultáneas por instancia (por defecto 80); bajarla escala antes |
 
-El traffic splitting también existe en **Cloud Run functions** (son servicios de Cloud Run) y en **GKE** con Gateway API o service mesh. Estrategias en [Despliegue continuo](../../../devops/ci-cd/despliegue-continuo.md).
+El traffic splitting también existe en **Cloud Run functions** y en **GKE** (Gateway API o service mesh). Estrategias en [Despliegue continuo](../../../devops/ci-cd/despliegue-continuo.md).
 
 ## IA, aceleradores y entornos de desarrollo
 
-- **Adjuntar GPUs** a una VM: la VM debe estar detenida, con `--maintenance-policy=TERMINATE` y un machine type compatible (`gcloud compute instances create ... --accelerator=type=nvidia-l4,count=1` o un machine type G2/A3 que ya las incluye). En GKE, node pools con GPU o TPU.
-- **Agent Runtime** (Gemini Enterprise Agent Platform, antes Vertex AI Agent Engine): se despliega un agente (por ejemplo hecho con Agent Development Kit) con el SDK de la plataforma; Google gestiona escalado, sesiones y memoria.
-- **Workbench** (antes Vertex AI Workbench): instancias de **JupyterLab** gestionadas; los notebooks también se pueden crear en **BigQuery Studio**.
-- **Cloud Workstations**: entornos de desarrollo gestionados y seguros en Google Cloud, definidos por **configurations** (imagen, máquina, red) que el equipo de plataforma controla.
+- **GPUs en una VM**: detenida, `--maintenance-policy=TERMINATE` y machine type compatible (`--accelerator=type=nvidia-l4,count=1` o G2/A3). En GKE, node pools con GPU o TPU.
+- **Agent Runtime** (antes Vertex AI Agent Engine): despliegas un agente (por ejemplo con Agent Development Kit) con el SDK; Google gestiona escalado, sesiones y memoria.
+- **Workbench**: JupyterLab gestionado; los notebooks también se crean en **BigQuery Studio**.
+- **Cloud Workstations**: entornos de desarrollo gestionados definidos por **configurations** que controla el equipo de plataforma.
 
 ## Cloud Storage: objetos y lifecycle
-
-Seguridad de objetos:
 
 | Mecanismo | Uso |
 | --- | --- |
 | **Uniform bucket-level access** | Permisos solo con IAM a nivel de bucket (recomendado); desactiva las ACLs por objeto |
 | **Public access prevention** | Impide que el bucket o sus objetos se hagan públicos |
-| **Signed URLs** | Acceso temporal a un objeto sin cuenta de Google (por ejemplo, descarga por 1 hora) |
+| **Signed URLs** | Acceso temporal a un objeto sin cuenta de Google |
 | **Object Versioning** | Guarda versiones anteriores al sobrescribir o borrar |
-| **Retention policy** / **Bucket Lock** | Impide borrar objetos antes de cierto tiempo (cumplimiento, WORM) |
-| **Soft delete** | Recuperar objetos borrados durante un periodo (7 días por defecto) |
+| **Retention policy** / **Bucket Lock** | Impide borrar antes de cierto tiempo (cumplimiento, WORM) |
+| **Soft delete** | Recuperar objetos borrados (7 días por defecto) |
 | **CMEK** | Cifrado con claves propias de Cloud KMS |
 
 ```json title="lifecycle.json"
 {
   "rule": [
     {"action": {"type": "SetStorageClass", "storageClass": "NEARLINE"}, "condition": {"age": 30}},
-    {"action": {"type": "SetStorageClass", "storageClass": "ARCHIVE"}, "condition": {"age": 365}},
-    {"action": {"type": "Delete"}, "condition": {"age": 2555}},
-    {"action": {"type": "Delete"}, "condition": {"isLive": false, "numNewerVersions": 3}}
+    {"action": {"type": "Delete"}, "condition": {"age": 2555}}
   ]
 }
 ```
 
-```bash
-gcloud storage buckets update gs://app-prod-4821-logs --lifecycle-file=lifecycle.json
-gcloud storage buckets update gs://app-prod-4821-logs --versioning
-gcloud storage sign-url gs://app-prod-4821-datos/informe.pdf --duration=1h \
-  --impersonate-service-account=firmador@app-prod-4821.iam.gserviceaccount.com
-gcloud storage buckets add-iam-policy-binding gs://app-prod-4821-datos \
-  --member="group:analistas@ejemplo.com" --role="roles/storage.objectViewer"
-```
+Se aplica con `gcloud storage buckets update gs://BUCKET --lifecycle-file=lifecycle.json`. Concepto de lifecycle en [Almacenamiento y datos](../../../cloud/redes-y-datos/almacenamiento-datos.md#object-storage).
 
 !!! tip "En el examen"
     - "Mover a una clase más barata después de N días" o "borrar después de N días" → **lifecycle rule** (no un script con cron).
@@ -180,162 +123,88 @@ gcloud storage buckets add-iam-policy-binding gs://app-prod-4821-datos \
 
 ## Bases de datos: consultas, backups y costos
 
-```bash
-gcloud sql connect pg-prod --user=postgres           # o el Cloud SQL Auth Proxy
-bq query --use_legacy_sql=false --dry_run 'SELECT pais, SUM(total) FROM ventas.pedidos GROUP BY pais'
-bq ls -j --max_results=10                              # estado de jobs de BigQuery
-gcloud dataflow jobs list --region=us-central1 --status=active
-cbt -project=app-prod-4821 -instance=telemetria read lecturas count=5
-gcloud spanner databases execute-sql pedidos-db --instance=pedidos --sql="SELECT COUNT(*) FROM Pedidos"
-```
-
-El `--dry_run` de BigQuery muestra **cuántos bytes leería** la consulta: con on-demand pagas por bytes procesados, así que es la forma de estimar el costo antes de ejecutar. Para estimar costos de almacenamiento y bases de datos usa el **Google Cloud Pricing Calculator**.
+- `bq query --dry_run` muestra **cuántos bytes leería** una consulta: en on-demand pagas por bytes, así que estima el costo antes de ejecutar. Para el resto, **Pricing Calculator**.
+- Estado de jobs: `bq ls -j` (BigQuery) y `gcloud dataflow jobs list` (Dataflow).
+- **Database Center**: vista única de toda la flota de bases de datos (inventario, salud, recomendaciones, Gemini). **Query Insights** e **index advisor** (Cloud SQL y AlloyDB) encuentran consultas lentas y proponen índices.
 
 | Producto | Backup | Restauración |
 | --- | --- | --- |
-| **Cloud SQL** | Backups automáticos y bajo demanda; **point-in-time recovery** (PITR) con logs | `gcloud sql backups restore` sobre una instancia (sobrescribe) o clonar a un momento |
-| **AlloyDB** | Backups continuos (PITR) y bajo demanda | Restaurar a un clúster nuevo |
-| **Spanner** | Backups y **PITR** (retención de versiones hasta 7 días) | Restaurar a una base nueva |
-| **Firestore** | Backups programados y PITR; export/import a Cloud Storage | Restaurar a una base nueva |
-| **Bigtable** | Backups de tablas | Restaurar a una tabla nueva |
-
-```bash
-gcloud sql backups create --instance=pg-prod
-gcloud sql backups list --instance=pg-prod
-gcloud sql backups restore 1730000000000 --restore-instance=pg-prod --backup-instance=pg-prod
-gcloud firestore backups schedules create --database='(default)' --recurrence=daily --retention=14d
-```
-
-- **Database Center**: vista única de **toda la flota de bases de datos** (Cloud SQL, AlloyDB, Spanner, Firestore, Bigtable, Memorystore) con inventario, salud, recomendaciones de seguridad y rendimiento, y asistencia de Gemini.
-- **Query Insights** (Cloud SQL y AlloyDB) e **index advisor** ayudan a encontrar consultas lentas y a proponer índices.
+| **Cloud SQL** | Automáticos y bajo demanda; **point-in-time recovery** (PITR) | `gcloud sql backups restore` sobre una instancia (sobrescribe) o clonar a un momento |
+| **AlloyDB** | Continuos (PITR) y bajo demanda | Clúster nuevo |
+| **Spanner** | Backups y **PITR** (versiones hasta 7 días) | Base nueva |
+| **Firestore** | Programados, PITR, export/import a Cloud Storage | Base nueva |
+| **Bigtable** | Backups de tablas | Tabla nueva |
 
 ### CMEK
 
-Por defecto Google cifra todo con claves que gestiona Google. Con **CMEK** (*customer-managed encryption keys*, claves gestionadas por el cliente) usas una clave de **Cloud KMS** que tú controlas (rotación, deshabilitación, auditoría). El paso que más se olvida: dar a la **service agent** del servicio el rol **Cloud KMS CryptoKey Encrypter/Decrypter** sobre la clave.
-
-```bash
-gcloud kms keyrings create datos --location=us-central1
-gcloud kms keys create bucket-key --keyring=datos --location=us-central1 --purpose=encryption \
-  --rotation-period=90d --next-rotation-time=2026-12-01T00:00:00Z
-gcloud storage service-agent --project=app-prod-4821 --authorize-cmek=projects/app-prod-4821/locations/us-central1/keyRings/datos/cryptoKeys/bucket-key
-gcloud storage buckets update gs://app-prod-4821-datos \
-  --default-encryption-key=projects/app-prod-4821/locations/us-central1/keyRings/datos/cryptoKeys/bucket-key
-```
-
-La clave debe estar en la **misma ubicación** que el recurso. Más en [Seguridad base](../../../cloud/identidad-y-seguridad/seguridad-base.md).
+Con **CMEK** (*customer-managed encryption keys*) usas una clave de **Cloud KMS** que tú controlas (rotación, deshabilitación, auditoría); concepto en [Seguridad de cifrado y secretos](../../../cloud/seguridad/seguridad-cifrado-secretos.md#envelope-encryption-y-modelos-de-clave). Lo que más se olvida: dar a la **service agent** del servicio el rol **Cloud KMS CryptoKey Encrypter/Decrypter** sobre la clave, y crear la clave en la **misma ubicación** que el recurso.
 
 ## Operar la red
 
+El diseño (VPC, firewall, load balancers) está en la [Sección 2](seccion-2-planificar-implementar.md#redes-diseno); aquí, las tareas del día a día.
+
 ```bash
-# Ampliar una subnet (solo se puede agrandar, nunca reducir)
 gcloud compute networks subnets expand-ip-range prod-us --region=us-central1 --prefix-length=21
-
-# IPs estáticas
-gcloud compute addresses create web-ip --region=us-central1                       # externa regional
-gcloud compute addresses create lb-ip --global                                    # externa global (LB)
-gcloud compute addresses create db-ip --region=us-central1 --subnet=prod-us --addresses=10.20.0.50
-
-# Ruta estática hacia on-premises a través de una VM appliance
-gcloud compute routes create a-onprem --network=prod-vpc --destination-range=192.168.0.0/16 \
-  --next-hop-instance=fw-1 --next-hop-instance-zone=us-central1-a --priority=800
-
-# Cloud NAT para VMs sin IP externa
-gcloud compute routers create nat-router --network=prod-vpc --region=us-central1
+gcloud compute addresses create web-ip --region=us-central1      # IP externa estática regional
 gcloud compute routers nats create nat-us --router=nat-router --region=us-central1 \
   --auto-allocate-nat-external-ips --nat-all-subnet-ip-ranges
-
-# Cloud DNS: zona privada visible solo desde la VPC
 gcloud dns managed-zones create interna --dns-name="interno.ejemplo.com." \
   --visibility=private --networks=prod-vpc --description="Zona interna"
-gcloud dns record-sets create db.interno.ejemplo.com. --zone=interna --type=A --ttl=300 --rrdatas=10.20.0.50
 ```
 
-!!! tip "En el examen"
-    - "La subnet se quedó sin IPs" → `expand-ip-range` (sin downtime), siempre que el nuevo rango no se solape.
-    - "La IP pública cambia al reiniciar la VM" → **reservar una IP estática** (las efímeras cambian). Una IP reservada **sin usar** también cobra.
-    - "VMs privadas necesitan descargar parches de internet" → **Cloud NAT** (solo salida; no permite conexiones entrantes).
-    - "Nombres internos que no se vean desde internet" → **Cloud DNS private zone**.
+Las **rutas estáticas** (`gcloud compute routes create`) envían un rango (por ejemplo, on-premises) a un next hop como una VM appliance. Para depurar firewall: **firewall rules logging** y **Connectivity Tests** ([Troubleshooting de red](../../../networking/avanzado/troubleshooting-red.md)).
 
-Las firewall rules y policies se gestionan con los mismos comandos de la [Sección 2](seccion-2-planificar-implementar.md#firewall-rules-y-cloud-ngfw-policies); para depurar, activa **firewall rules logging** y usa **Connectivity Tests** ([Troubleshooting de red](../../../networking/avanzado/troubleshooting-red.md)).
+!!! tip "En el examen"
+    - "La subnet se quedó sin IPs" → `expand-ip-range` (sin downtime), siempre que el nuevo rango no se solape. Solo se agranda, nunca se reduce.
+    - "La IP pública cambia al reiniciar la VM" → **reservar una IP estática**. Una IP reservada **sin usar** también cobra.
+    - "VMs privadas necesitan descargar parches" → **Cloud NAT** (solo salida).
+    - "Nombres internos que no se vean desde internet" → **Cloud DNS private zone**.
 
 ## Cloud Monitoring
 
-- **Metrics scope**: un proyecto puede ver métricas de hasta cientos de proyectos (un proyecto central de monitoreo).
-- **Alerting policies** (políticas de alertas): condición sobre una métrica (umbral, ausencia de datos, PromQL) + **notification channels** (correo, SMS, Slack, PagerDuty, Pub/Sub, webhooks).
-- **Uptime checks** (pruebas de disponibilidad) desde varias ubicaciones del mundo.
-- **Custom metrics**: desde la aplicación (OpenTelemetry o la API de Monitoring, prefijo `custom.googleapis.com/`) o **log-based metrics** (métricas creadas contando o extrayendo valores de los logs).
-- **Ops Agent**: agente único para **métricas y logs** del sistema operativo y de apps (NGINX, MySQL…) en Compute Engine. Sin él, solo ves métricas del hipervisor (CPU, red, disco), **no memoria ni uso del disco** desde dentro de la VM.
-- **Google Cloud Managed Service for Prometheus**: recolecta métricas Prometheus (en GKE viene integrado) y las consulta con PromQL sin operar Prometheus.
+Conceptos de métricas, logs, trazas y alarmas en [Observabilidad nativa](../../../cloud/operacion-y-gobierno/observabilidad-nativa.md). Lo propio de Google Cloud:
 
-```bash
-gcloud logging metrics create errores-pago \
-  --description="Errores del servicio de pagos" \
-  --log-filter='resource.type="cloud_run_revision" AND resource.labels.service_name="pagos" AND severity>=ERROR'
-# Ops Agent en una VM (o por política de VM Manager para todo un grupo)
-curl -sSO https://dl.google.com/cloudagents/add-google-cloud-ops-agent-repo.sh
-sudo bash add-google-cloud-ops-agent-repo.sh --also-install
-```
+- **Metrics scope**: un proyecto central ve métricas de hasta cientos de proyectos.
+- **Alerting policies**: condición (umbral, ausencia de datos, PromQL) + **notification channels** (correo, SMS, Slack, PagerDuty, Pub/Sub, webhooks). **Uptime checks** desde varias ubicaciones.
+- **Custom metrics**: desde la app (OpenTelemetry o API, prefijo `custom.googleapis.com/`) o **log-based metrics** (`gcloud logging metrics create` con un filtro).
+- **Ops Agent**: métricas y logs del SO y de apps en Compute Engine. Sin él solo ves métricas del hipervisor, **no memoria ni uso del disco** desde dentro.
+- **Managed Service for Prometheus**: métricas Prometheus (integrado en GKE) consultadas con PromQL.
 
 ## Cloud Logging
 
-```mermaid
-flowchart LR
-    SRC["Logs de recursos,<br/>apps y audit logs"] --> LR["Log Router"]
-    LR -->|sink _Required| REQ["_Required bucket<br/>400 días, fijo"]
-    LR -->|sink _Default| DEF["_Default bucket<br/>30 días, configurable"]
-    LR -->|sink propio| BQ["BigQuery"]
-    LR -->|sink propio| GCS["Cloud Storage"]
-    LR -->|sink propio| PS["Pub/Sub<br/>(SIEM externo)"]
-    LR -->|sink propio| UB["Log bucket propio<br/>(Log Analytics)"]
-```
-
-- **Log Router**: cada log entra al router, que lo envía según los **sinks** (con filtros de inclusión y exclusión).
-- **Log buckets**: `_Required` (Admin Activity, System Event y Access Transparency; **400 días**, no se modifica ni se borra), `_Default` (lo demás, 30 días por defecto, configurable) y buckets propios con retención a medida. Un bucket con **Log Analytics** se consulta con SQL.
-- **Destinos de un sink**: Cloud Storage (archivo barato y largo plazo), BigQuery (análisis), Pub/Sub (sistemas externos, SIEM, on-premises), otro log bucket u otro proyecto. Los **aggregated sinks** en la organización o un folder recogen logs de todos los proyectos.
-- Tras crear el sink, hay que dar a su **writer identity** (service account del sink) permiso de escritura en el destino.
+- **Log Router**: envía cada log según los **sinks** (filtros de inclusión y exclusión).
+- **Log buckets**: `_Required` (Admin Activity, System Event, Access Transparency; **400 días**, fijo), `_Default` (lo demás, 30 días por defecto, configurable) y buckets propios. Con **Log Analytics** se consultan con SQL.
+- **Destinos de un sink**: Cloud Storage (archivo barato), BigQuery (análisis), Pub/Sub (SIEM, sistemas externos), otro log bucket u otro proyecto. Los **aggregated sinks** en la organización o un folder (`--include-children`) recogen todos los proyectos.
+- Tras crear el sink, da a su **writer identity** permiso de escritura en el destino.
 
 ```bash
 gcloud logging sinks create audit-a-bq \
   bigquery.googleapis.com/projects/seguridad-central/datasets/audit_logs \
   --organization=123456789012 --include-children \
   --log-filter='logName:"cloudaudit.googleapis.com"'
-gcloud logging read 'resource.type="gce_instance" AND severity>=ERROR AND timestamp>="2026-10-25T00:00:00Z"' \
-  --limit=20 --format=json
-gcloud logging buckets update _Default --location=global --retention-days=90
+gcloud logging read 'resource.type="gce_instance" AND severity>=ERROR' --limit=20
 ```
 
 ### Audit logs, VPC Flow Logs y firewall logs
 
 | Log | Se activa | Qué registra |
 | --- | --- | --- |
-| **Admin Activity audit logs** | Siempre, gratis, no se pueden desactivar | Cambios de configuración y metadata ("quién creó o borró qué") |
-| **System Event audit logs** | Siempre | Acciones de Google sobre tus recursos (live migration, etc.) |
-| **Data Access audit logs** | **Desactivados por defecto** (salvo BigQuery); se activan por servicio en la configuración de auditoría de IAM | Lecturas de datos y de configuración; pueden generar mucho volumen y costo |
-| **Policy Denied audit logs** | Por defecto (se pueden excluir con filtros en el sink) | Accesos denegados por políticas de seguridad (por ejemplo, VPC Service Controls) |
-| **VPC Flow Logs** | Por subnet (`--enable-flow-logs`) | Muestra de flujos de red (5-tupla, bytes) |
+| **Admin Activity audit logs** | Siempre, gratis, no se desactivan | Cambios de configuración ("quién creó o borró qué") |
+| **System Event audit logs** | Siempre | Acciones de Google sobre tus recursos (live migration…) |
+| **Data Access audit logs** | **Desactivados por defecto** (salvo BigQuery); por servicio en la configuración de auditoría de IAM | Lecturas de datos y configuración; mucho volumen y costo |
+| **Policy Denied audit logs** | Por defecto (excluibles en el sink) | Accesos denegados por políticas (p. ej., VPC Service Controls) |
+| **VPC Flow Logs** | Por subnet (`--enable-flow-logs`) | Muestra de flujos de red |
 | **Firewall Rules Logging** | Por regla (`--enable-logging`) | Conexiones permitidas o denegadas por esa regla |
-
-Más sobre auditoría en [Seguridad base](../../../cloud/identidad-y-seguridad/seguridad-base.md) y [Detección y respuesta](../../../devsecops/gobierno-y-respuesta/deteccion-respuesta.md).
 
 ### Diagnóstico y salud
 
 | Herramienta | Para qué |
 | --- | --- |
-| **Cloud Trace** | Latencia distribuida entre servicios (trazas) |
-| **Cloud Profiler** | Qué funciones consumen CPU y memoria en producción |
-| **Error Reporting** | Agrupar excepciones de las apps |
-| **Query Insights** / **index advisor** | Consultas lentas e índices en Cloud SQL y AlloyDB |
+| **Cloud Trace** / **Cloud Profiler** / **Error Reporting** | Latencia entre servicios / CPU y memoria por función / agrupar excepciones |
 | **Personalized Service Health** | Incidentes de Google Cloud que **afectan a tus proyectos**, con alertas |
-| **Active Assist** (Recommender) | Recomendaciones: VMs inactivas, rightsizing, IPs y discos sin usar, roles excesivos |
-| **Cloud Hub** | Vista central de eventos activos (incidentes y mantenimientos), salud de aplicaciones de App Hub y alertas |
-| **Gemini Cloud Assist** | Investigaciones asistidas por IA y ayuda para crear consultas y alertas |
-
-```bash
-gcloud recommender recommendations list --project=app-prod-4821 --location=us-central1-a \
-  --recommender=google.compute.instance.IdleResourceRecommender
-```
-
-Conceptos de métricas, logs y trazas en [Observabilidad](../../../devops/operacion/observabilidad.md) y [Observabilidad nativa](../../../cloud/operacion-y-gobierno/observabilidad-nativa.md); cómo leer logs en [Leer logs](../../../devops/operacion/leer-logs.md).
+| **Active Assist** (Recommender) | VMs inactivas, rightsizing, IPs y discos sin usar, roles excesivos |
+| **Cloud Hub** | Vista central de incidentes, mantenimientos, salud de App Hub y alertas |
+| **Gemini Cloud Assist** | Investigaciones con IA y ayuda para consultas y alertas |
 
 !!! tip "En el examen"
     - "Ver memoria de la VM" → instalar **Ops Agent**.
@@ -347,14 +216,14 @@ Conceptos de métricas, logs y trazas en [Observabilidad](../../../devops/operac
 
 ## Casos de uso
 
-1. **Restaurar una VM al estado de ayer después de una actualización fallida.** → Crear un disco desde el snapshot programado y una VM nueva con él.
-2. **Desplegar una nueva versión de una API en Cloud Run y probarla con el 5% de los usuarios.** → `--no-traffic --tag`, luego `update-traffic --to-tags=tag=5` y subir gradualmente.
-3. **Una app en GKE tiene picos de tráfico diarios.** → HPA para Pods + cluster autoscaler en el node pool (o Autopilot).
-4. **Una subnet `/24` se quedó sin IPs.** → `expand-ip-range` a `/23` o `/22`.
-5. **Un auditor pide los audit logs de toda la organización en un único lugar durante 5 años.** → Aggregated sink en la organización hacia un bucket de Cloud Storage con retention policy.
-6. **El equipo quiere saber cuánto cuesta una consulta de BigQuery antes de ejecutarla.** → `bq query --dry_run`.
-7. **Una normativa exige que la empresa controle y pueda revocar las claves de cifrado de un bucket.** → CMEK con Cloud KMS y permiso a la service agent de Cloud Storage.
-8. **Ver incidentes de Google Cloud que afectan a tus proyectos y recibir alertas.** → **Personalized Service Health**.
+1. **Restaurar una VM al estado de ayer tras una actualización fallida.** → Disco desde el snapshot programado y VM nueva con él.
+2. **Probar una nueva versión en Cloud Run con el 5% de los usuarios.** → `--no-traffic --tag`, luego `update-traffic --to-tags=tag=5` y subir gradualmente.
+3. **App en GKE con picos diarios.** → HPA + cluster autoscaler en el node pool (o Autopilot).
+4. **Subnet `/24` sin IPs.** → `expand-ip-range` a `/23` o `/22`.
+5. **Audit logs de toda la organización en un lugar durante 5 años.** → Aggregated sink a Cloud Storage con retention policy.
+6. **Saber cuánto cuesta una consulta de BigQuery antes de ejecutarla.** → `bq query --dry_run`.
+7. **La empresa debe controlar y poder revocar las claves de un bucket.** → CMEK con Cloud KMS + permiso a la service agent de Cloud Storage.
+8. **Ver incidentes de Google Cloud que afectan a tus proyectos.** → **Personalized Service Health**.
 
 ## Preguntas de práctica
 
@@ -430,29 +299,17 @@ Conceptos de métricas, logs y trazas en [Observabilidad](../../../devops/operac
 
 ## Para profundizar
 
-- Operación: [Observabilidad nativa](../../../cloud/operacion-y-gobierno/observabilidad-nativa.md), [Observabilidad](../../../devops/operacion/observabilidad.md), [Operación y SRE](../../../devops/operacion/operacion-sre.md), [Troubleshooting](../../../devops/operacion/troubleshooting.md), [Runbooks y playbooks](../../../devops/operacion/runbooks-playbooks.md)
-- Resiliencia y backups: [Resiliencia](../../../cloud/operacion-y-gobierno/resiliencia.md), [Almacenamiento y datos](../../../cloud/redes-y-datos/almacenamiento-datos.md), [Continuidad de negocio](../../../negocio/continuidad-negocio.md)
-- Contenedores: [Kubernetes](../../../devops/contenedores/kubernetes.md), [Seguridad de Kubernetes](../../../devsecops/infraestructura-y-contenedores/seguridad-kubernetes.md)
-- Redes: [Redes en la nube](../../../cloud/redes-y-datos/redes.md), [Servicios de red](../../../networking/intermedio/servicios-red.md) (DNS), [Troubleshooting de red](../../../networking/avanzado/troubleshooting-red.md)
-- Automatización: [Automatización cloud con SDKs](../../../python/scripting/automatizacion-cloud.md)
+- [Observabilidad nativa](../../../cloud/operacion-y-gobierno/observabilidad-nativa.md) y [Observabilidad](../../../devops/operacion/observabilidad.md)
+- [Resiliencia](../../../cloud/operacion-y-gobierno/resiliencia.md) y [Continuidad de negocio](../../../negocio/continuidad-negocio.md)
+- [Kubernetes](../../../devops/contenedores/kubernetes.md) y [Seguridad de Kubernetes](../../../devsecops/infraestructura-y-contenedores/seguridad-kubernetes.md)
+- [Redes en la nube](../../../cloud/redes-y-datos/redes.md) y [Troubleshooting de red](../../../networking/avanzado/troubleshooting-red.md)
+- Comandos: [gcloud](../../../recursos/comandos/google-cli.md) y [kubectl](../../../recursos/comandos/kubectl.md)
 
 ## Referencias
 
 - [Snapshots y snapshot schedules](https://cloud.google.com/compute/docs/disks/scheduled-snapshots)
-- [Custom images e image families](https://cloud.google.com/compute/docs/images/image-families-best-practices)
-- [GKE node pools](https://cloud.google.com/kubernetes-engine/docs/concepts/node-pools)
-- [Autopilot resource requests](https://cloud.google.com/kubernetes-engine/docs/concepts/autopilot-resource-requests)
 - [Cloud Run: rollouts, rollbacks y traffic migration](https://cloud.google.com/run/docs/rollouts-rollbacks-traffic-migration)
 - [Cloud Storage lifecycle](https://cloud.google.com/storage/docs/lifecycle)
-- [Cloud SQL backups](https://cloud.google.com/sql/docs/postgres/backup-recovery/backups)
-- [Database Center](https://cloud.google.com/database-center/docs/overview)
 - [CMEK](https://cloud.google.com/kms/docs/cmek)
-- [Expand a subnet](https://cloud.google.com/vpc/docs/create-modify-vpc-networks#expand-subnet)
-- [Cloud NAT](https://cloud.google.com/nat/docs/overview)
-- [Cloud DNS](https://cloud.google.com/dns/docs/overview)
-- [Cloud Monitoring alerting](https://cloud.google.com/monitoring/alerts)
-- [Ops Agent](https://cloud.google.com/stackdriver/docs/solutions/agents/ops-agent)
 - [Routing and storage overview (Cloud Logging)](https://cloud.google.com/logging/docs/routing/overview)
 - [Cloud Audit Logs](https://cloud.google.com/logging/docs/audit)
-- [Personalized Service Health](https://cloud.google.com/service-health/docs/overview)
-- [Cloud Hub](https://cloud.google.com/hub/docs/overview)
